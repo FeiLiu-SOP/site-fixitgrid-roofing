@@ -1,0 +1,119 @@
+---
+import { internalPath, siteConfig } from "../../site-config";
+import { STEWERSHIP_LEGAL_OPERATOR } from "../../lib/stewardship-legal";
+
+const termsHref = internalPath("terms-of-service");
+const phone = siteConfig.phoneDisplay?.trim();
+const tel = siteConfig.phoneE164?.trim();
+const hasPhone = Boolean(phone && tel);
+---
+
+<h1>Privacy Policy</h1>
+<p class="legal-updated"><strong>Last updated:</strong> May 30, 2026</p>
+
+<div class="legal-disclaimer-box">
+  <strong>Community education only</strong>
+  These pages are neighbor-stewardship reference materials. They are not paid dispatch, contractor
+  matching, or insurance advice. See our <a href={termsHref}>Terms of Service</a> for full disclaimers.
+</div>
+
+<p>
+  <strong>Operator:</strong> {STEWERSHIP_LEGAL_OPERATOR}<br />
+  <strong>Website:</strong> {siteConfig.canonicalOrigin}
+  {hasPhone ? (
+    <>
+      <br />
+      <strong>Volunteer reference desk:</strong>{" "}
+      <a href={`tel:${tel!.replace(/^\+/, "")}`}>{phone}</a>
+    </>
+  ) : null}
+</p>
+
+<h2>1. Overview</h2>
+<p>
+  This Privacy Policy explains how we handle limited information when you visit our community
+  stewardship pages. These materials support voluntary neighbor education about housing upkeep topics
+  (water, exterior, plumbing reference notes). We do <strong>not</strong> operate a contractor
+  marketplace, paid dispatch desk, or lead-sales program on this site.
+</p>
+
+<h2>2. Information we collect</h2>
+<ul>
+  <li>Basic technical data: IP address, browser type, device, pages visited, referring URL</li>
+  <li>Cookies and analytics (e.g., page views) used to understand readership and improve clarity</li>
+  <li>
+    Information you choose to share if you contact a volunteer reference desk (e.g., email or message
+    content)
+  </li>
+</ul>
+<p>
+  We do <strong>not</strong> collect information for commercial telemarketing, insurance sales, or
+  third-party data brokerage on these pages.
+</p>
+
+<h2>3. How we use information</h2>
+<ul>
+  <li>Operate and secure the website</li>
+  <li>Measure aggregate readership (analytics)</li>
+  <li>Respond to good-faith volunteer or fellowship inquiries when you contact us directly</li>
+  <li>Comply with legal obligations</li>
+</ul>
+
+<h2>4. How we share information</h2>
+<p>
+  We may share limited data with hosting or analytics providers that help run the site. We do{" "}
+  <strong>not</strong> sell personal information. We do <strong>not</strong> share visitor data with
+  home-service contractors for paid handoffs from these stewardship pages.
+</p>
+
+<h2>5. Illustrative content on ZIP pages</h2>
+<p>
+  Some pages show educational anchors, stress indexes, or charts derived from public-style context.
+  These are <strong>illustrative planning notes only</strong> — not engineering reports, insurer
+  findings, bids, or government determinations.
+</p>
+
+<h2>6. Your choices</h2>
+<p>
+  You may use browser controls to limit cookies where available.
+  {hasPhone ? (
+    <>
+      {" "}
+      Privacy questions may be directed to the volunteer reference desk at{" "}
+      <a href={`tel:${tel!.replace(/^\+/, "")}`}>{phone}</a>.
+    </>
+  ) : (
+    <> Privacy questions may be directed through fellowship contact channels listed on this site.</>
+  )}
+</p>
+
+<h2>7. Data retention</h2>
+<p>
+  We retain information only as long as needed for site security, aggregate analytics, or legal
+  compliance, then delete or de-identify where appropriate.
+</p>
+
+<h2>8. Security</h2>
+<p>
+  We use reasonable safeguards. No Internet transmission is 100% secure.
+</p>
+
+<h2>9. Children</h2>
+<p>
+  These materials are intended for general community readers. We do not knowingly collect information
+  from children under 13.
+</p>
+
+<h2>10. Changes</h2>
+<p>We may update this policy. The &ldquo;Last updated&rdquo; date will change when we do.</p>
+
+<h2>11. Contact</h2>
+<p>
+  {STEWERSHIP_LEGAL_OPERATOR}
+  {hasPhone ? (
+    <>
+      <br />
+      Volunteer reference desk: <a href={`tel:${tel!.replace(/^\+/, "")}`}>{phone}</a>
+    </>
+  ) : null}
+</p>

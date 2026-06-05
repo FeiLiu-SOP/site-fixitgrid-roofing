@@ -1,0 +1,210 @@
+---
+import { getCollection } from "astro:content";
+import Footer from "../components/Footer.astro";
+import SiteFavicon from "../components/SiteFavicon.astro";
+import BrandOgImage from "../components/BrandOgImage.astro";
+import { ACTIVE_COLLECTION } from "../active-collection";
+import {
+  canonicalPageUrl,
+  getBrand,
+  getNicheLabelForSeed,
+  hubPublicPath,
+  internalPath,
+  siteConfig,
+} from "../site-config";
+import {
+  entryPublicPathSegments,
+  stateAbbrFromNearMeSlug,
+} from "../lib/fixitgrid-near-me-url";
+import { isStewardshipCollection, STEWERSHIP_BRAND_NAME } from "../lib/stewardship-legal";
+import { REALTORS_AT_THE_BEACH_PLUMBING_V2 } from "../domain-templates/realtorsatthebeach.com-plumbing-v2";
+
+function hostnameForBrand(astroHost: string): string {
+  if (astroHost) return astroHost;
+  try {
+    return new URL(siteConfig.canonicalOrigin).hostname;
+  } catch {
+    return "";
+  }
+}
+
+const posts = await getCollection(ACTIVE_COLLECTION);
+const pageNicheLabel = getNicheLabelForSeed("home");
+const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+const stewardshipHome = isStewardshipCollection(ACTIVE_COLLECTION);
+const homeBrandName = stewardshipHome ? STEWERSHIP_BRAND_NAME : brand.name;
+const homeMetaDescription = stewardshipHome
+  ? `${pageNicheLabel} education pages for neighbors. Browse local ZIP stewardship briefings (non-commercial).`
+  : `${brand.name}: The official audit node for local ${pageNicheLabel} risks. Browse all local service pages.`;
+const pageUrl = canonicalPageUrl();
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: `${pageNicheLabel} Service Pages`,
+  description: homeMetaDescription,
+  url: pageUrl,
+};
+function entryPath(entry: { id?: string; slug?: string }) {
+  const raw = entry.slug ?? entry.id ?? "";
+  return raw.replace(/\.(md|mdx)$/i, "");
+}
+const sortedPosts = [...posts].sort((a, b) => entryPath(a).localeCompare(entryPath(b)));
+
+function entryStateFromSlug(entry: { id?: string; slug?: string }): string | null {
+  const slug = entryPath(entry);
+  const nearMe = stateAbbrFromNearMeSlug(slug);
+  if (nearMe) return nearMe;
+  const m = slug.match(/-([a-z]{2})-\d{5}$/i);
+  if (!m) return null;
+  return m[1]!.toUpperCase();
+}
+
+function entryHref(entry: { id?: string; slug?: string }): string {
+  const slug = entryPath(entry);
+  const st = entryStateFromSlug(entry);
+  return internalPath(...entryPublicPathSegments(slug, st ?? undefined));
+}
+
+const stateCounts = new Map<string, number>();
+for (const p of posts) {
+  const st = entryStateFromSlug(p);
+  if (!st) continue;
+  stateCounts.set(st, (stateCounts.get(st) ?? 0) + 1);
+}
+const statesSorted = Array.from(stateCounts.entries())
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([st, count]) => ({ st, count, href: internalPath(st.toLowerCase()) }));
+const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
+  ? REALTORS_AT_THE_BEACH_PLUMBING_V2.theme.accent
+  : "#1d4ed8";
+---
+
+<html lang="en" style={`--theme-accent:${themeAccent};`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SiteFavicon />
+    <meta name="google-site-verification" content="e8639489520c639b" />
+    <title>{pageNicheLabel} Service Pages</title>
+    <meta name="description" content={homeMetaDescription} />
+    <meta name="robots" content={siteConfig.robotsContent} />
+    <link rel="canonical" href={pageUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={`${pageNicheLabel} Service Pages`} />
+    <meta property="og:description" content={homeMetaDescription} />
+    <meta property="og:url" content={pageUrl} />
+    <BrandOgImage />
+    <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
+    <style>
+      :root {
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      main {
+        width: min(980px, 94vw);
+        margin: 2rem auto;
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 26px rgba(2, 6, 23, 0.08);
+      }
+      h1 {
+        margin: 0 0 0.4rem;
+      }
+      /* Home H1 brand suffix: title case FixitGrid Local Dispatch Network */
+      .brand-home-title-suffix {
+        letter-spacing: 0.04em;
+        color: #94a3b8;
+        font-weight: 700;
+        font-size: 0.92em;
+      }
+      .meta {
+        color: #475569;
+        margin-bottom: 1rem;
+      }
+      ul {
+        margin: 0;
+        padding-left: 1.2rem;
+        columns: 2;
+        column-gap: 2rem;
+      }
+      li {
+        break-inside: avoid;
+        margin: 0.2rem 0;
+      }
+      a {
+        color: var(--theme-accent, #1d4ed8);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 900px) {
+        ul {
+          columns: 1;
+        }
+      }
+    
+      .tunnel-wrap {
+        margin: 1rem 0 1.25rem;
+      }
+      .tunnel-btn {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 16px;
+        border: 0;
+        background: #1e293b;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 14px;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 6px;
+      }
+      .tunnel-btn:hover {
+        text-decoration: underline;
+      }
+
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>
+        All {pageNicheLabel} Pages |{" "}
+        <span class="brand-home-title-suffix">{homeBrandName}</span>
+      </h1>
+      <p class="meta">Total pages: {sortedPosts.length}</p>
+      <p class="meta">Hub tunnel mode: centralized entry with weighted deep links.</p>
+      <div class="tunnel-wrap">
+        <a class="tunnel-btn" href={hubPublicPath("national-service-coverage")}>
+          [+] View All U.S. Service Locations
+        </a>
+      </div>
+
+      <h2>Browse by state</h2>
+      <p class="meta">State indexes: {statesSorted.length}</p>
+      <ul>
+        {statesSorted.map((s) => (
+          <li>
+            <a href={s.href}>{pageNicheLabel} in {s.st}</a> ({s.count})
+          </li>
+        ))}
+      </ul>
+
+      <h2>Browse all city pages</h2>
+      <ul>
+        {sortedPosts.map((post) => (
+          <li>
+            <a href={entryHref(post)}>{post.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,55 @@
+---
+import type { SeedLandmark } from "../lib/gsc-seed-landmarks";
+import { buildSeedLandmarksCoverageLine } from "../lib/gsc-seed-landmarks";
+
+export interface Props {
+  city: string;
+  state: string;
+  zip: string;
+  landmarks: SeedLandmark[];
+}
+
+const { city, state, zip, landmarks } = Astro.props;
+const cityLabel = city.trim() || "this area";
+const stateLabel = state.trim();
+const zipLabel = zip.trim();
+const placeLine =
+  stateLabel && zipLabel
+    ? `${cityLabel}, ${stateLabel} ${zipLabel}`
+    : stateLabel
+      ? `${cityLabel}, ${stateLabel}`
+      : cityLabel;
+const coverageLine = buildSeedLandmarksCoverageLine(landmarks);
+---
+
+<section class="service-area-local-landmarks" aria-labelledby="service-area-local-landmarks-title">
+  <h2 id="service-area-local-landmarks-title" class="service-area-local-landmarks__title">
+    Local service area
+  </h2>
+  <p class="service-area-local-landmarks__line">
+    Service coverage near {placeLine}: {coverageLine}. Dispatch routing uses your ZIP—not
+    landmark addresses.
+  </p>
+</section>
+
+<style>
+  .service-area-local-landmarks {
+    margin: 2rem 0 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .service-area-local-landmarks__title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .service-area-local-landmarks__line {
+    margin: 0;
+  }
+</style>

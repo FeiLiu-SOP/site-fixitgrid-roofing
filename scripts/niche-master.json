@@ -1,0 +1,500 @@
+{
+  "schemaVersion": 1,
+  "document": "Single source for niche keywords, forbidden phrases, engineering notice lexicon, alias pools, and Go generator specs.",
+  "collections": {
+    "roofing": {
+      "titleSuffix": "| FixitGrid Roofing Dispatch",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "roof",
+        "shingle",
+        "flashing",
+        "ice dam",
+        "ridge vent"
+      ],
+      "forbiddenPhrases": [
+        "structural drying",
+        "dehumidifier chamber",
+        "bed bug",
+        "termite",
+        "hydro-jetting",
+        "slab leak listening",
+        "sump discharge head"
+      ],
+      "ciDistHtmlRoot": "sites/site-roofing/dist",
+      "engineeringNotice": {
+        "mode": "prefixSuffix",
+        "prefixes": [
+          "High humidity causes",
+          "Coastal salt air affects",
+          "Midland freeze-thaw cycles stress",
+          "Clay-rich subsoils amplify",
+          "Seasonal wet-dry swings fatigue",
+          "Low-slope drainage patterns concentrate",
+          "Wind-driven rain loading tests",
+          "Thermal bridging at transitions can worsen",
+          "Wildland-urban interface heat spikes accelerate",
+          "Karst-adjacent groundwater variability influences"
+        ],
+        "suffixes": [
+          "expansion and fastener seating in roof-to-wall joints.",
+          "sealant pliability and lap-shear performance at transitions.",
+          "joint movement in parapet and coping assemblies.",
+          "capillary rise risk near stem walls and sill plates.",
+          "adhesive bonds on self-adhered membranes during shoulder seasons.",
+          "shingle seal-down timing after temperature swings.",
+          "metal panel clip galling if expansion runs are undersized.",
+          "underlayment wrinkling when deck moisture is uneven.",
+          "ice-dam backup paths at eaves and penetrations.",
+          "ridge vent neutral pressure assumptions during wind events."
+        ]
+      }
+    },
+    "plumbing": {
+      "titleSuffix": "| FixitGrid Plumbing Dispatch",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "plumber",
+        "drain",
+        "PRV",
+        "water heater",
+        "PEX"
+      ],
+      "forbiddenPhrases": [
+        "structural drying",
+        "bed bug",
+        "termite trail",
+        "shingle seal-down",
+        "ice-dam backup",
+        "rodent gnaw paths"
+      ],
+      "ciDistHtmlRoot": "sites/site-plumbing/dist",
+      "engineeringNotice": {
+        "mode": "prefixSuffix",
+        "prefixes": [
+          "Hard water scaling stresses",
+          "PRV oscillation can worsen",
+          "Galvanic couples near dielectrics amplify",
+          "Partially closed supply stops concentrate",
+          "Thermal expansion on long horizontal runs stresses",
+          "Drainage wet vent geometry can influence",
+          "Sump discharge freeze lines test",
+          "Recirculation pump dead-legs can worsen",
+          "Cleanout access offsets concentrate",
+          "Fixture shutoff age bands amplify"
+        ],
+        "suffixes": [
+          "seating torque on angle stops and supply risers.",
+          "pinhole cluster risk on aged domestic copper.",
+          "hydro-jetting envelope vs older cast-iron mains.",
+          "camera pass friction on offset closet bends.",
+          "sump check-valve chatter under high static head.",
+          "water heater T&P discharge routing assumptions.",
+          "branch wet vent compliance at island sinks.",
+          "hose bib vacuum-breaker integrity after winter cycles.",
+          "slab leak listening window variability on post-tension decks.",
+          "PRV outlet pressure curve stability under irrigation draws."
+        ]
+      }
+    },
+    "pestcontrol": {
+      "titleSuffix": "| FixitGrid Pest Control Dispatch",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "pest",
+        "rodent",
+        "termite",
+        "perimeter exclusion",
+        "attic bypass"
+      ],
+      "forbiddenPhrases": [
+        "structural drying",
+        "pipe corrosion",
+        "leak detection",
+        "shingle replacement",
+        "hydro-jetting envelope",
+        "dehumidifier reheat"
+      ],
+      "ciDistHtmlRoot": "sites/site-pestcontrol/dist",
+      "engineeringNotice": {
+        "mode": "prefixSuffix",
+        "prefixes": [
+          "Perimeter exclusion gaps concentrate",
+          "Soffit vent geometry can concentrate",
+          "Landscape mulch contact can accelerate",
+          "Seasonal ant trail pressure stresses",
+          "Attic bypass airflow can worsen",
+          "Basement sill plate gaps amplify",
+          "Garage door weatherstrip wear concentrates",
+          "Crawlspace vapor gradients can influence",
+          "Tree canopy touching rooflines can worsen",
+          "Downspout splash-back near foundations concentrates"
+        ],
+        "suffixes": [
+          "harborage along sill plates and rim joists.",
+          "entry vectors at weep holes and vent screens.",
+          "rodent gnaw paths at PVC penetrations and foam gaps.",
+          "wasp nesting cues under eave returns and light fixtures.",
+          "silverfish humidity pockets near paper-backed insulation.",
+          "cockroach aggregation near warm appliance voids.",
+          "spider webbing density at porch ceiling corners.",
+          "stored-product moth risk near pet food staging.",
+          "tick questing height along brush-to-lawn edges.",
+          "stored grain beetle risk near pantry cardboard seams."
+        ]
+      }
+    },
+    "water-damage": {
+      "titleSuffix": "| FixitGrid Water Damage Dispatch",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "mitigation",
+        "psychrometric",
+        "moisture mapping",
+        "extraction",
+        "dry-out"
+      ],
+      "forbiddenPhrases": [
+        "bed bug aggregation",
+        "termite shelter tubes",
+        "shingle seal-down timing",
+        "hydro-jetter nozzle envelope"
+      ],
+      "ciDistHtmlRoot": "sites/site-water-damage/dist",
+      "aliasPoolOrdered": [
+        "Water Mitigation",
+        "Flood Recovery",
+        "Disaster Cleanup",
+        "Moisture Restoration",
+        "Emergency Dry-Out",
+        "Property Drying",
+        "Water Loss Recovery",
+        "Storm Cleanup",
+        "Flood Restoration",
+        "Structural Drying"
+      ],
+      "engineeringNotice": {
+        "mode": "prefixSuffix",
+        "prefixes": [
+          "Vapor pressure gradients after intrusion stress",
+          "Class 2–3 bound moisture can worsen",
+          "HVAC interlock during drying influences",
+          "Insurance documentation density concentrates",
+          "Contents segregation staging amplifies",
+          "Demolition stop-lines near cabinets concentrate",
+          "Psychrometric ramp stability tests",
+          "Equipment day-count planning stresses",
+          "Subfloor cavity access limits worsen",
+          "Adjuster photo packet completeness influences"
+        ],
+        "suffixes": [
+          "evaporation potential at low-perm finishes.",
+          "chamber isolation at hallway transitions.",
+          "dehumidifier reheat balance in occupied zones.",
+          "moisture mapping repeat intervals after extraction.",
+          "salvage band decisions on engineered flooring.",
+          "equipment electrical load diversity on branch circuits.",
+          "containment zipper integrity at poly barriers.",
+          "drain tile surcharge during exterior hydrostatic spikes.",
+          "paper-faced gypsum disposal thresholds.",
+          "thermal imaging anomaly correlation with probe pairs."
+        ]
+      }
+    },
+    "siding-services": {
+      "titleSuffix": "| FixitGrid Siding Dispatch",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "siding",
+        "J-channel",
+        "housewrap",
+        "fiber-cement",
+        "kickout flashing"
+      ],
+      "forbiddenPhrases": [
+        "slab leak listening window",
+        "camera pass friction on offset closet bends",
+        "bed bug",
+        "structural drying chamber"
+      ],
+      "ciDistHtmlRoot": "sites/site-siding/dist",
+      "aliasPoolOrdered": [
+        "Siding Repair",
+        "Siding Installation",
+        "Local Siding Service",
+        "Exterior Siding Repair",
+        "Wall Restoration",
+        "Facade Renewal",
+        "Weather Barrier Wrap",
+        "Exterior Envelope",
+        "Cladding Retrofit",
+        "Panel Replacement"
+      ],
+      "engineeringNotice": {
+        "mode": "prefixSuffix",
+        "prefixes": [
+          "Wind-driven rain at laps stresses",
+          "Housewrap seam continuity tests",
+          "NFRC window perimeter transitions concentrate",
+          "Corner post stack geometry amplifies",
+          "J-channel drainage slope influences",
+          "Foam backer nail-length tables stress",
+          "Panel expansion gaps at long runs worsen",
+          "Kickout flashing absence concentrates",
+          "Coastal fastener corrosion class amplifies",
+          "Color lot variance across elevations influences"
+        ],
+        "suffixes": [
+          "cladding calibration vs localized gust factors.",
+          "substrate flatness tolerances before re-sheathing.",
+          "metal panel clip galling on long facades.",
+          "vinyl expansion noise at inside corners.",
+          "fiber-cement scoring depth vs snap risk.",
+          "starter strip elevation vs finished grade splash.",
+          "utility trim integration at meter packs.",
+          "battens alignment vs vertical joint staggering.",
+          "casing bead sealant tooling in freeze cycles.",
+          "drip edge metal gauge vs fascia overhang."
+        ]
+      }
+    },
+    "plumbing-v2": {
+      "titleSuffix": "| FixitGrid Plumbing (Hub) Dispatch",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY (Realtors templates apply on bonded domain)",
+      "nicheKeywords": [
+        "plumbing",
+        "repiping",
+        "cleanout",
+        "backflow",
+        "drain line"
+      ],
+      "forbiddenPhrases": [
+        "termite shelter tubes",
+        "rodent gnaw paths",
+        "structural drying",
+        "psychrometric ramp"
+      ],
+      "ciDistHtmlRoot": "sites/site-plumbing-v2/dist",
+      "aliasPoolOrdered": [
+        "Professional Plumbing Services",
+        "Emergency Pipe Repair",
+        "Leak Detection Pros",
+        "Drain Line Restoration Crew",
+        "Slab Leak Response Unit",
+        "Water Heater & Pipe Experts",
+        "Hydro-Jetting Specialists",
+        "Basement Sump Service Team",
+        "Whole-Home Repiping Advisors",
+        "Fixture & Supply Line Pros"
+      ],
+      "engineeringNotice": {
+        "mode": "prefixSuffix",
+        "prefixes": [
+          "Camera pass friction stresses",
+          "Hydro-jetter nozzle envelope tests",
+          "Sump basin geometry influences",
+          "PRV setpoint drift can worsen",
+          "Dielectric union checklist gaps amplify",
+          "PEX expansion ring batch variance concentrates",
+          "Backflow test cock orientation stresses",
+          "Slab moisture gradient under mains influences",
+          "Branch wet vent compliance concentrates",
+          "Hose bib freeze-risk flags amplify"
+        ],
+        "suffixes": [
+          "main-line replacement contingencies near curb stops.",
+          "jetter pressure ramp vs older CI lateral walls.",
+          "sump discharge head calculations under long runs.",
+          "fixture inventory torque logs at angle stops.",
+          "water heater flex line bend radius limits.",
+          "cleanout riser height vs finished slab.",
+          "recirculation pump check-valve chatter.",
+          "meter set orientation vs trenchless pull paths.",
+          "drain cleaning cable head wear before second pass.",
+          "sub-slab listening window variability on PT decks."
+        ]
+      }
+    },
+    "community-stewardship-water": {
+      "ciAuditProfile": "church",
+      "ciChurchDistRoot": "absent-apogee/dist",
+      "titleSuffix": "| Community Stewardship — Water",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "stewardship",
+        "potable",
+        "winterization",
+        "PRV education",
+        "hydrant-adjacent"
+      ],
+      "forbiddenPhrases": [
+        "vendor endorsements",
+        "warranty claims",
+        "termite trail pressure",
+        "shingle replacement quote"
+      ],
+      "engineeringNotice": {
+        "mode": "fullLines",
+        "lines": [
+          "Potable distribution volunteer notes emphasize shutoff labeling and winterization awareness.",
+          "Neighborhood water desk references emphasize filter change logs and hose bib drip checks.",
+          "Stewardship intake highlights backflow test intervals and thermal expansion at long runs.",
+          "Community briefing anchors PRV education and softener bypass etiquette for tenants.",
+          "Hydrant-adjacent properties receive winterization reminders without vendor endorsements."
+        ]
+      }
+    },
+    "community-stewardship-siding": {
+      "ciAuditProfile": "church",
+      "ciChurchDistRoot": "absent-apogee/dist",
+      "titleSuffix": "| Community Stewardship — Siding",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "stewardship",
+        "envelope education",
+        "flashing kickouts",
+        "brush-to-siding",
+        "casing bead"
+      ],
+      "forbiddenPhrases": [
+        "prescribing contractors",
+        "slab leak listening",
+        "hydro-jetting envelope",
+        "bed bug aggregation"
+      ],
+      "engineeringNotice": {
+        "mode": "fullLines",
+        "lines": [
+          "Envelope education volunteers track soffit intake balance and gutter overflow cues.",
+          "Neighborhood exterior desk references flashing kickouts without prescribing contractors.",
+          "Stewardship intake highlights paint film checks and caulk joint inspection cadence.",
+          "Community briefing anchors wind-driven rain vocabulary without warranty claims.",
+          "Brush-to-siding clearance reminders appear as voluntary maintenance education."
+        ]
+      }
+    },
+    "community-stewardship-plumbing": {
+      "ciAuditProfile": "church",
+      "ciChurchDistRoot": "absent-apogee/dist",
+      "titleSuffix": "| Community Stewardship — Plumbing",
+      "dispatchPhone": "Build: PUBLIC_PHONE_E164 + PUBLIC_PHONE_DISPLAY",
+      "nicheKeywords": [
+        "stewardship",
+        "cleanout etiquette",
+        "meter set orientation",
+        "tenant shutoff",
+        "non-urgent triage"
+      ],
+      "forbiddenPhrases": [
+        "warranty claims",
+        "termite harborage",
+        "structural drying",
+        "psychrometric ramp stability"
+      ],
+      "engineeringNotice": {
+        "mode": "fullLines",
+        "lines": [
+          "DWV education volunteers emphasize cleanout access etiquette and vent terminology.",
+          "Neighborhood plumbing desk references trap primer evaporation without brand claims.",
+          "Stewardship intake highlights supply stop exercise drills for multi-unit neighbors.",
+          "Community briefing anchors sump discharge frost heave vocabulary at a high level.",
+          "Hardness context appears as informational tables, not treatment prescriptions."
+        ]
+      }
+    }
+  },
+  "goNicheSpecs": {
+    "roofing": {
+      "templatePath": "template.txt",
+      "filePrefix": "roofing-",
+      "templateMode": "single",
+      "templateVersion": "roofing-v1",
+      "rankStart": 0,
+      "recordLimit": 0
+    },
+    "plumbing": {
+      "templatePath": "template-plumbing.txt",
+      "filePrefix": "plumbing-",
+      "templateMode": "layered",
+      "corePath": "template-plumbing-core.txt",
+      "cityFactsPath": "template-plumbing-city-facts.txt",
+      "nicheBlocksPath": "template-plumbing-niche-blocks.txt",
+      "templateVersion": "plumbing-v2a",
+      "rankStart": 0,
+      "recordLimit": 0
+    },
+    "pestcontrol": {
+      "templatePath": "template-pest-control.txt",
+      "filePrefix": "pest-control-",
+      "templateMode": "single",
+      "templateVersion": "pestcontrol-v2",
+      "rankStart": 0,
+      "recordLimit": 0
+    },
+    "water-damage": {
+      "templatePath": "template-water-damage.txt",
+      "filePrefix": "water-damage-",
+      "templateMode": "single",
+      "templateVersion": "water-damage-v1",
+      "rankStart": 10000,
+      "recordLimit": 3000
+    },
+    "siding-services": {
+      "templatePath": "template-siding-services.txt",
+      "filePrefix": "siding-services-",
+      "templateMode": "single",
+      "templateVersion": "siding-services-v1",
+      "rankStart": 10000,
+      "recordLimit": 3000
+    },
+    "plumbing-v2": {
+      "templatePath": "template-plumbing-v2.txt",
+      "filePrefix": "plumbing-v2-",
+      "templateMode": "single",
+      "templateVersion": "plumbing-v2-v1",
+      "rankStart": 10000,
+      "recordLimit": 3000
+    },
+    "community-stewardship-water": {
+      "templatePath": "template-community-stewardship-water.txt",
+      "filePrefix": "community-stewardship-water-",
+      "templateMode": "single",
+      "templateVersion": "community-stewardship-water-v1",
+      "rankStart": 0,
+      "recordLimit": 500
+    },
+    "community-stewardship-siding": {
+      "templatePath": "template-community-stewardship-siding.txt",
+      "filePrefix": "community-stewardship-siding-",
+      "templateMode": "single",
+      "templateVersion": "community-stewardship-siding-v1",
+      "rankStart": 0,
+      "recordLimit": 500
+    },
+    "community-stewardship-plumbing": {
+      "templatePath": "template-community-stewardship-plumbing.txt",
+      "filePrefix": "community-stewardship-plumbing-",
+      "templateMode": "single",
+      "templateVersion": "community-stewardship-plumbing-v1",
+      "rankStart": 0,
+      "recordLimit": 500
+    }
+  },
+  "semanticLexicons": {
+    "document": "Cross-vertical leak markers (substring scan on commercial dist HTML). Keys match collection ids except churchStewardshipGuardPhrases (church substring guards via compliance JSON).",
+    "roofing": ["roofing", "shingle seal-down", "ice dam", "ridge vent", "roof deck"],
+    "plumbing": ["plumber", "PEX", "hydro-jetting", "drain line", "water heater"],
+    "pestcontrol": ["bed bug", "termite trail", "rodent gnaw", "perimeter exclusion"],
+    "water-damage": ["structural drying", "psychrometric", "moisture mapping", "dehumidifier chamber"],
+    "siding-services": ["siding", "J-channel", "housewrap", "fiber-cement", "kickout flash"],
+    "plumbing-v2": ["repiping", "cleanout", "backflow", "drain line"],
+    "churchStewardshipGuardPhrases": [
+      "Call now",
+      "Book now",
+      "dispatch fee",
+      "financing available",
+      "limited time offer",
+      "same-day service"
+    ]
+  }
+}

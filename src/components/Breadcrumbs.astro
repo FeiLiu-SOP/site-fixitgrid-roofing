@@ -1,0 +1,53 @@
+---
+type Props = {
+  homeHref?: string;
+  stateLabel?: string | null;
+  stateHref?: string | null;
+  cityLabel?: string | null;
+};
+
+const {
+  homeHref = "/",
+  stateLabel = null,
+  stateHref = null,
+  cityLabel = null,
+} = Astro.props as Props;
+---
+
+<nav aria-label="Breadcrumb" class="crumbs">
+  <a href={homeHref}>Home</a>
+  {stateLabel ? (
+    <>
+      <span class="sep">&gt;</span>
+      {stateHref ? <a href={stateHref}>{stateLabel}</a> : <span>{stateLabel}</span>}
+    </>
+  ) : null}
+  {cityLabel ? (
+    <>
+      <span class="sep">&gt;</span>
+      <span>{cityLabel}</span>
+    </>
+  ) : null}
+</nav>
+
+<style>
+  .crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0 0 0.9rem;
+  }
+  .crumbs a {
+    color: var(--theme-accent, #1d4ed8);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    text-decoration: underline;
+  }
+  .sep {
+    color: #94a3b8;
+  }
+</style>

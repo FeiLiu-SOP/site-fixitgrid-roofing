@@ -1,0 +1,185 @@
+---
+import type { DispatchCompliance } from "../lib/compliance-matrix";
+
+const { compliance, cityDisplay, stateCode, nicheLabel, brandName, sectionTitle } = Astro.props as {
+  compliance: DispatchCompliance;
+  cityDisplay: string;
+  stateCode: string;
+  nicheLabel: string;
+  brandName?: string;
+  sectionTitle?: string;
+};
+
+const brand = brandName?.trim() || "FixitGrid";
+const title = sectionTitle?.trim() || "Dispatch Gateway Compliance Audit";
+---
+
+<section
+  id="compliance-matrix"
+  class="compliance-matrix"
+  aria-labelledby="compliance-matrix-title"
+>
+  <h2 id="compliance-matrix-title">{title}</h2>
+  <p class="compliance-matrix__status">
+    Routing status: Active dispatch coordination for {cityDisplay}, {stateCode}.
+  </p>
+  <table class="compliance-matrix__table">
+    <tbody>
+      <tr>
+        <th scope="row">Compliance policy</th>
+        <td>
+          We route {nicheLabel.toLowerCase()} requests only through professionals who
+          meet <strong>{compliance.authorityShort}</strong> licensing requirements in{" "}
+          {stateCode} where applicable.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">State regulator</th>
+        <td>
+          {compliance.authorityFull}
+          {" "}
+          (<a href={compliance.verifyUrl} rel="noopener noreferrer" target="_blank">
+            official license lookup
+          </a>)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Regional scope</th>
+        <td>{compliance.scopeNote}</td>
+      </tr>
+      <tr>
+        <th scope="row">Credential format (sample)</th>
+        <td>
+          {compliance.formatHint}
+          <span class="compliance-matrix__sample"> — illustrative only</span>
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Dispatch reference</th>
+        <td>
+          <code>{compliance.dispatchId}</code>
+          <span class="compliance-matrix__sample">
+            {" "}
+            — internal routing ID, not a government license number
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="compliance-matrix__disclaimer">
+    {brand} is a certified dispatch hub / referral network. Service is provided by
+    independent licensed partners where required. Confirm any contractor or agent license at
+    the official {compliance.authorityShort} lookup before authorizing work.
+  </p>
+</section>
+
+<style>
+  .compliance-matrix {
+    width: min(980px, 94vw);
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 1.5rem auto 0;
+    padding: 1.25rem 1.5rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+    overflow-wrap: anywhere;
+  }
+  .compliance-matrix h2 {
+    margin: 0 0 0.65rem;
+    font-size: 1.15rem;
+    color: #0f172a;
+  }
+  .compliance-matrix__status {
+    margin: 0 0 1rem;
+    color: #334155;
+    font-size: 0.95rem;
+  }
+  .compliance-matrix__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .compliance-matrix__table th {
+    text-align: left;
+    vertical-align: top;
+    width: 34%;
+    padding: 0.55rem 0.75rem 0.55rem 0;
+    color: #475569;
+    font-weight: 600;
+  }
+  .compliance-matrix__table td {
+    padding: 0.55rem 0;
+    color: #0f172a;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .compliance-matrix code {
+    word-break: break-all;
+  }
+  .compliance-matrix__table a {
+    color: var(--theme-accent, #1d4ed8);
+  }
+  .compliance-matrix__sample {
+    color: #64748b;
+    font-size: 0.85em;
+  }
+  .compliance-matrix code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: #f1f5f9;
+    padding: 0.12rem 0.35rem;
+    border-radius: 4px;
+  }
+  .compliance-matrix__disclaimer {
+    margin: 1rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  /* Mobile: stack rows — no horizontal table overflow */
+  @media (max-width: 640px) {
+    .compliance-matrix {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+    .compliance-matrix h2 {
+      font-size: 1.05rem;
+    }
+    .compliance-matrix__table,
+    .compliance-matrix__table tbody,
+    .compliance-matrix__table tr,
+    .compliance-matrix__table th,
+    .compliance-matrix__table td {
+      display: block;
+      width: 100%;
+    }
+    .compliance-matrix__table tr {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .compliance-matrix__table tr:last-child {
+      border-bottom: none;
+    }
+    .compliance-matrix__table th {
+      padding: 0 0 0.35rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .compliance-matrix__table td {
+      padding: 0;
+    }
+    .compliance-matrix__sample {
+      display: block;
+      margin-top: 0.25rem;
+    }
+  }
+</style>

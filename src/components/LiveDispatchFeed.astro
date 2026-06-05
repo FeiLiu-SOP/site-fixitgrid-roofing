@@ -1,0 +1,81 @@
+---
+type LiveRecord = {
+  city: string;
+  state: string;
+  offset: number;
+  tag: "[NODE ACTIVE]" | "[DISPATCH CONFIRMED]";
+};
+
+type Props = {
+  records: LiveRecord[];
+  title?: string;
+};
+
+const { records, title = "Real-Time Dispatch Ledger" } = Astro.props as Props;
+---
+
+{records.length > 0 && (
+  <section class="dispatch-ledger" aria-label="Live dispatch activity">
+    <h2>{title}</h2>
+    <ul>
+      {records.map((r) => (
+        <li>
+          <span class="tag">{r.tag}</span>
+          <span class="route">{r.city}, {r.state}</span>
+          <span class="live-time" data-offset={String(r.offset)}>--</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+<script is:inline>
+  (() => { document.querySelectorAll(".live-time").forEach((el) => { const n = Number(el.getAttribute("data-offset") || "0"); el.textContent = `${Math.max(1, n)} mins ago`; }); })();
+</script>
+<style>
+  .dispatch-ledger {
+    margin: 1rem 0 1.2rem;
+    border: 1px solid #dbe4ef;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 0.85rem 1rem;
+  }
+  .dispatch-ledger h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #0f172a;
+  }
+  .dispatch-ledger ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .dispatch-ledger li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #334155;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 0.28rem;
+  }
+  .dispatch-ledger li:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .tag {
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .route {
+    color: #334155;
+  }
+  .live-time {
+    color: #64748b;
+    margin-left: auto;
+    display: inline-block;
+    min-width: 76px;
+    text-align: right;
+  }
+</style>

@@ -1,0 +1,1915 @@
+---
+import { getCollection, render } from "astro:content";
+import Footer from "../components/Footer.astro";
+import SiteFavicon from "../components/SiteFavicon.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import LiveDispatchFeed from "../components/LiveDispatchFeed.astro";
+import MarketDataView from "../components/MarketDataView.astro";
+import RelatedCities from "../components/RelatedCities.astro";
+import ValueProtectionCalculator from "../components/ValueProtectionCalculator.astro";
+import OfficialRiskNodeHeader from "../components/OfficialRiskNodeHeader.astro";
+import TrustBar from "../components/TrustBar.astro";
+import NationalDispatchDisclaimer from "../components/NationalDispatchDisclaimer.astro";
+import NichePartnerLogos from "../components/NichePartnerLogos.astro";
+import DispatchCommandBar from "../components/DispatchCommandBar.astro";
+import RockwellGa4Events from "../components/RockwellGa4Events.astro";
+import ServiceAreaVerifiedReviews from "../components/ServiceAreaVerifiedReviews.astro";
+import ServiceAreaLocalLandmarks from "../components/ServiceAreaLocalLandmarks.astro";
+import { getGscSeedLandmarks } from "../lib/gsc-seed-landmarks";
+import { ogThumbnailUrl } from "../lib/og-thumbnail-url";
+import { ACTIVE_COLLECTION } from "../active-collection";
+import {
+  BRAND_CONFIG,
+  PUBLIC_NICHE_LABEL,
+  canonicalPageUrl,
+  getCanonicalBase,
+  getNicheLabelForSeed,
+  internalPath,
+  siteConfig,
+} from "../site-config";
+import {
+  REALTORS_AT_THE_BEACH_WATER_DAMAGE,
+  matchesRealtorsAtTheBeachWaterDamage,
+} from "../domain-templates/realtorsatthebeach.com-water-damage";
+import {
+  REALTORS_AT_THE_BEACH_PLUMBING_V2,
+} from "../domain-templates/realtorsatthebeach.com-plumbing-v2";
+import { buildBreadcrumbListSchema, buildSlugPageBreadcrumbItems } from "../lib/breadcrumb-schema";
+import { getStatePhysicalEnvironmentFact } from "../lib/geo-facts";
+import {
+  buildFaqSchema,
+  buildLocalBusinessSchema,
+  buildNewtownFellowshipLocalBusinessSchema,
+  buildServiceAreaAggregateRating,
+  getFaqByCollection,
+} from "../lib/seo";
+import { resolvePageLocation } from "../lib/location";
+import {
+  buildBaitPool2TitlesRoofing,
+  buildRoofingH1,
+  buildRoofingPageTitle,
+  ROOFING_META_MAX,
+} from "../lib/roofing-serp-title";
+import { getRoofingSerpOverride } from "../lib/roofing-serp-overrides";
+import {
+  buildBaitPool2TitlesPlumbing,
+  buildPlumbingH1,
+  buildPlumbingPageTitle,
+  PLUMBING_META_MAX,
+} from "../lib/plumbing-serp-title";
+import { getPlumbingSerpOverride } from "../lib/plumbing-serp-overrides";
+import {
+  buildBaitPool2TitlesPestcontrol,
+  buildPestH1,
+  buildPestNestNotice,
+  buildPestPageTitle,
+  PEST_META_MAX,
+} from "../lib/pestcontrol-serp-title";
+import { getPestcontrolSerpOverride } from "../lib/pestcontrol-serp-overrides";
+import {
+  buildBaitPool2TitlesWater,
+  buildWaterH1,
+  buildWaterPageTitle,
+  WATER_META_MAX,
+} from "../lib/water-damage-serp-title";
+import {
+  buildBaitPool2TitlesSiding,
+  buildSidingH1,
+  buildSidingPageTitle,
+  SIDING_META_MAX,
+} from "../lib/siding-serp-title";
+import {
+  buildBaitPool2TitlesPlumbingV2,
+  buildPlumbingV2H1,
+  buildPlumbingV2PageTitle,
+  PLUMBING_V2_META_MAX,
+} from "../lib/plumbing-v2-serp-title";
+import {
+  buildRockwellMaineEntityGraph,
+  matchesRockwellMaine,
+} from "../domain-templates/rockwell-maine-entity";
+import {
+  buildFixitGridEntityGraph,
+  matchesFixitGridEntity,
+} from "../domain-templates/fixitgrid.com-entity";
+import {
+  buildRealtorsEntityGraph,
+  matchesRealtorsEntity,
+} from "../domain-templates/realtorsatthebeach.com-entity";
+import ComplianceMatrix from "../components/ComplianceMatrix.astro";
+import LocalInfrastructureBrief from "../components/LocalInfrastructureBrief.astro";
+import { getDispatchCompliance } from "../lib/compliance-matrix";
+import { buildFixitGridFlClimateLead } from "../lib/fixitgrid-fl-climate";
+import {
+  buildFixitgridServiceReference,
+  isFixitgridInfraBriefPanel,
+} from "../lib/fixitgrid-infra-brief";
+import {
+  entryPublicPathSegments,
+  isFixitgridNearMeBuild,
+  resolveContentEntrySlug,
+  stateAbbrFromNearMeSlug,
+} from "../lib/fixitgrid-near-me-url";
+import {
+  appendCommercialContactFaqIfSeed,
+  shouldForceFaqSectionVisible,
+} from "../lib/commercial-contact-faq";
+
+/** Physical-value tier: deterministic title/H1 (no stableHash) when home value clears bar. */
+const HIGH_VALUE_USD_TRIGGER = 300_000;
+
+/** Monorepo: water-damage vertical (sync with `sites/site-water-damage`). */
+const isWaterDamageHub = ACTIVE_COLLECTION === "water-damage";
+/** Monorepo: plumbing vertical (sync with `sites/site-plumbing`). */
+const isPlumbingHub = ACTIVE_COLLECTION === "plumbing";
+/** Realtors siding (`sites/site-siding` / `siding-services`). */
+const isSidingHub = ACTIVE_COLLECTION === "siding-services";
+/** Realtors plumbing-v2 (`sites/site-plumbing-v2`, `/plumbing/` hub). */
+const isPlumbingV2Hub = ACTIVE_COLLECTION === "plumbing-v2";
+/** Rockwell roofing vertical (`sites/site-roofing` terrain-notice funnel). */
+const isRoofingHub = ACTIVE_COLLECTION === "roofing";
+/** Rockwell pest control (`sites/site-pestcontrol`). */
+const isPestControlHub = ACTIVE_COLLECTION === "pestcontrol";
+/** Newtown Fellowship / church city pages (`npm run build:community-stewardship-*`). */
+const isCommunityStewardshipNpo = ACTIVE_COLLECTION.startsWith("community-stewardship-");
+
+export async function getStaticPaths() {
+  const posts = await getCollection(ACTIVE_COLLECTION);
+  return posts.map((post) => {
+    const entrySlug = (post.slug ?? post.id ?? "").replace(/\.(md|mdx)$/i, "");
+    if (isFixitgridNearMeBuild()) {
+      const st = (post.data.state ?? stateAbbrFromNearMeSlug(entrySlug) ?? "FL").trim();
+      const segments = entryPublicPathSegments(entrySlug, st);
+      return { params: { slug: segments.join("/") } };
+    }
+    return { params: { slug: entrySlug } };
+  });
+}
+
+const { slug } = Astro.params;
+const posts = await getCollection(ACTIVE_COLLECTION);
+const entrySlugParam = resolveContentEntrySlug(slug ?? "");
+const entry =
+  posts.find((p) => (p.slug ?? p.id ?? "").replace(/\.(md|mdx)$/i, "") === entrySlugParam) ?? null;
+if (!entry) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+const post = entry;
+const entrySlug = entrySlugParam || (post.slug ?? post.id ?? "").replace(/\.(md|mdx)$/i, "");
+const pageUrl = isFixitgridNearMeBuild()
+  ? canonicalPageUrl(
+      ...entryPublicPathSegments(
+        entrySlug,
+        post.data.state ?? stateAbbrFromNearMeSlug(entrySlug) ?? "FL",
+      ),
+    )
+  : canonicalPageUrl(entrySlug);
+const ogImageUrl = ogThumbnailUrl(entrySlug);
+const pageNicheLabel = getNicheLabelForSeed(entrySlug);
+const isRockwellMaine = matchesRockwellMaine({ domainOrUrl: siteConfig.canonicalOrigin });
+const isFixitGridSite = matchesFixitGridEntity({ domainOrUrl: siteConfig.canonicalOrigin });
+const isRealtorsSite =
+  !isFixitGridSite && matchesRealtorsEntity({ domainOrUrl: siteConfig.canonicalOrigin });
+const pageLocation = resolvePageLocation({
+  collection: ACTIVE_COLLECTION,
+  title: post.data.title,
+  slug: entrySlug,
+  fmCity: post.data.city,
+  fmState: post.data.state,
+  fmZip: post.data.zipCode,
+});
+function titleCase(s: string) {
+  return s
+    .split(/\s+/g)
+    .filter(Boolean)
+    .map((w) => w.slice(0, 1).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+function cityFromSlug(slugText: string) {
+  const m = slugText.match(/^(.*)-([a-z]{2})-(\d{5})$/i);
+  if (!m) return null;
+  let prefixAndCity = m[1]!;
+  const pfx = `${String(ACTIVE_COLLECTION)}-`.toLowerCase();
+  if (prefixAndCity.toLowerCase().startsWith(pfx)) {
+    prefixAndCity = prefixAndCity.slice(pfx.length);
+  }
+  const city = prefixAndCity.split("-").filter(Boolean).join(" ").trim();
+  return city ? titleCase(city) : null;
+}
+const pageCity = cityFromSlug(entrySlug);
+const trustDispatchPlace = pageCity?.trim() ? pageCity.trim() : "Area";
+const desktopDispatchZip =
+  String(pageLocation?.zip ?? post.data.zipCode ?? "")
+    .replace(/\D/g, "")
+    .slice(0, 5) || "00000";
+const stateCodeFromSlug = (() => {
+  if (isFixitgridNearMeBuild()) {
+    const nearMeSt =
+      stateAbbrFromNearMeSlug(entrySlug) ??
+      String(post.data.state ?? "")
+        .trim()
+        .toUpperCase();
+    if (/^[A-Z]{2}$/.test(nearMeSt)) return nearMeSt;
+  }
+  const m = entrySlug.match(/-([a-z]{2})-\d{5}$/i);
+  return m ? m[1]!.toUpperCase() : null;
+})();
+// Action 1: footer random internal link from backup pool (state index + random city)
+const backupCandidates: { href: string; label: string }[] = [];
+if (stateCodeFromSlug) {
+  backupCandidates.push({
+    href: internalPath(stateCodeFromSlug.toLowerCase()),
+    label: `Browse ${pageNicheLabel} in ${stateCodeFromSlug}`,
+  });
+}
+const other = posts.filter((p) => (p.slug ?? p.id ?? "").replace(/\.(md|mdx)$/i, "") !== entrySlug);
+if (other.length > 0) {
+  const pick = other[Math.floor(Math.random() * other.length)]!;
+  const pickSlug = (pick.slug ?? pick.id ?? "").replace(/\.(md|mdx)$/i, "");
+  backupCandidates.push({
+    href: internalPath(pickSlug),
+    label: `Another ${pageNicheLabel} page`,
+  });
+}
+const footerExtraLink =
+  backupCandidates.length > 0 ? backupCandidates[Math.floor(Math.random() * backupCandidates.length)]! : null;
+
+type DispatchFeedRecord = {
+  city: string;
+  state: string;
+  offset: number;
+  tag: "[NODE ACTIVE]" | "[DISPATCH CONFIRMED]";
+};
+
+function shuffledDispatch<T>(arr: T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
+
+function cityLabelFromEntry(entry: (typeof posts)[number]): string {
+  const c = entry.data.city?.trim();
+  if (c) return titleCase(c);
+  const slugText = (entry.slug ?? entry.id ?? "").replace(/\.(md|mdx)$/i, "");
+  return cityFromSlug(slugText) ?? "Unknown City";
+}
+
+/** Water-damage city pages: optional ledger (parity with `sites/site-water-damage` state hub). */
+const slugDispatchFeedRecords: DispatchFeedRecord[] = (() => {
+  if (!isWaterDamageHub || !stateCodeFromSlug) return [];
+  const st = stateCodeFromSlug.toUpperCase();
+  const sameState = posts.filter((p) => {
+    const s = (p.slug ?? p.id ?? "").replace(/\.(md|mdx)$/i, "");
+    const m = s.match(/-([a-z]{2})-\d{5}$/i);
+    return m && m[1]!.toUpperCase() === st && s !== entrySlug;
+  });
+  if (sameState.length === 0) return [];
+  return shuffledDispatch(sameState.map((p) => ({ city: cityLabelFromEntry(p), state: st })))
+    .slice(0, 8)
+    .map((item, idx) => ({
+      ...item,
+      offset: 5 + Math.floor(Math.random() * 51),
+      tag: (idx % 2 === 0 ? "[NODE ACTIVE]" : "[DISPATCH CONFIRMED]") as DispatchFeedRecord["tag"],
+    }));
+})();
+
+const faqItems = getFaqByCollection(ACTIVE_COLLECTION);
+function stableHash(input: string) {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function formatZillowUsdShort(usd: number): string {
+  if (!Number.isFinite(usd) || usd <= 0) return "";
+  if (usd >= 1_000_000) {
+    const m = usd / 1_000_000;
+    const s =
+      m >= 10
+        ? String(Math.round(m))
+        : String(Math.round(m * 100) / 100).replace(new RegExp("\\.?0+$"), "");
+    return `$${s}M`;
+  }
+  const k = usd / 1000;
+  if (k < 10) return `$${Math.round(usd).toLocaleString("en-US")}`;
+  const roundedK = Math.round(k * 10) / 10;
+  const sk = Number.isInteger(roundedK) ? String(roundedK) : roundedK.toFixed(1).replace(/\.0$/, "");
+  return `$${sk}K`;
+}
+function clipMetaDescription(text: string, max = 158): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1).trimEnd().replace(/[,;\s]+$/, "")}…`;
+}
+
+function stateLabelForBait(stateCode: string, stateFromFm: string | undefined): string {
+  const fm = (stateFromFm ?? "").trim();
+  if (fm.length > 2) return fm;
+  return stateCode;
+}
+
+function buildBaitPool2TitlesLegacy(opts: {
+  service: string;
+  city: string;
+  stateCode: string;
+  stateFm: string | undefined;
+  zLabel: string | null;
+  pick: number;
+}): { pageTitle: string; pageH1: string } {
+  const stateToken = stateLabelForBait(opts.stateCode, opts.stateFm);
+  const { service, city, zLabel, pick } = opts;
+  if (pick === 0 && zLabel) {
+    const pageTitle = `${zLabel} Home Protection: ${city} Emergency ${service} (Verified)`;
+    const pageH1 = `${zLabel} Home Protection — ${city} Emergency ${service}`;
+    return { pageTitle, pageH1 };
+  }
+  if (pick === 1) {
+    const pageTitle = `${city} ${service} — 24/7 coordinated intake (${stateToken})`;
+    const pageH1 = `${city} ${service}: regional coordination desk (${stateToken})`;
+    return { pageTitle, pageH1 };
+  }
+  const pageTitle = `Maintenance intensity signal in ${city}. Coordinated ${service} planning.`;
+  const pageH1 = `Maintenance intensity signal in ${city} — coordinated ${service} planning`;
+  return { pageTitle, pageH1 };
+}
+
+/** Stewardship HTML: avoid `$123` substrings (church compliance `usd_amount`). */
+function stewardshipPlainHomeValue(usd: number): string {
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(usd)} USD (reference)`;
+}
+
+function buildStewardshipNpoBaitTitles(opts: {
+  service: string;
+  city: string;
+  stateCode: string;
+  stateFm: string | undefined;
+  pick: number;
+}): { pageTitle: string; pageH1: string } {
+  const stateToken = stateLabelForBait(opts.stateCode, opts.stateFm);
+  const { service, city, pick } = opts;
+  const r = pick % 3;
+  if (r === 0) {
+    return {
+      pageTitle: `${city} ${service} stewardship reference (${stateToken})`,
+      pageH1: `${city} ${service} — neighbor-stewardship intake notes (${stateToken})`,
+    };
+  }
+  if (r === 1) {
+    return {
+      pageTitle: `${city} volunteer coordination context (${stateToken}) — ${service}`,
+      pageH1: `${city} ${service}: educational coordination context (${stateToken})`,
+    };
+  }
+  return {
+    pageTitle: `${service} neighborhood stewardship brief — ${city}, ${stateToken}`,
+    pageH1: `Maintenance education brief for ${city} (${stateToken}) — ${service}`,
+  };
+}
+
+const zRaw = post.data.zillowHomeValueUsd;
+const zUsd =
+  typeof zRaw === "number" && Number.isFinite(zRaw) && zRaw > 0 ? zRaw : null;
+const zLabel = zUsd != null ? formatZillowUsdShort(zUsd) : null;
+const zLabelExact =
+  zUsd != null
+    ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(zUsd)
+    : null;
+/** Public HTML / meta: church builds avoid `$` + digits (compliance `usd_amount`). */
+const zLabelForPublicSurface =
+  isCommunityStewardshipNpo && zUsd != null ? stewardshipPlainHomeValue(zUsd) : zLabelExact;
+const baitPickRaw = stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|bait2`) % 3;
+let baitPick = baitPickRaw;
+if (
+  !isWaterDamageHub &&
+  !isPlumbingHub &&
+  !isPlumbingV2Hub &&
+  !isSidingHub &&
+  !isRoofingHub &&
+  !isPestControlHub &&
+  baitPick === 0 &&
+  !zLabel
+) {
+  baitPick = 1 + (stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|bait2NoZ`) % 2);
+}
+const isFinancialPressureMode =
+  zUsd != null &&
+  zUsd >= HIGH_VALUE_USD_TRIGGER &&
+  zLabelExact != null &&
+  pageCity != null;
+const isRoofingHighValue = isRoofingHub && isFinancialPressureMode;
+const isPlumbingHighValue = isPlumbingHub && isFinancialPressureMode;
+const isPestHighValue = isPestControlHub && isFinancialPressureMode;
+const isWaterHighValue = isWaterDamageHub && isFinancialPressureMode;
+const roofingConvHead =
+  isRoofingHub && pageCity
+    ? buildBaitPool2TitlesRoofing({
+        city: pageCity,
+        zLabel,
+        zLabelExact,
+        highValue: isRoofingHighValue,
+        slug: entrySlug,
+        stateCode: stateCodeFromSlug ?? "US",
+      })
+    : null;
+const roofingSerpOverride = isRoofingHub ? getRoofingSerpOverride(entrySlug) : null;
+const plumbingSerpOverride = isPlumbingHub ? getPlumbingSerpOverride(entrySlug) : null;
+const pestSerpOverride = isPestControlHub ? getPestcontrolSerpOverride(entrySlug) : null;
+const plumbingConvHead =
+  isPlumbingHub && pageCity && stateCodeFromSlug
+    ? buildBaitPool2TitlesPlumbing({
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+        zLabel,
+        zLabelExact,
+        highValue: isPlumbingHighValue,
+        slug: entrySlug,
+      })
+    : null;
+const pestConvHead =
+  isPestControlHub && pageCity && stateCodeFromSlug
+    ? buildBaitPool2TitlesPestcontrol({
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+        zLabel,
+        zLabelExact,
+        highValue: isPestHighValue,
+        slug: entrySlug,
+        pick: baitPickRaw,
+      })
+    : null;
+const waterConvHead =
+  isWaterDamageHub && pageCity && stateCodeFromSlug
+    ? buildBaitPool2TitlesWater({
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+        zLabel,
+        zLabelExact,
+        highValue: isWaterHighValue,
+        slug: entrySlug,
+        pick: baitPickRaw,
+      })
+    : null;
+const sidingConvHead =
+  isSidingHub && pageCity && stateCodeFromSlug
+    ? buildBaitPool2TitlesSiding({
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+        zLabel,
+        zLabelExact,
+        slug: entrySlug,
+        pick: baitPickRaw,
+      })
+    : null;
+const plumbingV2ConvHead =
+  isPlumbingV2Hub && pageCity && stateCodeFromSlug
+    ? buildBaitPool2TitlesPlumbingV2({
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+        zLabel,
+        zLabelExact,
+        slug: entrySlug,
+        pick: baitPickRaw,
+      })
+    : null;
+const baitHead =
+  pageCity && stateCodeFromSlug
+    ? isCommunityStewardshipNpo
+          ? buildStewardshipNpoBaitTitles({
+              service: pageNicheLabel,
+              city: pageCity,
+              stateCode: stateCodeFromSlug,
+              stateFm: post.data.state,
+              pick: baitPick,
+            })
+          : buildBaitPool2TitlesLegacy({
+              service: pageNicheLabel,
+              city: pageCity,
+              stateCode: stateCodeFromSlug,
+              stateFm: post.data.state,
+              zLabel,
+              pick: baitPick,
+            })
+    : null;
+const waterVisualLine = pageCity
+  ? `Urgent Notice: Your ${pageCity} property terrain data indicates high-risk saturation levels. Immediate structural drying is required to prevent mold colonization.`
+  : `Urgent Notice: Your property terrain data indicates high-risk saturation levels. Immediate structural drying is required to prevent mold colonization.`;
+
+/** Avoid `$`+digit and `dispatch fee` substrings (church HTML compliance scans strip JSON-LD but not `<title>`/body). */
+const h1ComplianceLead = "No surprise trip framing · upfront scope notes — ";
+
+const plumbingVisualLine = pageCity
+  ? `Educational dispatch context for ${pageCity}. Public terrain references are illustrative only—not engineering reports or licensed contractor estimates.`
+  : `Educational dispatch context for this area. Public terrain references are illustrative only—not engineering reports or licensed contractor estimates.`;
+
+const sidingVisualLine = pageCity
+  ? `Educational dispatch context for ${pageCity}. Envelope and exterior notes are illustrative only—not engineering reports or licensed contractor estimates.`
+  : `Educational dispatch context for this area. Envelope and exterior notes are illustrative only—not engineering reports or licensed contractor estimates.`;
+
+const roofTerrainNotice = isRoofingHub
+  ? pageCity
+    ? `Planning note for ${pageCity}: terrain-context on this page is illustrative only. Confirm scope, timing, and insurance questions with qualified professionals on site.`
+    : null
+  : null;
+
+const pestNestNotice =
+  isPestControlHub && pageCity ? buildPestNestNotice(pageCity) : null;
+
+/** `<title>` / JSON-LD name */
+const pageTitle = isWaterDamageHub
+  ? waterConvHead?.pageTitle ??
+    (pageCity
+      ? buildWaterPageTitle({
+          city: pageCity,
+          zLabel,
+          zLabelExact,
+          highValue: isWaterHighValue,
+          slug: entrySlug,
+          pick: baitPickRaw,
+        })
+      : post.data.title)
+  : isPlumbingHub
+    ? plumbingSerpOverride?.pageTitle ??
+      plumbingConvHead?.pageTitle ??
+      (pageCity
+        ? buildPlumbingPageTitle({
+            city: pageCity,
+            zLabel,
+            zLabelExact,
+            highValue: isPlumbingHighValue,
+            slug: entrySlug,
+          })
+        : post.data.title)
+    : isPlumbingV2Hub
+      ? plumbingV2ConvHead?.pageTitle ??
+        (pageCity
+          ? buildPlumbingV2PageTitle({
+              city: pageCity,
+              zLabel,
+              zLabelExact,
+              slug: entrySlug,
+              pick: baitPickRaw,
+            })
+          : post.data.title)
+      : isSidingHub
+      ? sidingConvHead?.pageTitle ??
+        (pageCity
+          ? buildSidingPageTitle({
+              city: pageCity,
+              zLabel,
+              zLabelExact,
+              slug: entrySlug,
+              pick: baitPickRaw,
+            })
+          : post.data.title)
+      : isRoofingHub
+      ? roofingSerpOverride?.pageTitle ??
+        roofingConvHead?.pageTitle ??
+        (pageCity
+          ? buildRoofingPageTitle({
+              city: pageCity,
+              zLabel,
+              zLabelExact,
+              highValue: isRoofingHighValue,
+              slug: entrySlug,
+            })
+          : buildRoofingPageTitle({
+              city: "Local",
+              zLabel,
+              zLabelExact,
+              highValue: false,
+              slug: entrySlug,
+            }))
+      : isPestControlHub
+        ? pestSerpOverride?.pageTitle ??
+          pestConvHead?.pageTitle ??
+          (pageCity
+            ? buildPestPageTitle({
+                city: pageCity,
+                zLabel,
+                zLabelExact,
+                highValue: isPestHighValue,
+                slug: entrySlug,
+                pick: baitPickRaw,
+              })
+            : post.data.title)
+        : isFinancialPressureMode
+          ? `${zLabelForPublicSurface} asset stewardship brief: ${pageCity} ${pageNicheLabel} (coordinated intake)`
+          : baitHead?.pageTitle ?? post.data.title;
+
+/** Visible `<h1>` fallback */
+const pageH1Plain = isWaterDamageHub
+  ? waterConvHead?.pageH1 ??
+    (pageCity
+      ? buildWaterH1({ city: pageCity, zLabel, zLabelExact })
+      : post.data.title)
+  : isPlumbingHub
+    ? plumbingSerpOverride?.pageH1 ??
+      plumbingConvHead?.pageH1 ??
+      (pageCity
+        ? buildPlumbingH1({
+            city: pageCity,
+            zLabel,
+            zLabelExact,
+            highValue: isPlumbingHighValue,
+          })
+        : post.data.title)
+    : isPlumbingV2Hub
+      ? plumbingV2ConvHead?.pageH1 ??
+        (pageCity
+          ? buildPlumbingV2H1({ city: pageCity, zLabel, zLabelExact })
+          : post.data.title)
+      : isSidingHub
+      ? sidingConvHead?.pageH1 ??
+        (pageCity
+          ? buildSidingH1({ city: pageCity, zLabel, zLabelExact })
+          : post.data.title)
+      : isRoofingHub
+      ? roofingSerpOverride?.pageH1 ??
+        roofingConvHead?.pageH1 ??
+        (pageCity ? buildRoofingH1(pageCity, isRoofingHighValue) : post.data.title)
+    : isPestControlHub
+      ? pestSerpOverride?.pageH1 ??
+        pestConvHead?.pageH1 ??
+        (pageCity
+          ? buildPestH1({ city: pageCity, zLabel, zLabelExact, highValue: isPestHighValue })
+          : post.data.title)
+    : zLabelForPublicSurface && pageCity
+      ? `${pageCity} infrastructure stewardship — ${zLabelForPublicSurface} median context`
+      : zLabelForPublicSurface
+        ? `Infrastructure stewardship — ${zLabelForPublicSurface} median context`
+        : pageCity
+          ? `${pageCity} infrastructure stewardship — protecting your property systems`
+          : post.data.title;
+
+const pageMetaDescriptionDefault = isWaterDamageHub
+  ? (waterConvHead?.metaDescription ??
+    clipMetaDescription(post.data.description, WATER_META_MAX))
+  : isPlumbingHub
+    ? (plumbingSerpOverride?.metaDescription ??
+      plumbingConvHead?.metaDescription ??
+      clipMetaDescription(post.data.description, PLUMBING_META_MAX))
+    : isPlumbingV2Hub
+      ? (plumbingV2ConvHead?.metaDescription ??
+        clipMetaDescription(post.data.description, PLUMBING_V2_META_MAX))
+      : isSidingHub
+      ? (sidingConvHead?.metaDescription ??
+        clipMetaDescription(post.data.description, SIDING_META_MAX))
+      : isRoofingHub
+      ? (roofingSerpOverride?.metaDescription ??
+        roofingConvHead?.metaDescription ??
+        clipMetaDescription(post.data.description, ROOFING_META_MAX))
+      : isPestControlHub
+        ? (pestSerpOverride?.metaDescription ??
+          pestConvHead?.metaDescription ??
+          clipMetaDescription(post.data.description, PEST_META_MAX))
+        : clipMetaDescription(
+          (() => {
+            const base = post.data.description;
+            if (zLabelForPublicSurface && !base.includes(zLabelForPublicSurface)) {
+              if (pageCity && stateCodeFromSlug) {
+                return `${base} Benchmark median home value near ${zLabelForPublicSurface} (${pageCity} ${stateCodeFromSlug} market context).`;
+              }
+              return `${base} Benchmark median home value near ${zLabelForPublicSurface}.`;
+            }
+            return base;
+          })(),
+        );
+
+const pageMetaDescription = isWaterDamageHub
+  ? pageMetaDescriptionDefault
+  : isPlumbingHub
+    ? pageMetaDescriptionDefault
+    : isPlumbingV2Hub
+      ? pageMetaDescriptionDefault
+      : isSidingHub
+      ? pageMetaDescriptionDefault
+      : isRoofingHub
+      ? pageMetaDescriptionDefault
+      : isPestControlHub
+        ? pageMetaDescriptionDefault
+        : isFinancialPressureMode
+          ? clipMetaDescription(
+              `Local ${pageCity} home value benchmark: ${zLabelForPublicSurface}. Regional infrastructure maintenance coordination and documented intake.`,
+            )
+          : pageMetaDescriptionDefault;
+function pickFaqSubset<T>(items: T[], seedText: string, count: number): T[] {
+  const copy = [...items];
+  let seed = stableHash(seedText);
+  for (let i = copy.length - 1; i > 0; i--) {
+    seed = Math.imul(seed ^ (seed >>> 13), 1274126177) >>> 0;
+    const j = seed % (i + 1);
+    const a = copy[i]!;
+    const b = copy[j]!;
+    copy[i] = b;
+    copy[j] = a;
+  }
+  return copy.slice(0, Math.min(count, copy.length));
+}
+const faqCount = 3 + (stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|faqCount`) % 3); // 3–5
+const pageFaqItems = pickFaqSubset(faqItems, `${ACTIVE_COLLECTION}|${entrySlug}|faq`, faqCount);
+const ctaVariantsCommercial = [
+  {
+    title: `24/7 Local ${pageNicheLabel} Emergency Service`,
+    meta: "Coordinated intake, transparent pricing, and inspection availability where offered.",
+  },
+  {
+    title: `Same-Day ${pageNicheLabel} Support Options`,
+    meta: "Scheduling windows, scope review, and straightforward next-step guidance.",
+  },
+  {
+    title: `Regional ${pageNicheLabel} coordination and response`,
+    meta: "Clear intake, practical timing expectations, and direct call routing.",
+  },
+  {
+    title: `${pageNicheLabel} Help for Urgent Property Issues`,
+    meta: "Coordinated service planning and transparent appointment communication.",
+  },
+  {
+    title: `On-Demand ${pageNicheLabel} Service Availability`,
+    meta: "Regional coordination with call-first scheduling and pricing clarity.",
+  },
+];
+const ctaVariantsStewardship = [
+  {
+    title: `Local ${pageNicheLabel} neighbor stewardship reference`,
+    meta: "Educational intake notes and ZIP-sector context only.",
+  },
+  {
+    title: `Regional ${pageNicheLabel} planning notes`,
+    meta: "Informational materials; not a paid-service marketplace.",
+  },
+  {
+    title: `${pageNicheLabel} community reference desk`,
+    meta: "Volunteer framing with neutral timing expectations.",
+  },
+  {
+    title: `${pageNicheLabel} ZIP-sector education context`,
+    meta: "Neighbors coordinate licensed help directly from this reference page.",
+  },
+  {
+    title: `Area ${pageNicheLabel} stewardship briefing`,
+    meta: "Reference-only coordination language; no live contractor matching.",
+  },
+];
+const ctaVariants = isCommunityStewardshipNpo ? ctaVariantsStewardship : ctaVariantsCommercial;
+const ctaVariant = ctaVariants[stableHash(`${entrySlug}|cta`) % ctaVariants.length]!;
+const serviceLineVariantsCommercial = [
+  `Licensed local technicians available for urgent ${pageNicheLabel.toLowerCase()} service calls with coordinated intake.`,
+  `Certified regional coordination for time-sensitive ${pageNicheLabel.toLowerCase()} requests and urgent property issues.`,
+  `Qualified local routing for priority ${pageNicheLabel.toLowerCase()} calls with clear intake verification.`,
+  `Insured scheduling support for urgent ${pageNicheLabel.toLowerCase()} service needs and same-day windows where available.`,
+  `Regional service coordination for ${pageNicheLabel.toLowerCase()} requests with practical timelines and scope clarity.`,
+];
+const serviceLineVariantsStewardship = [
+  `Volunteer desk materials for ${pageNicheLabel.toLowerCase()} reference in this ZIP (informational only).`,
+  `Neighborhood stewardship narratives for ${pageNicheLabel.toLowerCase()} context — no pricing or dispatch promises.`,
+  `Educational coordination notes for ${pageNicheLabel.toLowerCase()} maintenance planning in this area.`,
+  `ZIP-level reference framing for ${pageNicheLabel.toLowerCase()} systems education (non-commercial).`,
+  `Regional stewardship language for ${pageNicheLabel.toLowerCase()} neighbor questions (reference desk tone).`,
+];
+const serviceLineVariants = isCommunityStewardshipNpo
+  ? serviceLineVariantsStewardship
+  : serviceLineVariantsCommercial;
+const serviceLine =
+  serviceLineVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|svcLine`) % serviceLineVariants.length]!;
+const callBtnVariantsCommercial = [
+  `Call now: ${siteConfig.phoneDisplay}`,
+  `Tap to call: ${siteConfig.phoneDisplay}`,
+  `Request service: ${siteConfig.phoneDisplay}`,
+  `Call for scheduling: ${siteConfig.phoneDisplay}`,
+  `Phone support: ${siteConfig.phoneDisplay}`,
+];
+const callBtnVariantsStewardship = [
+  `Neighbor line: ${siteConfig.phoneDisplay}`,
+  `Desk phone: ${siteConfig.phoneDisplay}`,
+  `Volunteer desk: ${siteConfig.phoneDisplay}`,
+  `Community line: ${siteConfig.phoneDisplay}`,
+  `Reference desk: ${siteConfig.phoneDisplay}`,
+];
+const callBtnVariants = isCommunityStewardshipNpo ? callBtnVariantsStewardship : callBtnVariantsCommercial;
+const callBtnLabel =
+  callBtnVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|callBtn`) % callBtnVariants.length]!;
+const headerVariantsCommercial = [
+  `National ${pageNicheLabel} intake & regional coordination`,
+  `${pageNicheLabel} service routing network`,
+  `Regional ${pageNicheLabel} coordination desk`,
+  `${pageNicheLabel} scheduling & response hub`,
+  `Regional ${pageNicheLabel} service access point`,
+];
+const headerVariantsSidingCommercial = [
+  "National siding repair intake & regional coordination",
+  "Regional siding installation & repair routing",
+  "Local siding crew dispatch & scheduling desk",
+  "Siding repair service access point",
+  "Regional exterior siding response hub",
+];
+const headerVariantsStewardship = [
+  `Community ${pageNicheLabel} stewardship reference desk`,
+  `${pageNicheLabel} neighbor education routing`,
+  `Regional ${pageNicheLabel} volunteer context notes`,
+  `${pageNicheLabel} ZIP-sector education framing`,
+  `Area ${pageNicheLabel} reference materials (non-commercial)`,
+];
+const headerVariants = isCommunityStewardshipNpo
+  ? headerVariantsStewardship
+  : isSidingHub
+    ? headerVariantsSidingCommercial
+    : headerVariantsCommercial;
+const sidingServiceLeadHtml = isSidingHub
+  ? "<p><strong>On-site siding repair and installation dispatch.</strong> This page coordinates licensed local crews for moisture intrusion, decay at the envelope, and panel replacement — not retail material sales. Share photos and ZIP context for a scope review before scheduling.</p>"
+  : null;
+const headerVariant = headerVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|header`) % headerVariants.length]!;
+const faqTitleVariants = [
+  "Frequently Asked Questions",
+  "Service Questions and Answers",
+  "Common Scheduling Questions",
+  "Quick FAQ",
+  "Help Center: FAQ",
+] as const;
+const faqTitle = faqTitleVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|faqTitle`) % faqTitleVariants.length]!;
+const geoTitleVariants = [
+  "Regional Infrastructure Brief",
+  "Regional service-area snapshot",
+  "Area routing notes",
+  "Site conditions overview",
+  "Terrain & access context summary",
+] as const;
+const geoTitle = geoTitleVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|geoTitle`) % geoTitleVariants.length]!;
+const elevationLabelVariants = [
+  "Elevation context",
+  "Terrain elevation note",
+  "Height reference band",
+  "Elevation snapshot",
+  "Topographic elevation note",
+] as const;
+const elevationLabel =
+  elevationLabelVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|elevationLabel`) % elevationLabelVariants.length]!;
+const zipSnapshotVariants = [
+  "ZIP sector snapshot (sampled):",
+  "ZIP sector sample:",
+  "Regional ZIP preview:",
+  "Service ZIP sample:",
+  "Nearby ZIP snapshot:",
+] as const;
+const zipSnapshotLabel =
+  zipSnapshotVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|zipSnapshot`) % zipSnapshotVariants.length]!;
+const zipViewVariants = [
+  "View ZIP list",
+  "Open ZIP sample",
+  "Expand ZIP coverage",
+  "Review ZIP sectors",
+  "Show ZIP markers",
+] as const;
+const zipViewLabel = zipViewVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|zipView`) % zipViewVariants.length]!;
+const transitLabelVariants = [
+  "Transit markers:",
+  "Routing markers:",
+  "Local path markers:",
+  "Coverage corridors:",
+  "Regional access notes:",
+] as const;
+const transitLabel =
+  transitLabelVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|transitLabel`) % transitLabelVariants.length]!;
+const transitViewVariants = [
+  "View transit markers",
+  "Open routing markers",
+  "Expand path notes",
+  "Review corridor list",
+  "Show access markers",
+] as const;
+const transitViewLabel =
+  transitViewVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|transitView`) % transitViewVariants.length]!;
+const relatedTitleVariants = [
+  `Nearby recovery resources in ${stateCodeFromSlug ?? "your state"}`,
+  `Regional cleanup options in ${stateCodeFromSlug ?? "your state"}`,
+  `More coordinated response routes in ${stateCodeFromSlug ?? "your state"}`,
+  `Regional restoration paths in ${stateCodeFromSlug ?? "your state"}`,
+  `Additional city coverage in ${stateCodeFromSlug ?? "your state"}`,
+] as const;
+const relatedTitle =
+  relatedTitleVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|relatedTitle`) % relatedTitleVariants.length]!;
+const forceFaqForContactSeed = shouldForceFaqSectionVisible(ACTIVE_COLLECTION, entrySlug);
+const showFaq =
+  forceFaqForContactSeed ||
+  stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|showFaq`) % 10 >= 3;
+const showRelated = stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|showRelated`) % 10 >= 3;
+const stateNotice = stateCodeFromSlug
+  ? `Notice: This ${stateCodeFromSlug} page summarizes regional infrastructure maintenance coordination and local topographic context; it is not a government bulletin.`
+  : "Notice: This page summarizes regional infrastructure maintenance coordination and local topographic context; it is not a government bulletin.";
+const telHref = `tel:${siteConfig.phoneE164.replace(/^\+/, "")}`;
+const dispatcherCountyLabel = (
+  String(post.data.county ?? "").trim() ||
+  (pageCity && stateCodeFromSlug ? `${pageCity}, ${stateCodeFromSlug}` : stateCodeFromSlug ?? "Regional")
+).trim();
+const dispatcherClaimsLine =
+  "Scheduling visibility depends on confirmed technician availability; this page does not display simulated queue depth.";
+const dispatcherClaimsLineDisplay = isCommunityStewardshipNpo
+  ? "Scheduling visibility depends on volunteer desk coverage; this page does not display simulated queue depth."
+  : dispatcherClaimsLine;
+const phoneTrustSubtitle = isCommunityStewardshipNpo
+  ? `Newtown Fellowship neighbor desk — educational context for ${trustDispatchPlace}.`
+  : `National Dispatch Hub - Connecting to Local ${trustDispatchPlace} Response Team.`;
+const phoneZipHint = isCommunityStewardshipNpo
+  ? `ZIP-sector reference anchor: ${desktopDispatchZip}`
+  : `Dispatching now for ${desktopDispatchZip}`;
+const phoneBtnAriaLabel = isCommunityStewardshipNpo
+  ? `Phone ${siteConfig.phoneDisplay} (neighbor support line)`
+  : `Call ${siteConfig.phoneDisplay}`;
+
+/** Pest-control only: insurance / termite equity line (below calculator “price”). */
+const pageZipForPestPulse = (() => {
+  const fromFm = String(post.data.zipCode ?? "").trim();
+  if (/^\d{5}$/.test(fromFm)) return fromFm;
+  const m = entrySlug.match(/-(\d{5})$/i);
+  return m?.[1] ?? null;
+})();
+const pestInsuranceEquityNote =
+  ACTIVE_COLLECTION === "pestcontrol"
+    ? (() => {
+        const stateTok = stateCodeFromSlug
+          ? stateLabelForBait(stateCodeFromSlug, post.data.state)
+          : "your state";
+        const equityPart = zLabelExact ? `${zLabelExact} equity` : zLabel ? `${zLabel} equity` : "home equity";
+        return `Note: Standard homeowners insurance in ${stateTok} typically excludes Termite structural damage. Protect your ${equityPart} now.`;
+      })()
+    : null;
+const pestLatestDispatchLine =
+  ACTIVE_COLLECTION === "pestcontrol" && pageZipForPestPulse
+    ? `Educational note for ZIP ${pageZipForPestPulse}: termite pressure varies by season—ask your coordinator for inspection-backed guidance (not a live incident feed).`
+    : null;
+
+// Action 3: Geo brief section data from frontmatter (truthy only; Astro just displays)
+const geo = {
+  county: post.data.county as string | undefined,
+  elevationFt: typeof post.data.elevationFt === "number" ? post.data.elevationFt : undefined,
+  lat: typeof post.data.lat === "number" ? post.data.lat : undefined,
+  lng: typeof post.data.lng === "number" ? post.data.lng : undefined,
+  zipSample: Array.isArray(post.data.zipSample) ? post.data.zipSample : undefined,
+  zipCodes: Array.isArray(post.data.zipCodes) ? post.data.zipCodes : undefined,
+  localPaths: Array.isArray(post.data.localPaths) ? post.data.localPaths : undefined,
+};
+const stateGeoFact = getStatePhysicalEnvironmentFact(stateCodeFromSlug);
+const geoCoordsLine =
+  geo.county && typeof geo.lat === "number" && typeof geo.lng === "number"
+    ? `Regional infrastructure brief: ${geo.county}. Coordinates ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}.${
+        (geo.zipSample ?? []).filter(Boolean).length
+          ? ` Sample ZIP codes: ${(geo.zipSample ?? []).slice(0, 5).join(", ")}.`
+          : ""
+      }`
+    : null;
+const geoPhysicalEnvLine = stateCodeFromSlug
+  ? `Physical environment context (${stateGeoFact.label}): ${stateGeoFact.narrative}`
+  : null;
+const showGeoSection = Boolean(geoCoordsLine || geoPhysicalEnvLine);
+const localPathsText =
+  geo.localPaths && geo.localPaths.length
+    ? `Regional access notes: ${geo.localPaths.slice(0, 5).join(", ")}.`
+    : null;
+
+function addendumForFaq(seedText: string) {
+  const pool = [
+    geo.county ? `Local note: County context — ${geo.county}.` : null,
+    geo.zipSample?.length ? `Local note: Sample ZIP sectors — ${(geo.zipSample ?? []).slice(0, 5).join(", ")}.` : null,
+    stateCodeFromSlug ? `Local note: State routing node — ${stateCodeFromSlug}.` : null,
+    typeof geo.lat === "number" && typeof geo.lng === "number"
+      ? `Local note: Coordinate anchor — ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}.`
+      : null,
+    geo.localPaths?.length ? `Local note: Transit markers — ${(geo.localPaths ?? []).slice(0, 2).join("; ")}.` : null,
+  ].filter(Boolean) as string[];
+  if (!pool.length) return null;
+  return stableHash(seedText) % 2 === 0 ? pool[stableHash(seedText + "|p") % pool.length]! : null;
+}
+
+const pageFaqItemsBase = pageFaqItems.map((item, idx) => {
+  const add = addendumForFaq(`${ACTIVE_COLLECTION}|${entrySlug}|faqAdd|${idx}`);
+  return {
+    question: item.question,
+    answer: add ? `${item.answer} ${add}` : item.answer,
+  };
+});
+const { items: pageFaqItemsFinal } = appendCommercialContactFaqIfSeed({
+  collection: ACTIVE_COLLECTION,
+  entrySlug,
+  city: String(post.data.city ?? pageCity ?? "").trim() || null,
+  stateCode: String(post.data.state ?? stateCodeFromSlug ?? "").trim() || null,
+  phoneDisplay: siteConfig.phoneDisplay,
+  items: pageFaqItemsBase,
+});
+
+const enableRealtorsAtTheBeachWaterDamageIsolation = matchesRealtorsAtTheBeachWaterDamage({
+  domainOrUrl: siteConfig.canonicalOrigin,
+  activeCollection: ACTIVE_COLLECTION,
+});
+
+const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
+  ? REALTORS_AT_THE_BEACH_PLUMBING_V2.theme.accent
+  : enableRealtorsAtTheBeachWaterDamageIsolation
+    ? REALTORS_AT_THE_BEACH_WATER_DAMAGE.theme.accent
+    : "#1d4ed8";
+
+const themeFontFamily = ACTIVE_COLLECTION === "plumbing-v2"
+  ? REALTORS_AT_THE_BEACH_PLUMBING_V2.theme.fontFamily
+  : enableRealtorsAtTheBeachWaterDamageIsolation
+    ? REALTORS_AT_THE_BEACH_WATER_DAMAGE.theme.fontFamily
+    : 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+
+const domPrefix = ACTIVE_COLLECTION === "plumbing-v2"
+  ? `${REALTORS_AT_THE_BEACH_PLUMBING_V2.domPrefixBase}-${stableHash(
+      `${siteConfig.canonicalOrigin}|${entrySlug}|dom`,
+    )}`
+  : enableRealtorsAtTheBeachWaterDamageIsolation
+    ? `${REALTORS_AT_THE_BEACH_WATER_DAMAGE.domPrefixBase}-${stableHash(
+        `${siteConfig.canonicalOrigin}|${entrySlug}|dom`,
+      )}`
+    : null;
+
+const articleBodyId = domPrefix ? `${domPrefix}-article-md-body` : "article-md-body";
+const articleBodyClass = domPrefix ? `${domPrefix}--article-content` : "article-content";
+
+const serviceInfoClass = domPrefix ? `${domPrefix}--service-info` : "service-info";
+const phoneBtnClass = domPrefix ? `${domPrefix}--phone-btn` : "phone-btn";
+const geoBriefClass = domPrefix ? `${domPrefix}--geo-brief` : "geo-brief";
+const faqClass = domPrefix ? `${domPrefix}--faq` : "faq";
+
+const geoBriefTitleId = domPrefix ? `${domPrefix}-geo-brief-title` : "geo-brief-title";
+const faqTitleId = domPrefix ? `${domPrefix}-faq-title` : "faq-title";
+
+const fixitGridDispatchCompliance =
+  isFixitGridSite && stateCodeFromSlug
+    ? getDispatchCompliance({
+        stateCode: stateCodeFromSlug,
+        niche: ACTIVE_COLLECTION,
+        citySlug: entrySlug,
+        domainKey: "fixitgrid",
+      })
+    : null;
+
+const realtorsDispatchCompliance =
+  isRealtorsSite && stateCodeFromSlug
+    ? getDispatchCompliance({
+        stateCode: stateCodeFromSlug,
+        niche: ACTIVE_COLLECTION,
+        citySlug: entrySlug,
+        domainKey: "realtors",
+      })
+    : null;
+
+const dispatchComplianceForPage = fixitGridDispatchCompliance ?? realtorsDispatchCompliance;
+
+const infraBriefPanelActive = isFixitgridInfraBriefPanel({
+  isFixitGridSite,
+  infraBriefPanel: post.data.infraBriefPanel,
+});
+
+const fixitGridClimateLead =
+  infraBriefPanelActive && stateCodeFromSlug && pageCity
+    ? buildFixitGridFlClimateLead({
+        collection: ACTIVE_COLLECTION,
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+      })
+    : null;
+
+const fixitGridServiceReference =
+  infraBriefPanelActive && stateCodeFromSlug
+    ? buildFixitgridServiceReference({
+        niche: ACTIVE_COLLECTION,
+        city: pageCity ?? String(post.data.city ?? "").trim(),
+        stateCode: stateCodeFromSlug,
+        zip: String(post.data.zipCode ?? "").trim(),
+      })
+    : null;
+
+const { Content } = await render(entry);
+
+const localBusinessSchema = isFixitGridSite
+  ? buildFixitGridEntityGraph({
+      collection: ACTIVE_COLLECTION,
+      pageDescription: pageMetaDescription,
+      pageUrl,
+      location: pageLocation,
+      entrySlug,
+      dispatchCompliance: fixitGridDispatchCompliance,
+      cityDisplay: pageLocation?.city ?? pageCity ?? null,
+    })
+  : isRealtorsSite
+    ? buildRealtorsEntityGraph({
+        collection: ACTIVE_COLLECTION,
+        pageDescription: pageMetaDescription,
+        pageUrl,
+        location: pageLocation,
+        entrySlug,
+        dispatchCompliance: realtorsDispatchCompliance,
+        cityDisplay: pageLocation?.city ?? pageCity ?? null,
+      })
+  : isRockwellMaine
+  ? buildRockwellMaineEntityGraph({
+      collection: ACTIVE_COLLECTION,
+      pageDescription: pageMetaDescription,
+      pageUrl,
+      location: pageLocation,
+      entrySlug,
+    })
+  : isCommunityStewardshipNpo
+    ? buildNewtownFellowshipLocalBusinessSchema({
+        collection: ACTIVE_COLLECTION,
+        pageTitle,
+        pageDescription: pageMetaDescription,
+        pageUrl,
+        location: pageLocation,
+      })
+    : buildLocalBusinessSchema({
+        collection: ACTIVE_COLLECTION,
+        pageTitle,
+        pageDescription: pageMetaDescription,
+        pageUrl,
+        location: pageLocation,
+        entrySlug,
+      });
+const faqSchema = showFaq ? buildFaqSchema(pageFaqItemsFinal) : null;
+const seedAggregateRating = buildServiceAreaAggregateRating(entrySlug);
+const seedReviewCityDisplay = pageLocation?.city ?? pageCity ?? "Local";
+const seedLandmarks = getGscSeedLandmarks(entrySlug);
+const seedLandmarksZip =
+  (pageLocation?.zip ?? String(post.data.zipCode ?? "").trim()) || "";
+const seedLandmarksState =
+  pageLocation?.state ?? stateCodeFromSlug ?? String(post.data.state ?? "").trim();
+
+const breadcrumbListSchema = buildBreadcrumbListSchema(
+  buildSlugPageBreadcrumbItems({
+    canonicalPageUrl,
+    serviceHubLabel: PUBLIC_NICHE_LABEL,
+    stateCode: stateCodeFromSlug,
+    cityDisplayName: pageCity,
+    entrySlug,
+  }),
+);
+
+// Action 3: stable DOM section randomizer for 4 blocks (content / geo / faq / related)
+const blocks = ["content", "geo", "faq", "related"] as const;
+const visibleBlocks = blocks.filter((k) => {
+  if (k === "faq") return showFaq;
+  if (k === "related") return showRelated;
+  return true;
+});
+const blockOrder = infraBriefPanelActive
+  ? (["content", "faq", "geo", "related"] as const).filter((k) =>
+      visibleBlocks.includes(k),
+    )
+  : ACTIVE_COLLECTION === "plumbing-v2"
+  ? REALTORS_AT_THE_BEACH_PLUMBING_V2.blockOrder.filter((k) => visibleBlocks.includes(k))
+  : enableRealtorsAtTheBeachWaterDamageIsolation
+  ? REALTORS_AT_THE_BEACH_WATER_DAMAGE.blockOrder.filter((k) => visibleBlocks.includes(k))
+  : (() => {
+      const orderSeed = stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|order`);
+      const order = [...visibleBlocks];
+      {
+        let s = orderSeed;
+        for (let i = order.length - 1; i > 0; i--) {
+          s = Math.imul(s ^ (s >>> 13), 1274126177) >>> 0;
+          const j = s % (i + 1);
+          const a = order[i]!;
+          const b = order[j]!;
+          order[i] = b;
+          order[j] = a;
+        }
+      }
+      return order;
+    })();
+---
+
+<html
+  lang="en"
+  style={`--theme-accent:${themeAccent};font-family:${themeFontFamily};`}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SiteFavicon />
+    <meta name="google-site-verification" content="e8639489520c639b" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageMetaDescription} />
+    <meta name="robots" content={siteConfig.robotsContent} />
+    {post.data.templateVersion ? (
+      <meta name="template-version" content={post.data.templateVersion} />
+    ) : null}
+    <link rel="canonical" href={pageUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageMetaDescription} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbListSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
+    {faqSchema ? (
+      <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    ) : null}
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      @media (max-width: 768px) {
+        body {
+          /* Prevent footer/content from being blocked by sticky call bar */
+          padding-bottom: calc(88px + env(safe-area-inset-bottom));
+        }
+      }
+      a {
+        color: var(--theme-accent, #1d4ed8);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      main {
+        width: min(800px, 92vw);
+        margin: 2rem auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 2rem 1.25rem;
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.08);
+      }
+      h1 {
+        line-height: 1.2;
+        margin-top: 0;
+      }
+      .service-info,
+      [class$="--service-info"] {
+        margin: 1.5rem 0 2rem;
+        padding: 1.25rem 1.4rem;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #cbd5e1;
+        border-left: 6px solid var(--theme-accent, #1d4ed8);
+        border-radius: 10px;
+      }
+      .service-info h2,
+      [class$="--service-info"] h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.25rem;
+      }
+      .service-info p,
+      [class$="--service-info"] p {
+        margin: 0.25rem 0;
+        color: #334155;
+      }
+      .service-meta {
+        font-size: 0.95rem;
+      }
+      @keyframes ctaUrgencyFlash {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.82;
+        }
+      }
+      @keyframes ctaPressurePulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 2px 10px rgba(185, 28, 28, 0.28);
+        }
+        50% {
+          transform: scale(1.02);
+          box-shadow: 0 6px 18px rgba(185, 28, 28, 0.45);
+        }
+      }
+      .phone-btn,
+      [class$="--phone-btn"] {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.45rem;
+        background: #b91c1c;
+        color: #fff;
+        padding: 0.7rem 1rem;
+        border-radius: 0;
+        text-decoration: none;
+        font-weight: 700;
+        border: none;
+        transform-origin: center;
+        animation: ctaUrgencyFlash 1.15s ease-in-out infinite, ctaPressurePulse 2.2s ease-in-out infinite;
+        box-sizing: border-box;
+      }
+      .phone-btn__main {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+      }
+      .phone-btn__signal {
+        flex-shrink: 0;
+        display: none;
+        opacity: 0.95;
+      }
+      .phone-btn__label {
+        display: inline-block;
+      }
+      .phone-btn__trust {
+        display: none;
+        margin-top: 0.35rem;
+        padding: 0 0.25rem;
+        max-width: 100%;
+        font-size: 9px;
+        line-height: 1.35;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.88);
+        text-align: center;
+      }
+      .national-dispatch-mobile-wrap {
+        display: block;
+      }
+      .phone-dispatch-zip-hint {
+        display: none;
+      }
+      @media (min-width: 1024px) {
+        .phone-btn,
+        [class$="--phone-btn"] {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          max-width: 100%;
+          min-height: 5rem;
+          padding: 1.5rem 1.25rem;
+          font-size: 1.875rem;
+          font-weight: 800;
+          line-height: 1.12;
+          border-radius: 12px;
+          animation: none;
+          box-shadow:
+            0 10px 15px -3px rgb(15 23 42 / 0.12),
+            0 4px 6px -4px rgb(15 23 42 / 0.08);
+          cursor: pointer;
+          transition:
+            filter 0.2s ease,
+            box-shadow 0.2s ease,
+            background-color 0.2s ease;
+        }
+        .phone-btn:hover,
+        [class$="--phone-btn"]:hover {
+          filter: brightness(1.1);
+          background: #b91c1c;
+          color: #fff;
+          text-decoration: none;
+          box-shadow:
+            0 14px 22px -4px rgb(15 23 42 / 0.16),
+            0 6px 8px -5px rgb(15 23 42 / 0.1);
+        }
+        .phone-btn__signal {
+          display: block;
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+        .phone-btn__trust {
+          display: block;
+          font-size: 10px;
+        }
+        .national-dispatch-mobile-wrap {
+          display: none;
+        }
+        .phone-dispatch-zip-hint {
+          display: block;
+          margin: 0.4rem 0 0;
+          padding: 0 0.15rem;
+          font-size: 10px;
+          line-height: 1.35;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          color: #64748b;
+          text-align: right;
+        }
+      }
+      @media (max-width: 1023px) {
+        .phone-btn:hover,
+        [class$="--phone-btn"]:hover {
+          background: #991b1b;
+          color: #fff;
+          text-decoration: none;
+        }
+      }
+      .dispatcher-hookup-line {
+        margin: 0.55rem 0 0;
+        font-size: 0.88rem;
+        color: #475569;
+        line-height: 1.4;
+      }
+      .pest-equity-insurance-note {
+        margin: 0.55rem 0 0;
+        font-size: 0.84rem;
+        line-height: 1.38;
+        color: #b91c1c;
+        font-weight: 600;
+      }
+      .pest-zip-dispatch-pulse {
+        margin: 0.45rem 0 0;
+        font-size: 0.86rem;
+        color: #475569;
+        line-height: 1.4;
+      }
+      .faq,
+      [class$="--faq"] {
+        margin-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 1rem;
+      }
+      .faq h2,
+      [class$="--faq"] h2 {
+        margin: 0 0 0.75rem;
+      }
+      .faq details,
+      [class$="--faq"] details {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+        margin-bottom: 0.6rem;
+        padding: 0.6rem 0.8rem;
+      }
+      .faq summary,
+      [class$="--faq"] summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .faq p,
+      [class$="--faq"] p {
+        margin: 0.55rem 0 0.1rem;
+        color: #334155;
+      }
+      .geo-brief,
+      [class$="--geo-brief"] {
+        margin-top: 1.75rem;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 1rem;
+      }
+      .geo-brief h2,
+      [class$="--geo-brief"] h2 {
+        margin: 0 0 0.5rem;
+      }
+      .geo-brief p,
+      [class$="--geo-brief"] p {
+        margin: 0.4rem 0;
+        color: #334155;
+      }
+    </style>
+    <!-- Markdown via <Content />; children lack page scoped attrs — is:global + fixed id matches static build (avoids dev/HMR blank body) -->
+    <style is:global>
+      [id$="article-md-body"] {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      /* Engineering Notice highlight — suppressed when brief panel owns that data */
+      [id$="article-md-body"]:not(.infra-brief-demo-body) p:first-child {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        background: #0b1220;
+        color: #e2e8f0;
+        border: 1px solid rgba(226, 232, 240, 0.18);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        margin: 0 0 1rem;
+      }
+      [id$="article-md-body"] p:first-child strong {
+        color: #f8fafc;
+        font-weight: 700;
+      }
+      [id$="article-md-body"] p {
+        display: block;
+        margin: 0.65rem 0;
+        color: #334155;
+        line-height: 1.55;
+      }
+      [id$="article-md-body"] strong {
+        color: #0f172a;
+      }
+      .h1-zmoney {
+        color: #b91c1c;
+        font-weight: 800;
+        font-size: 1.1em;
+        text-decoration: underline;
+      }
+      .hero-flood-alert-band {
+        background: #fefce8;
+        border-bottom: 1px solid #fde68a;
+        padding: 1rem 1.25rem 1.15rem;
+        margin: 0 0 1rem;
+        border-radius: 0 0 10px 10px;
+      }
+      .hero-flood-alert-band h1 {
+        margin: 0;
+        line-height: 1.28;
+        font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+      }
+      .hero-flood-alert-band h1 + p {
+        margin-top: 0.45rem !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article>
+        {
+          isWaterDamageHub ? (
+            <>
+              <OfficialRiskNodeHeader />
+              <ValueProtectionCalculator
+                homeUsd={zUsd}
+                zLabel={zLabel}
+                city={pageCity}
+                accent={themeAccent}
+                domPrefix={domPrefix}
+                visualizedAssessmentLine={waterVisualLine}
+              />
+              <NichePartnerLogos />
+              {pestInsuranceEquityNote ? <p class="pest-equity-insurance-note">{pestInsuranceEquityNote}</p> : null}
+              <section class="hero-flood-alert-band" aria-label="Service area headline">
+                <Breadcrumbs
+                  homeHref={internalPath()}
+                  stateLabel={stateCodeFromSlug}
+                  stateHref={stateCodeFromSlug ? internalPath(stateCodeFromSlug.toLowerCase()) : null}
+                  cityLabel={pageCity}
+                />
+                <h1>{pageH1Plain}</h1>
+                <p style="margin: 0.25rem 0 0; color: #475569; font-size: 0.98rem;">
+                  {headerVariant}
+                </p>
+              </section>
+              {slugDispatchFeedRecords.length > 0 ? (
+                <LiveDispatchFeed
+                  records={slugDispatchFeedRecords}
+                  title={`${stateCodeFromSlug ?? ""} Dispatch Activity Feed`}
+                />
+              ) : null}
+              {zUsd != null ? (
+                <MarketDataView
+                  seed={entrySlug}
+                  city={pageCity}
+                  state={stateCodeFromSlug}
+                  zip={pageLocation?.zip ?? null}
+                  homeUsd={zUsd}
+                  elevationFt={typeof post.data.elevationFt === "number" ? post.data.elevationFt : undefined}
+                  county={post.data.county as string | undefined}
+                  accent={themeAccent}
+                />
+              ) : null}
+            </>
+          ) : isPlumbingHub || isPlumbingV2Hub || isSidingHub ? (
+            <>
+              <OfficialRiskNodeHeader />
+              <ValueProtectionCalculator
+                homeUsd={zUsd}
+                zLabel={zLabel}
+                city={pageCity}
+                accent={themeAccent}
+                domPrefix={domPrefix}
+                visualizedAssessmentLine={
+                  isSidingHub ? sidingVisualLine : plumbingVisualLine
+                }
+              />
+              <NichePartnerLogos />
+              {pestInsuranceEquityNote ? <p class="pest-equity-insurance-note">{pestInsuranceEquityNote}</p> : null}
+              <section class="hero-flood-alert-band" aria-label="Service area headline">
+                <h1>{pageH1Plain}</h1>
+                <p style="margin: 0.25rem 0 0; color: #475569; font-size: 0.98rem;">
+                  {headerVariant}
+                </p>
+              </section>
+              {zUsd != null ? (
+                <MarketDataView
+                  seed={entrySlug}
+                  city={pageCity}
+                  state={stateCodeFromSlug}
+                  zip={pageLocation?.zip ?? null}
+                  homeUsd={zUsd}
+                  elevationFt={typeof post.data.elevationFt === "number" ? post.data.elevationFt : undefined}
+                  county={post.data.county as string | undefined}
+                  accent={themeAccent}
+                />
+              ) : null}
+            </>
+          ) : isPestControlHub ? (
+            <>
+              <OfficialRiskNodeHeader zipCode={desktopDispatchZip} />
+              <ValueProtectionCalculator
+                homeUsd={zUsd}
+                zLabel={zLabel}
+                city={pageCity}
+                accent={themeAccent}
+                domPrefix={domPrefix}
+                terrainRiskNotice={pestNestNotice}
+                presentation="value_protection"
+              />
+              <NichePartnerLogos />
+              {pestInsuranceEquityNote ? <p class="pest-equity-insurance-note">{pestInsuranceEquityNote}</p> : null}
+              <section class="hero-flood-alert-band" aria-label="Service area headline">
+                <h1>{pageH1Plain}</h1>
+                <p style="margin: 0.25rem 0 0; color: #475569; font-size: 0.98rem;">
+                  {headerVariant}
+                </p>
+              </section>
+              {zUsd != null ? (
+                <MarketDataView
+                  seed={entrySlug}
+                  city={pageCity}
+                  state={stateCodeFromSlug}
+                  zip={pageLocation?.zip ?? null}
+                  homeUsd={zUsd}
+                  elevationFt={typeof post.data.elevationFt === "number" ? post.data.elevationFt : undefined}
+                  county={post.data.county as string | undefined}
+                  accent={themeAccent}
+                />
+              ) : null}
+            </>
+          ) : (
+            <>
+              {isFinancialPressureMode ? null : (
+                <>
+                  <OfficialRiskNodeHeader
+                    zipCode={desktopDispatchZip}
+                    stewardshipMode={isCommunityStewardshipNpo}
+                  />
+                  <ValueProtectionCalculator
+                    homeUsd={zUsd}
+                    zLabel={zLabel}
+                    city={pageCity}
+                    accent={themeAccent}
+                    domPrefix={domPrefix}
+                    terrainRiskNotice={roofTerrainNotice}
+                    presentation={isCommunityStewardshipNpo ? "stewardship_provision_guide" : "value_protection"}
+                  />
+                  <NichePartnerLogos />
+                </>
+              )}
+              <section class="hero-flood-alert-band" aria-label="Service area headline">
+                <h1>
+                  {
+                    plumbingSerpOverride ? (
+                      plumbingSerpOverride.pageH1
+                    ) : roofingSerpOverride ? (
+                      roofingSerpOverride.pageH1
+                    ) : isFinancialPressureMode ? (
+                      <>
+                        {`${pageCity} ${pageNicheLabel} - Property Protection: `}
+                        <span class="h1-zmoney">{zLabelForPublicSurface}</span>
+                      </>
+                    ) : (
+                      pageH1Plain
+                    )
+                  }
+                </h1>
+                <p style="margin: 0.25rem 0 0; color: #475569; font-size: 0.98rem;">
+                  {headerVariant}
+                </p>
+              </section>
+              {isFinancialPressureMode ? (
+                <>
+                  <OfficialRiskNodeHeader
+                    zipCode={desktopDispatchZip}
+                    stewardshipMode={isCommunityStewardshipNpo}
+                  />
+                  <ValueProtectionCalculator
+                    homeUsd={zUsd}
+                    zLabel={zLabel}
+                    city={pageCity}
+                    accent={themeAccent}
+                    domPrefix={domPrefix}
+                    terrainRiskNotice={roofTerrainNotice}
+                    presentation={isCommunityStewardshipNpo ? "stewardship_provision_guide" : "value_protection"}
+                  />
+                  <NichePartnerLogos />
+                </>
+              ) : null}
+              {zUsd != null ? (
+                <MarketDataView
+                  seed={entrySlug}
+                  city={pageCity}
+                  state={stateCodeFromSlug}
+                  zip={pageLocation?.zip ?? null}
+                  homeUsd={zUsd}
+                  elevationFt={typeof post.data.elevationFt === "number" ? post.data.elevationFt : undefined}
+                  county={post.data.county as string | undefined}
+                  accent={themeAccent}
+                  medianContextCardTitle={isCommunityStewardshipNpo ? "Illustrative median housing context" : null}
+                />
+              ) : null}
+            </>
+          )
+        }
+        <div class={serviceInfoClass}>
+          <h2>{ctaVariant.title}</h2>
+          <p>{serviceLine}</p>
+          <p class="service-meta">{ctaVariant.meta}</p>
+          <TrustBar collectionKey={ACTIVE_COLLECTION} />
+          <a class={`${phoneBtnClass} phone-dispatch-btn`} href={telHref} aria-label={phoneBtnAriaLabel}>
+            <span class="phone-btn__main">
+              <svg
+                class="phone-btn__signal"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <g fill="currentColor">
+                  <rect x="3" y="14" width="3.2" height="6" rx="0.6"></rect>
+                  <rect x="8.1" y="11" width="3.2" height="9" rx="0.6"></rect>
+                  <rect x="13.2" y="8" width="3.2" height="12" rx="0.6"></rect>
+                  <rect x="18.3" y="5" width="3.2" height="15" rx="0.6"></rect>
+                </g>
+              </svg>
+              <span class="phone-btn__label">{callBtnLabel}</span>
+            </span>
+            <span class="phone-btn__trust">{phoneTrustSubtitle}</span>
+          </a>
+          <p class="phone-dispatch-zip-hint">{phoneZipHint}</p>
+          <div class="national-dispatch-mobile-wrap">
+            <NationalDispatchDisclaimer city={pageCity} slug={entrySlug} stewardshipReference={isCommunityStewardshipNpo} />
+          </div>
+          <p class="dispatcher-hookup-line">
+            Regional coordination desk ({dispatcherCountyLabel}): {dispatcherClaimsLineDisplay}
+          </p>
+          {pestLatestDispatchLine ? <p class="pest-zip-dispatch-pulse">{pestLatestDispatchLine}</p> : null}
+        </div>
+        {
+          blockOrder.map((k) => {
+            if (k === "content") {
+              return (
+                <div
+                  id={articleBodyId}
+                  class:list={[articleBodyClass, infraBriefPanelActive && "infra-brief-demo-body"]}
+                >
+                  {sidingServiceLeadHtml ? <div set:html={sidingServiceLeadHtml} /> : null}
+                  <Content />
+                </div>
+              );
+            }
+            if (k === "geo") {
+              if (infraBriefPanelActive && fixitGridServiceReference) {
+                return (
+                  <LocalInfrastructureBrief
+                    cityDisplay={pageLocation?.city ?? pageCity ?? "Local"}
+                    stateCode={stateCodeFromSlug ?? "US"}
+                    nicheLabel={pageNicheLabel}
+                    county={geo.county}
+                    lat={geo.lat}
+                    lng={geo.lng}
+                    elevationFt={geo.elevationFt}
+                    zipCode={String(post.data.zipCode ?? pageLocation?.zip ?? "").trim() || undefined}
+                    zipSample={geo.zipSample}
+                    zipCodes={geo.zipCodes}
+                    localPaths={geo.localPaths}
+                    stateGeoFact={stateGeoFact}
+                    serviceReference={fixitGridServiceReference}
+                    dispatchCompliance={fixitGridDispatchCompliance}
+                    climateLine={fixitGridClimateLead}
+                    compact={true}
+                  />
+                );
+              }
+              return showGeoSection ? (
+                <section class={geoBriefClass} aria-labelledby={geoBriefTitleId}>
+                  <h2 id={geoBriefTitleId}>{geoTitle}</h2>
+                  {geoCoordsLine ? <p>{geoCoordsLine}</p> : null}
+                  {geoPhysicalEnvLine ? <p>{geoPhysicalEnvLine}</p> : null}
+                  {localPathsText ? <p>{localPathsText}</p> : null}
+                  {geo.elevationFt ? (
+                    <p>
+                      {elevationLabel}: {geo.elevationFt} ft (reference band).
+                    </p>
+                  ) : null}
+                  {geo.zipCodes?.length ? (
+                    <div>
+                      <p style="margin-bottom: 0.25rem;">{zipSnapshotLabel}</p>
+                      <details>
+                        <summary style="cursor: pointer; font-weight: 600;">
+                          {zipViewLabel} ({geo.zipCodes.slice(0, 12).length})
+                        </summary>
+                        <ul style="margin: 0.55rem 0 0; padding-left: 1.25rem;">
+                          {geo.zipCodes.slice(0, 12).map((z) => (
+                            <li>{z}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    </div>
+                  ) : null}
+                  {geo.localPaths?.length ? (
+                    <div style="margin-top: 0.65rem;">
+                      <p style="margin-bottom: 0.25rem;">{transitLabel}</p>
+                      <details>
+                        <summary style="cursor: pointer; font-weight: 600;">
+                          {transitViewLabel} ({geo.localPaths.slice(0, 5).length})
+                        </summary>
+                        <ul style="margin: 0.55rem 0 0; padding-left: 1.25rem;">
+                          {geo.localPaths.slice(0, 5).map((p) => (
+                            <li>{p}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    </div>
+                  ) : null}
+                </section>
+              ) : null;
+            }
+            if (k === "faq") {
+              return showFaq ? (
+                <section class={faqClass} aria-labelledby={faqTitleId}>
+                  <h2 id={faqTitleId}>{faqTitle}</h2>
+                  {pageFaqItemsFinal.map((item) => (
+                    <details>
+                      <summary>{item.question}</summary>
+                      <p>{item.answer}</p>
+                    </details>
+                  ))}
+                </section>
+              ) : null;
+            }
+            return showRelated ? (
+              <RelatedCities
+                currentSlug={entrySlug}
+                state={stateCodeFromSlug}
+                domPrefix={domPrefix}
+                themeAccent={themeAccent}
+                titleText={relatedTitle}
+              />
+            ) : null;
+          })
+        }
+        {
+          seedLandmarks ? (
+            <ServiceAreaLocalLandmarks
+              city={seedReviewCityDisplay}
+              state={seedLandmarksState}
+              zip={seedLandmarksZip}
+              landmarks={seedLandmarks.landmarks}
+            />
+          ) : null
+        }
+        {
+          seedAggregateRating ? (
+            <ServiceAreaVerifiedReviews
+              city={seedReviewCityDisplay}
+              reviewCount={seedAggregateRating.reviewCount}
+            />
+          ) : null
+        }
+      </article>
+    </main>
+    {
+      dispatchComplianceForPage && stateCodeFromSlug ? (
+        <ComplianceMatrix
+          compliance={dispatchComplianceForPage}
+          cityDisplay={pageLocation?.city ?? pageCity ?? "Local"}
+          stateCode={stateCodeFromSlug}
+          nicheLabel={pageNicheLabel}
+          brandName={isRealtorsSite ? "Realtors at the Beach" : "FixitGrid"}
+          sectionTitle={
+            isRealtorsSite
+              ? "Buyer & Service Network Compliance Audit"
+              : "Dispatch Gateway Compliance Audit"
+          }
+        />
+      ) : null
+    }
+    <Footer
+      extraLink={footerExtraLink}
+      notice={stateNotice}
+      variantSeed={`${ACTIVE_COLLECTION}|${entrySlug}|footer`}
+      slug={entrySlug}
+      auditStateCode={stateCodeFromSlug}
+      auditZipCode={desktopDispatchZip}
+      collectionKey={ACTIVE_COLLECTION}
+    />
+    <DispatchCommandBar
+      city={pageLocation?.city ?? pageCity ?? "Local"}
+      zip={(pageLocation?.zip ?? String(post.data.zipCode ?? "").trim()) || "00000"}
+      nicheLabel={pageNicheLabel}
+      slugSeed={entrySlug}
+    />
+    <RockwellGa4Events collection={ACTIVE_COLLECTION} pageSlug={entrySlug} />
+  </body>
+</html>

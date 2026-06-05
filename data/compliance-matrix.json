@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "domainPrefixes": {
+    "fixitgrid": "FG",
+    "realtors": "RE"
+  },
+  "states": {
+    "AL": {
+      "authorityFull": "Alabama Home Builders Licensure Board",
+      "authorityShort": "HBLB",
+      "verifyUrl": "https://www.hblb.alabama.gov/verify-license/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "AK": {
+      "authorityFull": "Alaska Division of Corporations, Business and Professional Licensing",
+      "authorityShort": "DCBPL",
+      "verifyUrl": "https://www.commerce.alaska.gov/cbp/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "AZ": {
+      "authorityFull": "Arizona Registrar of Contractors",
+      "authorityShort": "ROC",
+      "verifyUrl": "https://roc.az.gov/verify-license",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "AR": {
+      "authorityFull": "Arkansas Contractors Licensing Board",
+      "authorityShort": "ACLB",
+      "verifyUrl": "https://www.aclb.arkansas.gov/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "CA": {
+      "authorityFull": "California Contractors State License Board",
+      "authorityShort": "CSLB",
+      "verifyUrl": "https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/CheckLicense.aspx",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "CSLB Class C-39 roofing or B general building (numeric license)",
+        "plumbing": "CSLB Class C-36 plumbing (numeric, up to 8 digits)",
+        "pestcontrol": "CDPR licensed pest control operator registration"
+      }
+    },
+    "CO": {
+      "authorityFull": "Colorado Department of Regulatory Agencies (local GC licensing)",
+      "authorityShort": "DORA",
+      "verifyUrl": "https://dpo.colorado.gov/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "CT": {
+      "authorityFull": "Connecticut Department of Consumer Protection",
+      "authorityShort": "DCP",
+      "verifyUrl": "https://portal.ct.gov/DCP/License-Division/License-Division",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "DE": {
+      "authorityFull": "Delaware Division of Professional Regulation",
+      "authorityShort": "DPR",
+      "verifyUrl": "https://dpr.delaware.gov/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "FL": {
+      "authorityFull": "Florida Department of Business and Professional Regulation",
+      "authorityShort": "DBPR",
+      "verifyUrl": "https://www.myfloridalicense.com/wl11.asp",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "DBPR certified building (CBC) or roofing specialty contractor",
+        "plumbing": "DBPR certified plumbing contractor (CPC)",
+        "pestcontrol": "FDACS structural pest control / pesticide applicator license"
+      }
+    },
+    "GA": {
+      "authorityFull": "Georgia Secretary of State — Residential and General Contractors",
+      "authorityShort": "GA SOS",
+      "verifyUrl": "https://verify.sos.ga.gov/verification/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "HI": {
+      "authorityFull": "Hawaii Professional and Vocational Licensing Division",
+      "authorityShort": "PVL",
+      "verifyUrl": "https://pvl.ehawaii.gov/pvlsearch/app",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "ID": {
+      "authorityFull": "Idaho Division of Building Safety",
+      "authorityShort": "DBS",
+      "verifyUrl": "https://dbs.idaho.gov/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "IL": {
+      "authorityFull": "Illinois Department of Financial and Professional Regulation (trades; local GC)",
+      "authorityShort": "IDFPR",
+      "verifyUrl": "https://online.idfpr.com/inquiry/inquiry.aspx",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "IN": {
+      "authorityFull": "Indiana Professional Licensing Agency",
+      "authorityShort": "IPLA",
+      "verifyUrl": "https://mylicense.in.gov/everification/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "IA": {
+      "authorityFull": "Iowa Division of Labor — Contractor Registration",
+      "authorityShort": "Iowa DOL",
+      "verifyUrl": "https://www.iowadivisionoflabor.gov/contractor-registration",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "KS": {
+      "authorityFull": "Kansas local jurisdictions (no statewide GC license)",
+      "authorityShort": "Local KS",
+      "verifyUrl": "https://www.kansas.gov/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "KY": {
+      "authorityFull": "Kentucky Housing, Buildings and Construction",
+      "authorityShort": "HBC",
+      "verifyUrl": "https://dhbc.ky.gov/Pages/default.aspx",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "LA": {
+      "authorityFull": "Louisiana State Licensing Board for Contractors",
+      "authorityShort": "LSLBC",
+      "verifyUrl": "https://www.lslbc.louisiana.gov/contractor-search/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "ME": {
+      "authorityFull": "Maine local jurisdictions (trades licensed statewide)",
+      "authorityShort": "Local ME",
+      "verifyUrl": "https://www.maine.gov/pfr/professionallicensing/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MD": {
+      "authorityFull": "Maryland Home Improvement Commission",
+      "authorityShort": "MHIC",
+      "verifyUrl": "https://www.dllr.state.md.us/license/mhic/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MA": {
+      "authorityFull": "Massachusetts Division of Professional Licensure",
+      "authorityShort": "MA DPL",
+      "verifyUrl": "https://www.mass.gov/orgs/division-of-professional-licensure",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MI": {
+      "authorityFull": "Michigan Department of Licensing and Regulatory Affairs",
+      "authorityShort": "LARA",
+      "verifyUrl": "https://www.lara.michigan.gov/colaLicVerify/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MN": {
+      "authorityFull": "Minnesota Department of Labor and Industry",
+      "authorityShort": "DOLI",
+      "verifyUrl": "https://www.dli.mn.gov/business/get-licenses-and-permits",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MS": {
+      "authorityFull": "Mississippi State Board of Contractors",
+      "authorityShort": "MSBOC",
+      "verifyUrl": "https://www.msboc.us/license-search/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MO": {
+      "authorityFull": "Missouri local jurisdictions (no statewide GC license)",
+      "authorityShort": "Local MO",
+      "verifyUrl": "https://pr.mo.gov/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "MT": {
+      "authorityFull": "Montana Board of Plumbers and Residential Contractors",
+      "authorityShort": "MT BOPELS",
+      "verifyUrl": "https://boards.bsd.dli.mt.gov/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NE": {
+      "authorityFull": "Nebraska local jurisdictions (no statewide GC license)",
+      "authorityShort": "Local NE",
+      "verifyUrl": "https://www.nebraska.gov/ded/regulatory-licensing/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NV": {
+      "authorityFull": "Nevada State Contractors Board",
+      "authorityShort": "NSCB",
+      "verifyUrl": "https://www.nscb.nv.gov/verify-license/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NH": {
+      "authorityFull": "New Hampshire local jurisdictions (trades licensed statewide)",
+      "authorityShort": "Local NH",
+      "verifyUrl": "https://www.oplc.nh.gov/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NJ": {
+      "authorityFull": "New Jersey Division of Consumer Affairs — Home Improvement",
+      "authorityShort": "NJ DCA",
+      "verifyUrl": "https://www.njconsumeraffairs.gov/hic/Pages/default.aspx",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NM": {
+      "authorityFull": "New Mexico Regulation and Licensing Department",
+      "authorityShort": "RLD",
+      "verifyUrl": "https://www.rld.nm.gov/boards-and-commissions/individual-boards-and-commissions/contractors/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NY": {
+      "authorityFull": "New York local jurisdictions (trades licensed statewide)",
+      "authorityShort": "Local NY",
+      "verifyUrl": "https://www.dos.ny.gov/licensing/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "NC": {
+      "authorityFull": "North Carolina Licensing Board for General Contractors",
+      "authorityShort": "NCLBGC",
+      "verifyUrl": "https://www.nclbgc.org/license-search/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "ND": {
+      "authorityFull": "North Dakota Secretary of State — Contractor licenses",
+      "authorityShort": "ND SOS",
+      "verifyUrl": "https://firststop.sos.nd.gov/search/contractor",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "OH": {
+      "authorityFull": "Ohio Construction Industry Licensing Board (trades; local GC)",
+      "authorityShort": "OCILB",
+      "verifyUrl": "https://com.ohio.gov/divisions-and-programs/industrial-compliance/boards/contractors",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "OK": {
+      "authorityFull": "Oklahoma local jurisdictions (no statewide GC license)",
+      "authorityShort": "Local OK",
+      "verifyUrl": "https://oklahoma.gov/cib.html",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "OR": {
+      "authorityFull": "Oregon Construction Contractors Board",
+      "authorityShort": "CCB",
+      "verifyUrl": "https://www.oregon.gov/ccb/license/Pages/index.aspx",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "PA": {
+      "authorityFull": "Pennsylvania Home Improvement Contractor Registration",
+      "authorityShort": "PA HIC",
+      "verifyUrl": "https://www.attorneygeneral.gov/consumer-home-improvement/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "RI": {
+      "authorityFull": "Rhode Island Contractors Registration and Licensing Board",
+      "authorityShort": "CRLB",
+      "verifyUrl": "https://dlt.ri.gov/regulation-and-safety/contractors-registration-and-licensing-board",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "SC": {
+      "authorityFull": "South Carolina Contractor Licensing Board",
+      "authorityShort": "SC CLB",
+      "verifyUrl": "https://llr.sc.gov/contractors/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "SD": {
+      "authorityFull": "South Dakota local jurisdictions (trades licensed statewide)",
+      "authorityShort": "Local SD",
+      "verifyUrl": "https://dlr.sd.gov/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "TN": {
+      "authorityFull": "Tennessee Board for Licensing Contractors",
+      "authorityShort": "TN BLC",
+      "verifyUrl": "https://verify.tn.gov/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "TX": {
+      "authorityFull": "Texas Department of Licensing and Regulation",
+      "authorityShort": "TDLR",
+      "verifyUrl": "https://www.tdlr.texas.gov/verify.htm",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "Municipal contractor registration; TDLR for related trades",
+        "plumbing": "TDLR plumbing contractor license",
+        "pestcontrol": "TDA SPCS structural pest control license"
+      }
+    },
+    "UT": {
+      "authorityFull": "Utah Division of Professional Licensing",
+      "authorityShort": "DOPL",
+      "verifyUrl": "https://secure.utah.gov/llv/search/index.html",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "VT": {
+      "authorityFull": "Vermont Office of Professional Regulation",
+      "authorityShort": "OPR",
+      "verifyUrl": "https://sos.vermont.gov/opr/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "VA": {
+      "authorityFull": "Virginia Department of Professional and Occupational Regulation",
+      "authorityShort": "DPOR",
+      "verifyUrl": "https://www.dpor.virginia.gov/LicenseLookup",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "WA": {
+      "authorityFull": "Washington State Department of Labor and Industries",
+      "authorityShort": "L&I",
+      "verifyUrl": "https://secure.lni.wa.gov/verify/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "WV": {
+      "authorityFull": "West Virginia Division of Labor — Contractor Licensing",
+      "authorityShort": "WV DOL",
+      "verifyUrl": "https://labor.wv.gov/Pages/Contractor-Licensing.aspx",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "WI": {
+      "authorityFull": "Wisconsin Department of Safety and Professional Services",
+      "authorityShort": "DSPS",
+      "verifyUrl": "https://licenses.wi.gov/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "WY": {
+      "authorityFull": "Wyoming local jurisdictions (no statewide GC license)",
+      "authorityShort": "Local WY",
+      "verifyUrl": "https://wyomingbusiness.org/",
+      "scopeNote": "No statewide general contractor license; partners must meet local municipal and trade licensing rules.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    },
+    "DC": {
+      "authorityFull": "DC Department of Licensing and Consumer Protection",
+      "authorityShort": "DLCP",
+      "verifyUrl": "https://dlcp.dc.gov/",
+      "scopeNote": "State-level contractor or trade licensing applies; confirm via official lookup.",
+      "formatHints": {
+        "roofing": "State-registered contractor or certified building contractor where required",
+        "plumbing": "Licensed plumbing contractor per state code",
+        "pestcontrol": "Licensed pesticide applicator or structural pest control operator"
+      }
+    }
+  }
+}

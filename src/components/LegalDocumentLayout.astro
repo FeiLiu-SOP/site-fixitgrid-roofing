@@ -1,0 +1,120 @@
+---
+import Footer from "./Footer.astro";
+import SiteFavicon from "./SiteFavicon.astro";
+import { ACTIVE_COLLECTION } from "../active-collection";
+import { getBrand, internalPath, siteConfig } from "../site-config";
+import { isStewardshipCollection, STEWERSHIP_BRAND_SHORT } from "../lib/stewardship-legal";
+
+interface Props {
+  title: string;
+  metaDescription: string;
+  canonicalPath: string;
+}
+
+const { title, metaDescription, canonicalPath } = Astro.props;
+const stewardship = isStewardshipCollection(ACTIVE_COLLECTION);
+
+function hostnameForBrand(astroHost: string): string {
+  if (astroHost) return astroHost;
+  try {
+    return new URL(siteConfig.canonicalOrigin).hostname;
+  } catch {
+    return "";
+  }
+}
+
+const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+const titleSuffix = stewardship ? STEWERSHIP_BRAND_SHORT : brand.short;
+const pageUrl = new URL(internalPath(canonicalPath), Astro.url).href;
+const privacyHref = internalPath("privacy-policy");
+const termsHref = internalPath("terms-of-service");
+const accent = stewardship ? "#15803d" : "#1d4ed8";
+---
+
+<html lang="en" style={`--legal-accent:${accent};`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SiteFavicon />
+    <title>{title} | {titleSuffix}</title>
+    <meta name="description" content={metaDescription} />
+    <meta name="robots" content={siteConfig.robotsContent} />
+    <link rel="canonical" href={pageUrl} />
+    <style>
+      :root {
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      main.legal-doc {
+        width: min(720px, 94vw);
+        margin: 2rem auto 1rem;
+        background: #fff;
+        padding: 1.75rem 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 26px rgba(2, 6, 23, 0.08);
+      }
+      .legal-doc h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.65rem;
+        line-height: 1.25;
+      }
+      .legal-doc .legal-updated {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0 0 1.25rem;
+      }
+      .legal-doc h2 {
+        margin: 1.35rem 0 0.45rem;
+        font-size: 1.05rem;
+      }
+      .legal-doc p,
+      .legal-doc li {
+        line-height: 1.6;
+        color: #334155;
+      }
+      .legal-doc ul {
+        margin: 0.35rem 0 0.75rem;
+        padding-left: 1.25rem;
+      }
+      .legal-doc a {
+        color: var(--legal-accent);
+      }
+      .legal-disclaimer-box {
+        margin: 1rem 0 1.25rem;
+        padding: 1rem 1.1rem;
+        border-left: 4px solid #f59e0b;
+        background: #fffbeb;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        color: #78350f;
+      }
+      .legal-disclaimer-box strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-size: 0.78rem;
+        color: #92400e;
+      }
+      .legal-nav {
+        margin: 0 0 1rem;
+        font-size: 0.88rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="legal-doc">
+      <p class="legal-nav">
+        <a href={privacyHref}>Privacy Policy</a>
+        {" · "}
+        <a href={termsHref}>Terms of Service</a>
+      </p>
+      <slot name="body" />
+    </main>
+    <Footer collectionKey={ACTIVE_COLLECTION} />
+  </body>
+</html>

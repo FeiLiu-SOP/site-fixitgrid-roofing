@@ -1,0 +1,290 @@
+---
+/**
+ * Local asset safety block: public median price context + educational risk index (not insurance/engineering).
+ */
+interface Props {
+  seed: string;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  homeUsd: number | null;
+  elevationFt?: number;
+  county?: string | null;
+  accent: string;
+  /** Newtown Fellowship: replace Zillow-style benchmark title with nonprofit wording. */
+  medianContextCardTitle?: string | null;
+}
+
+const { seed, city, state, zip, homeUsd, elevationFt, county, accent, medianContextCardTitle } = Astro.props;
+const medianCardH3 = medianContextCardTitle?.trim() || "Median owner-cost anchor (Zillow-style benchmark)";
+
+function stableHash(input: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+const hasValue = typeof homeUsd === "number" && Number.isFinite(homeUsd) && homeUsd > 0;
+const stewardshipPlainMoney = Boolean(medianContextCardTitle?.trim());
+const formattedHome = hasValue
+  ? stewardshipPlainMoney
+    ? `USD ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(homeUsd!)} (illustrative median)`
+    : new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(homeUsd!)
+  : null;
+
+const place =
+  city && state
+    ? `${city}, ${state}${zip ? ` ${zip}` : ""}`
+    : zip
+      ? `ZIP ${zip}`
+      : "this service area";
+
+/** 0–100 synthetic structural risk context index for on-page education only. */
+function structureRiskContextIndex(): { score: number; band: string; drivers: string[] } {
+  let s = stableHash(`${seed}|structRisk`);
+  const drivers: string[] = [];
+  let score = 42 + (s % 18);
+
+  if (typeof elevationFt === "number" && Number.isFinite(elevationFt)) {
+    if (elevationFt < 400) {
+      score += 8;
+      drivers.push("Lower elevation band → higher sensitivity to pluvial / drainage stress in some climates.");
+    } else if (elevationFt > 2200) {
+      score += 4;
+      drivers.push("Higher elevation band → freeze–thaw and wind exposure patterns may differ from coastal norms.");
+    } else {
+      drivers.push("Mid elevation reference → review local drainage and seasonal freeze risk with a qualified inspector.");
+    }
+  } else {
+    drivers.push("Elevation not on file for this page → index uses cohort defaults; confirm site-specific topography locally.");
+  }
+
+  if (hasValue) {
+    if (homeUsd! >= 650_000) {
+      score += 5;
+      drivers.push("Higher median context often correlates with larger conditioned envelopes and specialty systems—maintenance checklists tend to be longer.");
+    } else if (homeUsd! < 180_000) {
+      score += 3;
+      drivers.push("Lower median context can include older stock mixes—deferral of envelope and MEP maintenance can compound faster.");
+    }
+  }
+
+  if (county && String(county).trim()) {
+    drivers.push(`County anchor (${String(county).trim()}) is used only to keep cohort narratives locally grounded—not as a regulatory signal.`);
+  }
+
+  score = Math.min(96, Math.max(28, score + (s % 7) - 3));
+  s = stableHash(`${seed}|band`);
+  const band =
+    score >= 72 ? "Elevated planning priority" : score >= 55 ? "Moderate watch band" : "Baseline stewardship band";
+
+  return { score, band, drivers };
+}
+
+const idx = structureRiskContextIndex();
+
+const months = ["M-11", "M-10", "M-9", "M-8", "M-7", "M-6", "M-5", "M-4", "M-3", "M-2", "M-1", "M"];
+const series: number[] = [];
+{
+  let h = stableHash(`${seed}|trend`);
+  for (let i = 0; i < 12; i++) {
+    h = Math.imul(h ^ 0x9e3779b9, 0x85ebca6b) >>> 0;
+    const wobble = (h % 9) - 4;
+    series.push(Math.min(96, Math.max(30, idx.score - 10 + i * 0.35 + wobble)));
+  }
+}
+
+const w = 360;
+const h = 96;
+const pad = 8;
+const pts = series
+  .map((v, i) => {
+    const x = pad + (i * (w - pad * 2)) / Math.max(1, series.length - 1);
+    const y = pad + ((100 - v) / 100) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  })
+  .join(" ");
+---
+
+<section
+  class="mdv-wrap"
+  style={`--mdv-accent:${accent};`}
+  aria-labelledby="mdv-title"
+  lang="en"
+>
+  <h2 class="mdv-title" id="mdv-title">Local residential safety &amp; market context</h2>
+  <p class="mdv-lead">
+    Educational briefing for <strong>{place}</strong>. This block summarizes <em>public-style</em> housing-cost context and a
+    transparent, page-local composite index. It is <strong>not</strong> an insurance determination, engineering report, lender
+    appraisal, or government hazard map.
+  </p>
+
+  {
+    formattedHome ? (
+      <div class="mdv-grid">
+        <div class="mdv-card">
+          <h3 class="mdv-h3">{medianCardH3}</h3>
+          <p class="mdv-metric">{formattedHome}</p>
+          <p class="mdv-note">
+            Figure reflects a third-party median home value commonly used as a market anchor. It does not describe your
+            individual home condition, replacement cost, or insurability.
+          </p>
+        </div>
+        <div class="mdv-card mdv-card-accent">
+          <h3 class="mdv-h3">Residential structure risk context index</h3>
+          <p class="mdv-index">
+            <span class="mdv-index-value">{idx.score}</span>
+            <span class="mdv-index-band">/ 100 — {idx.band}</span>
+          </p>
+          <ul class="mdv-drivers">
+            {idx.drivers.map((d) => (
+              <li>{d}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    ) : (
+      <p class="mdv-muted">Median benchmark is not published on this page; structural context still benefits from a licensed walkthrough.</p>
+    )
+  }
+
+  <div class="mdv-trend">
+    <h3 class="mdv-h3">Illustrative 12-month cohort trend (deterministic model)</h3>
+    <p class="mdv-note">
+      The line is a <strong>deterministic</strong> visualization derived from this page&apos;s stable seed plus the index above. It
+      does not ingest live sensor feeds, claims feeds, or municipal inspection databases.
+    </p>
+    <svg
+      class="mdv-chart"
+      viewBox={`0 0 ${w} ${h}`}
+      width="100%"
+      height="120"
+      role="img"
+      aria-label="Twelve month illustrative structure risk context trend"
+    >
+      <rect x="0" y="0" width={w} height={h} rx="10" fill="#f8fafc" stroke="#e2e8f0"></rect>
+      <polyline fill="none" stroke="var(--mdv-accent,#1d4ed8)" stroke-width="2.5" points={pts}></polyline>
+      {series.map((v, i) => {
+        const x = pad + (i * (w - pad * 2)) / Math.max(1, series.length - 1);
+        const y = pad + ((100 - v) / 100) * (h - pad * 2);
+        return <circle cx={x} cy={y} r="3.5" fill="var(--mdv-accent,#1d4ed8)"></circle>;
+      })}
+    </svg>
+    <div class="mdv-months" aria-hidden="true">
+      {months.map((m) => (
+        <span>{m}</span>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .mdv-wrap {
+    margin: 1.5rem 0 1.25rem;
+    padding: 1.25rem 1.2rem 1.35rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+  .mdv-title {
+    margin: 0 0 0.45rem;
+    font-size: 1.2rem;
+    line-height: 1.3;
+    color: #0f172a;
+  }
+  .mdv-lead {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #475569;
+  }
+  .mdv-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 720px) {
+    .mdv-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .mdv-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1rem 0.95rem;
+    background: #fff;
+  }
+  .mdv-card-accent {
+    border-left: 4px solid var(--mdv-accent, #1d4ed8);
+  }
+  .mdv-h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #0f172a;
+  }
+  .mdv-metric {
+    margin: 0.15rem 0 0.5rem;
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--mdv-accent, #1d4ed8);
+  }
+  .mdv-index {
+    margin: 0.15rem 0 0.55rem;
+    font-size: 1.05rem;
+    color: #0f172a;
+  }
+  .mdv-index-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--mdv-accent, #1d4ed8);
+    margin-right: 0.35rem;
+  }
+  .mdv-index-band {
+    font-weight: 600;
+    color: #334155;
+  }
+  .mdv-drivers {
+    margin: 0.35rem 0 0;
+    padding-left: 1.15rem;
+    color: #334155;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .mdv-note {
+    margin: 0.35rem 0 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: #64748b;
+  }
+  .mdv-muted {
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.92rem;
+    color: #64748b;
+  }
+  .mdv-trend {
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #cbd5e1;
+  }
+  .mdv-chart {
+    display: block;
+    margin-top: 0.65rem;
+    max-width: 100%;
+  }
+  .mdv-months {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.35rem;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    max-width: 360px;
+  }
+</style>

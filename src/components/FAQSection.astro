@@ -1,0 +1,24 @@
+---
+import type { FaqItem } from "../lib/seo";
+
+type Props = {
+  items: FaqItem[];
+  faqClass: string;
+  faqTitle: string;
+  faqTitleId: string;
+};
+
+const { items, faqClass, faqTitle, faqTitleId } = Astro.props;
+---
+
+<section class={faqClass} aria-labelledby={faqTitleId}>
+  <h2 id={faqTitleId}>{faqTitle}</h2>
+  {
+    items.map((item) => (
+      <details>
+        <summary>{item.question}</summary>
+        <p>{item.answer}</p>
+      </details>
+    ))
+  }
+</section>

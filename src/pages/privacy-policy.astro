@@ -1,0 +1,34 @@
+---
+import CommercialPrivacyPolicyBody from "../components/legal/CommercialPrivacyPolicyBody.astro";
+import StewardshipPrivacyPolicyBody from "../components/legal/StewardshipPrivacyPolicyBody.astro";
+import LegalDocumentLayout from "../components/LegalDocumentLayout.astro";
+import { ACTIVE_COLLECTION } from "../active-collection";
+import { getBrand, siteConfig } from "../site-config";
+import { isStewardshipCollection, STEWERSHIP_LEGAL_OPERATOR } from "../lib/stewardship-legal";
+
+function hostnameForBrand(astroHost: string): string {
+  if (astroHost) return astroHost;
+  try {
+    return new URL(siteConfig.canonicalOrigin).hostname;
+  } catch {
+    return "";
+  }
+}
+
+const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+const stewardship = isStewardshipCollection(ACTIVE_COLLECTION);
+---
+
+<LegalDocumentLayout
+  title="Privacy Policy"
+  metaDescription={
+    stewardship
+      ? `Privacy Policy for ${STEWERSHIP_LEGAL_OPERATOR}. Community education site — basic analytics only; no commercial dispatch or data sales.`
+      : `Privacy Policy for ${brand.name}. How we collect and use phone, call, and site data for home-service dispatch coordination.`
+  }
+  canonicalPath="privacy-policy"
+>
+  <Fragment slot="body">
+    {stewardship ? <StewardshipPrivacyPolicyBody /> : <CommercialPrivacyPolicyBody />}
+  </Fragment>
+</LegalDocumentLayout>

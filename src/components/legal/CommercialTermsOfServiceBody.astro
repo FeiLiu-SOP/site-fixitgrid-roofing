@@ -1,0 +1,108 @@
+---
+import { getBrand, siteConfig } from "../../site-config";
+
+function hostnameForBrand(astroHost: string): string {
+  if (astroHost) return astroHost;
+  try {
+    return new URL(siteConfig.canonicalOrigin).hostname;
+  } catch {
+    return "";
+  }
+}
+
+const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+const phone = siteConfig.phoneDisplay;
+const tel = siteConfig.phoneE164;
+---
+
+<h1>Terms of Service</h1>
+<p class="legal-updated"><strong>Last updated:</strong> May 30, 2026</p>
+
+<div class="legal-disclaimer-box">
+  <strong>Disclaimer — informational use only</strong>
+  This website and its service-area pages are provided for <strong>general information and intake
+  coordination only</strong>. Content—including market anchors, stress or risk indexes, charts, USGS or
+  other public-data references, calculators, reviews or job-count displays, and scheduling language—is{" "}
+  <strong>illustrative and educational</strong>. It is <strong>not</strong> a licensed contractor
+  estimate, engineering report, structural inspection, insurance determination, appraisal, or government
+  hazard map. Obtain <strong>on-site evaluation by qualified professionals</strong> before making repair,
+  purchase, or insurance decisions. We do not guarantee accuracy of third-party or page-local composite
+  data.
+</div>
+
+<h2>1. Acceptance</h2>
+<p>By using this website or calling our phone numbers, you agree to these Terms of Service.</p>
+
+<h2>2. What we provide</h2>
+<p>
+  {brand.name} provides <strong>information, intake, and scheduling coordination</strong> for residential
+  home services. We connect callers with <strong>independent licensed and insured contractors or partners</strong>{" "}
+  where available.
+</p>
+<p>We do <strong>not</strong> guarantee:</p>
+<ul>
+  <li>same-day or emergency arrival times</li>
+  <li>a specific price, quote, or &ldquo;starting at&rdquo; rate unless confirmed during intake or on a work order</li>
+  <li>availability in every ZIP code at all hours</li>
+  <li>outcomes based on illustrative indexes, calculators, or third-party benchmarks shown on the site</li>
+</ul>
+
+<h2>3. Not an emergency services agency</h2>
+<p>
+  For life-threatening emergencies (fire, gas leak, immediate medical danger), contact <strong>911</strong>{" "}
+  or your utility emergency line first.
+</p>
+
+<h2>4. Pricing and payment</h2>
+<ul>
+  <li>Diagnostic, trip, after-hours, and repair charges vary by market and scope</li>
+  <li>Any price mentioned on marketing pages is <strong>illustrative</strong> unless confirmed during intake</li>
+  <li>Payment terms are between you and the performing contractor unless we state otherwise on the call</li>
+</ul>
+
+<h2>5. Third-party contractors</h2>
+<p>
+  Contractors are independent businesses. We are not responsible for their workmanship, warranties, or
+  conduct, except as required by applicable law.
+</p>
+
+<h2>6. Website content and data displays</h2>
+<p>
+  Market anchors, stress indexes, maps, trend lines, partner logos, and educational blocks are{" "}
+  <strong>informational only</strong>. References to public datasets (including terrain or infrastructure
+  context) are not site-specific engineering certifications.
+</p>
+
+<h2>7. Reviews and social proof</h2>
+<p>
+  Ratings or job counts shown on service-area pages may be <strong>aggregated or illustrative</strong> for
+  scheduling context. They are not a guarantee of future results for your specific property.
+</p>
+
+<h2>8. Acceptable use</h2>
+<p>You agree not to misuse the site, submit false requests, or use automated means to scrape or disrupt services.</p>
+
+<h2>9. Disclaimer of warranties</h2>
+<p>
+  The site and coordination services are provided <strong>&ldquo;as is&rdquo;</strong> to the fullest extent
+  permitted by law.
+</p>
+
+<h2>10. Limitation of liability</h2>
+<p>
+  To the fullest extent permitted by law, we are not liable for indirect, incidental, or consequential
+  damages arising from use of the site or services coordinated through it.
+</p>
+
+<h2>11. Governing law</h2>
+<p>
+  These Terms are governed by the laws of the <strong>State of Maine</strong>, without regard to
+  conflict-of-law rules, except where consumer protection laws in your state require otherwise.
+</p>
+
+<h2>12. Contact</h2>
+<p>
+  {brand.name}<br />
+  Phone: <a href={`tel:${tel.replace(/^\+/, "")}`}>{phone}</a><br />
+  Website: {siteConfig.canonicalOrigin}
+</p>

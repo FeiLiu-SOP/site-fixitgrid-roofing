@@ -1,0 +1,479 @@
+---
+import type { DispatchCompliance } from "../lib/compliance-matrix";
+import type { StateGeoFact } from "../lib/geo-facts";
+
+interface Props {
+  cityDisplay: string;
+  stateCode: string;
+  nicheLabel: string;
+  county?: string;
+  lat?: number;
+  lng?: number;
+  elevationFt?: number;
+  zipCode?: string;
+  zipSample?: string[];
+  zipCodes?: string[];
+  localPaths?: string[];
+  stateGeoFact: StateGeoFact;
+  serviceReference: string;
+  dispatchCompliance: DispatchCompliance | null;
+  climateLine?: string | null;
+  /** Tighter panel — keeps CTA as primary focal point on page. */
+  compact?: boolean;
+}
+
+const {
+  cityDisplay,
+  stateCode,
+  nicheLabel,
+  county,
+  lat,
+  lng,
+  elevationFt,
+  zipCode,
+  zipSample = [],
+  zipCodes = [],
+  localPaths = [],
+  stateGeoFact,
+  serviceReference,
+  dispatchCompliance,
+  climateLine,
+  compact = false,
+} = Astro.props;
+
+const coords =
+  typeof lat === "number" && typeof lng === "number"
+    ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+    : null;
+const zipLine =
+  zipSample.filter(Boolean).slice(0, 5).join(" · ") ||
+  (zipCode ? zipCode : null);
+const envNarrative =
+  stateGeoFact.narrative.length > 220
+    ? `${stateGeoFact.narrative.slice(0, 217).trim()}…`
+    : stateGeoFact.narrative;
+const envNarrativeShort =
+  stateGeoFact.narrative.length > 120
+    ? `${stateGeoFact.narrative.slice(0, 117).trim()}…`
+    : stateGeoFact.narrative;
+---
+
+<section
+  id="local-infrastructure-brief"
+  class:list={["local-infra-brief", compact && "local-infra-brief--compact"]}
+  aria-labelledby="local-infra-brief-title"
+>
+  {
+    compact ? (
+      <p class="local-infra-brief__sync-active" aria-label="Registry sync status active">
+        <span class="local-infra-brief__sync-dot" aria-hidden="true"></span>
+        SYNC: ACTIVE
+      </p>
+    ) : null
+  }
+  <header class="local-infra-brief__head">
+    <div class="local-infra-brief__title-wrap">
+      <svg
+        class="local-infra-brief__scan"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          fill="currentColor"
+          d="M4 6h2v12H4V6zm4 3h2v9H8V9zm4-2h2v11h-2V7zm4 4h2v7h-2v-7z"
+        ></path>
+      </svg>
+      <h2 id="local-infra-brief-title">Local Infrastructure Brief</h2>
+    </div>
+    {
+      compact ? null : (
+        <p class="local-infra-brief__badge" aria-label="Reference dataset loaded">
+          <span class="local-infra-brief__check" aria-hidden="true">✓</span>
+          registry sync · reference band
+        </p>
+      )
+    }
+  </header>
+
+  <dl class="local-infra-brief__grid">
+    <div class="local-infra-brief__row">
+      <dt>site anchor</dt>
+      <dd>
+        <code>{cityDisplay}, {stateCode}</code>
+        {county ? <span class="local-infra-brief__muted"> · {county}</span> : null}
+      </dd>
+    </div>
+    {
+      coords ? (
+        <div class="local-infra-brief__row">
+          <dt>coordinates</dt>
+          <dd><code>{coords}</code></dd>
+        </div>
+      ) : null
+    }
+    {
+      typeof elevationFt === "number" ? (
+        <div class="local-infra-brief__row">
+          <dt>elevation</dt>
+          <dd>
+            <code>{elevationFt} ft</code>
+            <span class="local-infra-brief__muted"> reference band</span>
+          </dd>
+        </div>
+      ) : null
+    }
+    {
+      zipLine ? (
+        <div class="local-infra-brief__row">
+          <dt>zip corridor</dt>
+          <dd><code>{zipLine}</code></dd>
+        </div>
+      ) : null
+    }
+    {
+      !compact ? (
+        <div class="local-infra-brief__row">
+          <dt>vertical</dt>
+          <dd><code>{nicheLabel.toLowerCase()}</code></dd>
+        </div>
+      ) : null
+    }
+    <div class="local-infra-brief__row">
+      <dt>environment</dt>
+      <dd>
+        <code>{stateGeoFact.label}</code>
+        {
+          compact ? (
+            <span class="local-infra-brief__muted"> — {envNarrativeShort}</span>
+          ) : (
+            <span class="local-infra-brief__muted"> — {envNarrative}</span>
+          )
+        }
+      </dd>
+    </div>
+    {
+      climateLine ? (
+        <div class="local-infra-brief__row">
+          <dt>sector note</dt>
+          <dd>{climateLine}</dd>
+        </div>
+      ) : null
+    }
+    <div class="local-infra-brief__row">
+      <dt>service ref</dt>
+      <dd><code>{serviceReference}</code></dd>
+    </div>
+    {
+      dispatchCompliance ? (
+        <>
+          <div class="local-infra-brief__row">
+            <dt>dispatch id</dt>
+            <dd>
+              <code>{dispatchCompliance.dispatchId}</code>
+              <span class="local-infra-brief__muted"> internal routing</span>
+            </dd>
+          </div>
+          <div class="local-infra-brief__row">
+            <dt>regulator</dt>
+            <dd>
+              <code>{dispatchCompliance.authorityShort}</code>
+              {" "}
+              <a href={dispatchCompliance.verifyUrl} rel="noopener noreferrer" target="_blank">
+                official lookup
+              </a>
+            </dd>
+          </div>
+        </>
+      ) : null
+    }
+  </dl>
+
+  {
+    zipCodes.length > 0 || localPaths.length > 0 ? (
+      <details class="local-infra-brief__expand">
+        <summary>Extended routing grid</summary>
+        {
+          zipCodes.length > 0 ? (
+            <p class="local-infra-brief__expand-label">ZIP sample ({Math.min(zipCodes.length, 12)})</p>
+          ) : null
+        }
+        {
+          zipCodes.length > 0 ? (
+            <ul>
+              {zipCodes.slice(0, 12).map((z) => (
+                <li><code>{z}</code></li>
+              ))}
+            </ul>
+          ) : null
+        }
+        {
+          localPaths.length > 0 ? (
+            <p class="local-infra-brief__expand-label">access markers</p>
+          ) : null
+        }
+        {
+          localPaths.length > 0 ? (
+            <ul>
+              {localPaths.slice(0, 5).map((p) => (
+                <li>{p}</li>
+              ))}
+            </ul>
+          ) : null
+        }
+      </details>
+    ) : null
+  }
+
+  <p class="local-infra-brief__foot">
+    Reference dataset for {cityDisplay} — not live telemetry or a government bulletin.
+  </p>
+</section>
+
+<style>
+  .local-infra-brief {
+    margin-top: 1.75rem;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: #e2e8f0;
+    padding: 1rem 1.1rem 0.85rem;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .local-infra-brief__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #334155;
+  }
+  .local-infra-brief__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .local-infra-brief__title-wrap h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #f8fafc;
+  }
+  .local-infra-brief__scan {
+    color: #38bdf8;
+    opacity: 0.9;
+  }
+  .local-infra-brief__badge {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .local-infra-brief__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    background: #14532d;
+    color: #86efac;
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+  .local-infra-brief__grid {
+    margin: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .local-infra-brief__row {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 7.5rem) 1fr;
+    gap: 0.65rem;
+    align-items: start;
+  }
+  .local-infra-brief__row dt {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+    padding-top: 0.12rem;
+  }
+  .local-infra-brief__row dd {
+    margin: 0;
+    color: #cbd5e1;
+    overflow-wrap: anywhere;
+  }
+  .local-infra-brief__row code,
+  .local-infra-brief__expand code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.84em;
+    color: #7dd3fc;
+    background: rgba(15, 23, 42, 0.55);
+    padding: 0.08rem 0.28rem;
+    border-radius: 4px;
+  }
+  .local-infra-brief__muted {
+    color: #94a3b8;
+    font-size: 0.88em;
+  }
+  .local-infra-brief__row a {
+    color: #7dd3fc;
+    font-size: 0.88em;
+  }
+  .local-infra-brief__expand {
+    margin-top: 0.75rem;
+    font-size: 0.86rem;
+    color: #94a3b8;
+  }
+  .local-infra-brief__expand summary {
+    cursor: pointer;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .local-infra-brief__expand ul {
+    margin: 0.35rem 0 0.5rem;
+    padding-left: 1.1rem;
+  }
+  .local-infra-brief__expand-label {
+    margin: 0.5rem 0 0.2rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+  }
+  .local-infra-brief__foot {
+    margin: 0.75rem 0 0;
+    padding-top: 0.65rem;
+    border-top: 1px solid #334155;
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+  .local-infra-brief--compact {
+    position: relative;
+    max-width: 38rem;
+    margin-top: 2.25rem;
+    padding: 0.7rem 0.85rem 0.65rem;
+    padding-top: 0.85rem;
+    font-size: 0.84rem;
+    color: #e0f2fe;
+    background: linear-gradient(165deg, #001f3f 0%, #002a4d 52%, #003a5c 100%);
+    border: 1px solid rgba(34, 211, 238, 0.32);
+    box-shadow:
+      0 4px 18px rgba(0, 31, 63, 0.28),
+      inset 0 1px 0 rgba(125, 211, 252, 0.12);
+  }
+  .local-infra-brief__sync-active {
+    position: absolute;
+    top: 0.62rem;
+    right: 0.72rem;
+    z-index: 1;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.38rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #bbf7d0;
+    text-transform: uppercase;
+  }
+  .local-infra-brief__sync-dot {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.65);
+    animation: local-infra-sync-pulse 1.75s ease-in-out infinite;
+  }
+  @keyframes local-infra-sync-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+    }
+    50% {
+      opacity: 0.88;
+      box-shadow: 0 0 0 7px rgba(34, 197, 94, 0);
+    }
+  }
+  .local-infra-brief--compact .local-infra-brief__head {
+    margin-bottom: 0.55rem;
+    padding-bottom: 0.45rem;
+    padding-right: 6.5rem;
+    border-bottom-color: rgba(34, 211, 238, 0.22);
+  }
+  .local-infra-brief--compact .local-infra-brief__title-wrap h2 {
+    font-size: 0.92rem;
+    color: #f0f9ff;
+  }
+  .local-infra-brief--compact .local-infra-brief__scan {
+    color: #22d3ee;
+  }
+  .local-infra-brief--compact .local-infra-brief__grid {
+    gap: 0.4rem;
+  }
+  .local-infra-brief--compact .local-infra-brief__row dt {
+    color: #67e8f9;
+  }
+  .local-infra-brief--compact .local-infra-brief__row dd {
+    color: #e0f2fe;
+  }
+  .local-infra-brief--compact .local-infra-brief__row code,
+  .local-infra-brief--compact .local-infra-brief__expand code {
+    color: #7dd3fc;
+    background: rgba(0, 31, 63, 0.65);
+  }
+  .local-infra-brief--compact .local-infra-brief__muted {
+    color: #94a3b8;
+  }
+  .local-infra-brief--compact .local-infra-brief__row a {
+    color: #38bdf8;
+  }
+  .local-infra-brief--compact .local-infra-brief__foot {
+    margin-top: 0.5rem;
+    padding-top: 0.45rem;
+    font-size: 0.72rem;
+    border-top-color: rgba(34, 211, 238, 0.22);
+    color: #7dd3fc;
+  }
+  .local-infra-brief--compact .local-infra-brief__expand summary,
+  .local-infra-brief--compact .local-infra-brief__expand-label {
+    color: #67e8f9;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .local-infra-brief__sync-dot {
+      animation: none;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.45);
+    }
+  }
+  @media (max-width: 640px) {
+    .local-infra-brief__row {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+    .local-infra-brief--compact {
+      max-width: 100%;
+    }
+  }
+</style>

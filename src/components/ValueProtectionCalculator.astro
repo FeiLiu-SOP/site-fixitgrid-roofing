@@ -1,0 +1,420 @@
+---
+/**
+ * First-fold "value protection" block: anchors visually to injected median home USD.
+ * SSR-first: full layout and numbers without hydration; range updates via tiny inline script.
+ */
+interface Props {
+  homeUsd: number | null;
+  zLabel: string | null;
+  city: string | null;
+  accent: string;
+  domPrefix: string | null;
+  /** Red alert after lead (roofing insurance funnel; site-roofing). */
+  terrainRiskNotice?: string | null;
+  /** Mitigation / compliance line below readout or fallback (water / plumbing hubs). */
+  visualizedAssessmentLine?: string | null;
+  /** Newtown Fellowship: Stewardship Provision Guide (not FixitGrid commercial calculator). */
+  presentation?: "value_protection" | "stewardship_provision_guide";
+}
+
+const {
+  homeUsd,
+  zLabel,
+  city,
+  accent,
+  domPrefix,
+  terrainRiskNotice = null,
+  visualizedAssessmentLine = null,
+  presentation = "value_protection",
+} = Astro.props;
+const isProvisionGuide = presentation === "stewardship_provision_guide";
+const rootId = domPrefix ? `${domPrefix}-value-calculator` : "value-calculator-root";
+const wrapClass = [
+  isProvisionGuide ? "stewardship-provision-guide" : "value-protection-calculator",
+  domPrefix ? `${domPrefix}--value-calculator` : null,
+].filter(Boolean);
+
+const hasValue = typeof homeUsd === "number" && Number.isFinite(homeUsd) && homeUsd > 0;
+const formattedHome = hasValue
+  ? isProvisionGuide
+    ? `USD ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(homeUsd!)} (illustrative)`
+    : new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(homeUsd!)
+  : null;
+
+const cityLine = city ? `${city}` : "this area";
+const defaultPct = 12;
+
+/** Slider stress % (5–40) → displayed index (18–100); default 12% → 48 for audit contrast vs asset blue. */
+function stressIndexFromPct(pct: number): number {
+  return Math.min(100, Math.round(18 + pct * 2.5));
+}
+
+const initialStressIndex = stressIndexFromPct(defaultPct);
+---
+
+<section
+  class:list={wrapClass}
+  id={rootId}
+  style={`--vpc-accent:${accent};`}
+  data-vpc-usd={hasValue ? String(Math.round(homeUsd!)) : ""}
+  data-vpc-default-pct={String(defaultPct)}
+  data-module={isProvisionGuide ? "Stewardship_Provision_Guide" : undefined}
+  aria-labelledby={`${rootId}-title`}
+>
+  <div class="vpc-inner">
+    <h2 class="vpc-title" id={`${rootId}-title`}>
+      {isProvisionGuide ? "Stewardship Provision Guide" : "Value Protection Calculator"}
+    </h2>
+    <p class="vpc-lead">
+      {
+        isProvisionGuide ? (
+          <>
+            Neighborhood maintenance planning context for {cityLine}
+            {zLabel ? (
+              <>
+                {" "}
+                <span class="vpc-zlabel">(Market Context Supplement)</span>
+              </>
+            ) : null}
+          </>
+        ) : (
+          <>
+            First-screen asset anchor for {cityLine}
+            {zLabel ? (
+              <>
+                {" "}
+                <span class="vpc-zlabel">({zLabel} benchmark)</span>
+              </>
+            ) : null}
+          </>
+        )
+      }
+    </p>
+    {terrainRiskNotice ? <p class="vpc-terrain-notice">{terrainRiskNotice}</p> : null}
+    {
+      hasValue ? (
+        <>
+          <div class="vpc-metrics-row">
+            <div class="vpc-hero-amount" style={`color:var(--vpc-accent,${accent});`}>
+              <span class="vpc-hero-label">
+                {isProvisionGuide ? "Illustrative median housing context" : "Protected home value (aligned)"}
+              </span>
+              <span class="vpc-hero-number">{formattedHome}</span>
+            </div>
+            <div
+              class="vpc-risk-meter"
+              aria-label={`Infrastructure stress index ${initialStressIndex} out of 100`}
+            >
+              <span class="vpc-risk-meter-label">Infrastructure stress index</span>
+              <p class="vpc-risk-meter-readout">
+                <span class="vpc-risk-meter-score">{initialStressIndex}</span>
+                <span class="vpc-risk-meter-denom"> / 100</span>
+              </p>
+            </div>
+          </div>
+          <div class="vpc-controls">
+            <label class="vpc-range-label" for={`${rootId}-range`}>
+              {
+                isProvisionGuide
+                  ? "Scenario stress — estimated maintenance burden (%)"
+                  : "Scenario stress — estimated exposure (%)"
+              }
+            </label>
+            <input
+              id={`${rootId}-range`}
+              class="vpc-range"
+              type="range"
+              min="5"
+              max="40"
+              step="1"
+              value={String(defaultPct)}
+            />
+            <div
+              class:list={[
+                "vpc-readout",
+                defaultPct > 10 ? "vpc-readout--mitigation-required" : null,
+              ].filter(Boolean)}
+            >
+              <span class="vpc-readout-label">
+                {isProvisionGuide
+                  ? "Illustrative maintenance burden at this stress"
+                  : "Illustrative exposure at this stress"}
+              </span>
+              <output class="vpc-readout-value" id={`${rootId}-out`} for={`${rootId}-range`}>
+                —
+              </output>
+            </div>
+          </div>
+          {visualizedAssessmentLine ? (
+            <p class="vpc-visualized-assessment">{visualizedAssessmentLine}</p>
+          ) : null}
+          <p class="vpc-foot">
+            {
+              isProvisionGuide
+                ? "Illustrative planning math only — not a repair quote, insurance estimate, or contractor bid."
+                : "Illustrative math only — call to scope real loss scenarios for your property."
+            }
+          </p>
+        </>
+      ) : (
+        <>
+          <div class="vpc-fallback">
+            <p class="vpc-fallback-text">
+              {
+                isProvisionGuide
+                  ? "Median context is not published on this page. Stewardship volunteers can help you locate public housing-data references for your neighborhood."
+                  : "Local median benchmark not on file for this node. Call intake to align a protected-asset figure to your address and coverage goals."
+              }
+            </p>
+          </div>
+          {visualizedAssessmentLine ? (
+            <p class="vpc-visualized-assessment">{visualizedAssessmentLine}</p>
+          ) : null}
+        </>
+      )
+    }
+  </div>
+</section>
+
+{hasValue ? (
+  <script
+    is:inline
+    set:html={`(function(){var r=document.getElementById(${JSON.stringify(
+      rootId,
+    )});if(!r)return;var u=r.getAttribute("data-vpc-usd");var h=u?parseInt(u,10):0;if(!h||!isFinite(h))return;var g=r.querySelector("input[type=range]"),o=r.querySelector("output");if(!g||!o)return;var sc=r.querySelector(".vpc-risk-meter-score");var ro=o.closest(".vpc-readout");var provision=${isProvisionGuide ? "1" : "0"};function f(n){if(provision)return "USD "+new Intl.NumberFormat("en-US",{maximumFractionDigits:0}).format(n)+" (illustrative)";return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n)}function idx(p){return Math.min(100,Math.round(18+(+p||0)*2.5))}function s(){var p=+g.value||0;o.textContent=f(Math.round(h*p/100));if(sc)sc.textContent=String(idx(p));if(ro){if(p>10)ro.classList.add("vpc-readout--mitigation-required");else ro.classList.remove("vpc-readout--mitigation-required")}}g.addEventListener("input",s);s();})();`}
+  />
+) : null}
+
+<style>
+  .stewardship-provision-guide {
+    margin: 1rem 0 1.25rem;
+    border-radius: 14px;
+    border: 2px solid rgba(71, 85, 105, 0.22);
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 55%, #e2e8f0 100%);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    overflow: visible;
+  }
+  .value-protection-calculator {
+    margin: 1rem 0 1.25rem;
+    border-radius: 14px;
+    border: 2px solid rgba(15, 23, 42, 0.12);
+    background: linear-gradient(145deg, #f8fafc 0%, #ffffff 55%, #f1f5f9 100%);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
+    overflow: visible;
+  }
+  .vpc-inner {
+    padding: 1rem 1.1rem 1.15rem;
+    max-width: 100%;
+  }
+  .vpc-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+  }
+  .vpc-lead {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.45;
+  }
+  .vpc-zlabel {
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .vpc-terrain-notice {
+    margin: -0.35rem 0 0.75rem;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #991b1b;
+    background: rgba(254, 226, 226, 0.65);
+    border: 1px solid rgba(185, 28, 28, 0.35);
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+  .vpc-metrics-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: stretch;
+    margin-bottom: 0.85rem;
+  }
+  .vpc-hero-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1 1 168px;
+    margin-bottom: 0;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    min-width: 0;
+  }
+  .vpc-risk-meter {
+    flex: 1 1 148px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    background: rgba(255, 247, 237, 0.96);
+    border: 1px solid rgba(234, 88, 12, 0.28);
+    min-width: 0;
+  }
+  .vpc-risk-meter-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9a3412;
+  }
+  .vpc-risk-meter-readout {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .vpc-risk-meter-score {
+    font-size: clamp(1.45rem, 4.2vw, 2rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: #ea580c;
+  }
+  .vpc-risk-meter-denom {
+    font-size: clamp(1.05rem, 3vw, 1.35rem);
+    font-weight: 800;
+    color: #c2410c;
+  }
+  .vpc-hero-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+  }
+  .vpc-hero-number {
+    font-size: clamp(1.55rem, 4.5vw, 2.1rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .vpc-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .vpc-range-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+  }
+  .vpc-range {
+    width: 100%;
+    accent-color: var(--vpc-accent, #2563eb);
+  }
+  .vpc-readout {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-top: 0.25rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    background: #0b1220;
+    color: #e2e8f0;
+    overflow: hidden;
+  }
+  .stewardship-provision-guide .vpc-readout--mitigation-required::before {
+    content: "[PLANNING NOTE: elevated maintenance burden]";
+    color: rgba(148, 163, 184, 0.72);
+    border-color: rgba(71, 85, 105, 0.55);
+    text-shadow: none;
+    background: repeating-linear-gradient(
+      -33deg,
+      rgba(226, 232, 240, 0.08),
+      rgba(226, 232, 240, 0.08) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  /** Authority-First: exposure >10% — stamp watermark on the readout (currency) layer only. */
+  .vpc-readout--mitigation-required::before {
+    content: "[STATUS: MITIGATION REQUIRED]";
+    white-space: nowrap;
+    position: absolute;
+    inset: 0.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 900;
+    font-size: clamp(0.44rem, 1.65vw, 0.58rem);
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    color: rgba(252, 165, 165, 0.55);
+    text-transform: uppercase;
+    border: 0.18rem double rgba(220, 38, 38, 0.72);
+    border-radius: 6px;
+    transform: rotate(-10deg) scale(0.92);
+    z-index: 0;
+    pointer-events: none;
+    max-width: calc(100% - 0.3rem);
+    margin: auto;
+    box-shadow:
+      inset 0 0 0 1px rgba(254, 202, 202, 0.15),
+      0 0 0 1px rgba(127, 29, 29, 0.4),
+      2px 3px 0 rgba(0, 0, 0, 0.22);
+    background: repeating-linear-gradient(
+      -33deg,
+      rgba(254, 226, 226, 0.07),
+      rgba(254, 226, 226, 0.07) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  }
+  .vpc-readout-label {
+    position: relative;
+    z-index: 1;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .vpc-readout-value {
+    position: relative;
+    z-index: 1;
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .vpc-visualized-assessment {
+    margin: 0.55rem 0 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+    line-height: 1.45;
+  }
+  .vpc-foot {
+    margin: 0.65rem 0 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+  .vpc-fallback {
+    padding: 0.65rem 0.5rem 0.15rem;
+  }
+  .vpc-fallback-text {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #475569;
+    line-height: 1.5;
+  }
+</style>

@@ -1,0 +1,339 @@
+---
+/**
+ * Mobile-only sticky conversion dock (slug pages). Brand + collection copy per brief.
+ */
+import { ACTIVE_COLLECTION, type ActiveCollectionKey } from "../active-collection";
+import { getBrand, siteConfig } from "../site-config";
+
+export interface Props {
+  city: string;
+  zip: string;
+  nicheLabel: string;
+  slugSeed: string;
+  /** Newtown Fellowship: nonprofit sticky bar (isolated from FixitGrid commercial dock). */
+  stickyVariant?: "default" | "newtown_fellowship";
+  /** Dev stewardship hub: align with page collection (default = build-time ACTIVE_COLLECTION). */
+  collectionKey?: ActiveCollectionKey;
+}
+
+const BRAND_DISPLAY = "FixitGrid Local Dispatch Network";
+
+/** Non-roofing fallback: never default unknown collection to roofing keys containing Roofing */
+const NEUTRAL_DISPATCH_COMMAND = { left: "Information Desk", right: "Community Briefing" } as const;
+
+const COLLECTION_COMMAND: Record<
+  ActiveCollectionKey,
+  { left: string; right: string }
+> = {
+  "water-damage": { left: "Mitigation Desk", right: "Emergency Extraction" },
+  plumbing: { left: "Pipe Safety Hub", right: "Emergency Dispatch" },
+  "plumbing-v2": { left: "Pipe Safety Hub", right: "Emergency Dispatch" },
+  roofing: { left: "Roofing Audit", right: "Structural Command" },
+  "siding-services": { left: "Envelope Audit", right: "Professional Retrofit" },
+  pestcontrol: { left: "Eradication Unit", right: "Secure Property" },
+  "community-stewardship-water": { left: "Stewardship Desk", right: "Water Systems Intake" },
+  "community-stewardship-siding": { left: "Envelope Desk", right: "Exterior Intake" },
+  "community-stewardship-plumbing": { left: "Plumbing Desk", right: "Supply & Drain Intake" },
+};
+
+/** Newtown + church verticals: sticky ticker/copy aligned to line (no Roofing leak) */
+const NEWTOWN_STEWARDSHIP_TICKER: Record<
+  "community-stewardship-water" | "community-stewardship-siding" | "community-stewardship-plumbing",
+  { auditLine: string; bar: { left: string; right: string } }
+> = {
+  "community-stewardship-water": {
+    auditLine: "Water Systems Integrity Audit",
+    bar: { left: "Integrity channel", right: "Water Systems Integrity Audit" },
+  },
+  "community-stewardship-siding": {
+    auditLine: "Exterior Envelope Status",
+    bar: { left: "Envelope channel", right: "Exterior Envelope Status" },
+  },
+  "community-stewardship-plumbing": {
+    auditLine: "Supply & Drain Integrity Audit",
+    bar: { left: "Path channel", right: "Supply & Drain Integrity Audit" },
+  },
+};
+
+function viewerCount(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h * 33 + seed.charCodeAt(i)) >>> 0;
+  }
+  return 2 + (h % 3);
+}
+
+const { city, zip, nicheLabel, slugSeed, stickyVariant = "default", collectionKey } = Astro.props;
+const isNewtownFellowshipSticky = stickyVariant === "newtown_fellowship";
+const col = collectionKey ?? ACTIVE_COLLECTION;
+/** Church/NPO: any community-stewardship-* build uses volunteer sticky copy (no misleading commercial ads) */
+const isNpoStewardship = col.startsWith("community-stewardship-");
+const brandRef = getBrand(Astro.url.hostname);
+const brandDisplay = BRAND_DISPLAY;
+const newtownStew =
+  isNewtownFellowshipSticky &&
+  (col === "community-stewardship-water" ||
+    col === "community-stewardship-siding" ||
+    col === "community-stewardship-plumbing")
+    ? NEWTOWN_STEWARDSHIP_TICKER[col]
+    : null;
+/** NPO: main bar is volunteer intake + neighbor stewardship (not commercial dispatch wording) */
+const npoDockBar = { left: "Volunteer Intake", right: "Neighbor Stewardship" } as const;
+const cmd = isNpoStewardship ? npoDockBar : (newtownStew?.bar ?? COLLECTION_COMMAND[col] ?? NEUTRAL_DISPATCH_COMMAND);
+/** Church gray + nonprofit palette: NPO vertical or explicit Newtown Fellowship sticky */
+const useNpoDockSkin = isNpoStewardship || isNewtownFellowshipSticky;
+const zipClean = zip.replace(/\D/g, "");
+const zipDisplay = zipClean.length === 5 ? zipClean : zip.trim() || "local";
+const zLabel = nicheLabel.trim() || "Service";
+const viewers = viewerCount(slugSeed);
+const cityDisplay = city.trim() || "Local";
+const phoneE164 = siteConfig.phoneE164.trim();
+const telHref = `tel:${phoneE164}`;
+---
+
+<div
+  class:list={["dispatch-cmd-root", useNpoDockSkin ? "dispatch-cmd-root--newtown-fellowship" : null]}
+  aria-hidden="false"
+  title={
+    isNpoStewardship || isNewtownFellowshipSticky
+      ? "Newtown Fellowship community support"
+      : `${brandRef.short} mobile dispatch`
+  }
+>
+  <div class="dispatch-cmd-ticker" role="status">
+    {
+      isNpoStewardship ? (
+        newtownStew ? (
+          <>
+            {newtownStew.auditLine} — educational ZIP context for {zipDisplay}. Not a live auction or paid-service
+            queue.
+          </>
+        ) : (
+          <>
+            Neighbor stewardship education — ZIP context for {zipDisplay}. Informational only; not a paid-service queue.
+          </>
+        )
+      ) : isNewtownFellowshipSticky ? (
+        <>
+          Market Context Supplement — educational housing stewardship briefing for {zipDisplay}. Not a live auction or
+          paid-service queue.
+        </>
+      ) : (
+        <>
+          {zLabel} Asset at Risk in {zipDisplay} - {viewers} owners currently viewing this audit.
+        </>
+      )
+    }
+  </div>
+  <div class="dispatch-cmd-bar">
+    <div class="dispatch-cmd-bar-main">
+      <div class="dispatch-cmd-left">
+        <span
+          class="dispatch-cmd-pulse-dot"
+          aria-hidden="true"
+          title={isNpoStewardship ? "Volunteer activity monitored" : undefined}></span>
+        <span class="dispatch-cmd-left-text">{cmd.left}</span>
+        <span class="dispatch-cmd-sep" aria-hidden="true">|</span>
+        <span class="dispatch-cmd-mid-text">{cmd.right}</span>
+      </div>
+      <a
+        class="dispatch-cmd-tel"
+        href={telHref}
+        aria-label={
+          isNpoStewardship
+            ? `Neighbor support line — ${siteConfig.phoneDisplay}`
+            : isNewtownFellowshipSticky
+              ? `Community support line — ${siteConfig.phoneDisplay}`
+              : `Call ${brandDisplay} — ${siteConfig.phoneDisplay}`
+        }
+      >
+        {isNpoStewardship ? (
+          <span class="dispatch-cmd-tel-long">NEIGHBOR SUPPORT LINE</span>
+        ) : isNewtownFellowshipSticky ? (
+          <span class="dispatch-cmd-tel-long">COMMUNITY SUPPORT LINE</span>
+        ) : (
+          "CALL"
+        )}
+      </a>
+    </div>
+    <p class="dispatch-cmd-micro">
+      {
+        isNpoStewardship || isNewtownFellowshipSticky ? (
+          <>Newtown Fellowship - volunteer neighbor-stewardship desk (informational routing only).</>
+        ) : (
+          <>
+            National Dispatch Hub - Connecting to Local {cityDisplay} Response Team.
+          </>
+        )
+      }
+    </p>
+  </div>
+</div>
+
+<style>
+  .dispatch-cmd-root {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  @media (max-width: 1023px) {
+    .dispatch-cmd-root {
+      display: flex;
+    }
+  }
+  .dispatch-cmd-ticker {
+    min-height: 12px;
+    height: 12px;
+    line-height: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0 8px;
+    box-sizing: border-box;
+    background: #fefce8;
+    color: #78350f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dispatch-cmd-bar {
+    background: #0b2d5c;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dispatch-cmd-root--newtown-fellowship .dispatch-cmd-ticker {
+    background: #e2e8f0;
+    color: #334155;
+  }
+  .dispatch-cmd-root--newtown-fellowship .dispatch-cmd-bar {
+    background: #475569;
+  }
+  .dispatch-cmd-root--newtown-fellowship .dispatch-cmd-micro {
+    background: #475569;
+    color: rgba(248, 250, 252, 0.88);
+  }
+  .dispatch-cmd-bar-main {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 75px;
+    min-height: 75px;
+    max-height: 75px;
+    box-sizing: border-box;
+  }
+  .dispatch-cmd-left {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    padding: 0 0.5rem 0 0.65rem;
+    min-width: 0;
+    font-size: clamp(0.62rem, 2.4vw, 0.72rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.15;
+  }
+  .dispatch-cmd-pulse-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+    animation: dispatch-cmd-pulse 2s ease-in-out infinite;
+  }
+  @keyframes dispatch-cmd-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(0.92);
+    }
+  }
+  .dispatch-cmd-left-text {
+    flex-shrink: 0;
+    color: #f8fafc;
+  }
+  .dispatch-cmd-sep {
+    flex-shrink: 0;
+    color: rgba(248, 250, 252, 0.45);
+    font-weight: 700;
+  }
+  .dispatch-cmd-mid-text {
+    min-width: 0;
+    color: rgba(226, 232, 240, 0.92);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dispatch-cmd-tel {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #b91c1c;
+    color: #ffffff;
+    font-weight: 900;
+    font-size: clamp(0.85rem, 3.5vw, 1rem);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+    min-width: 0;
+  }
+  .dispatch-cmd-tel-long {
+    display: block;
+    text-align: center;
+    line-height: 1.05;
+    font-size: clamp(0.52rem, 2.35vw, 0.68rem);
+    letter-spacing: 0.04em;
+    padding: 0 0.15rem;
+    hyphens: auto;
+  }
+  .dispatch-cmd-root--newtown-fellowship .dispatch-cmd-tel {
+    background: #334155;
+    letter-spacing: 0.03em;
+  }
+  .dispatch-cmd-tel:hover,
+  .dispatch-cmd-tel:focus-visible {
+    background: #991b1b;
+    color: #ffffff;
+    outline: none;
+  }
+  .dispatch-cmd-micro {
+    margin: 0;
+    padding: 0.2rem 0.5rem 0.28rem;
+    font-size: 9px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.72);
+    text-align: center;
+    background: #0b2d5c;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+  }
+</style>
+
+<style is:global>
+  @media (max-width: 1023px) {
+    body:has(.dispatch-cmd-root) {
+      padding-bottom: max(
+        5rem,
+        calc(12px + 75px + 2.25rem + env(safe-area-inset-bottom, 0px))
+      );
+    }
+  }
+</style>

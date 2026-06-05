@@ -1,0 +1,58 @@
+---
+interface Props {
+  city: string | null;
+  /** Drives `stableHash(slug) % 5` line pick; falls back to place label when omitted. */
+  slug?: string | null;
+  /** Church / NPO (`community-stewardship-*`): volunteer-desk wording (no national dispatch hub lines). */
+  stewardshipReference?: boolean;
+}
+
+function stableHash(input: string) {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+const { city, slug, stewardshipReference = false } = Astro.props;
+const place = city?.trim() ? city.trim() : "Area";
+const variationKey = (slug?.trim() || place) as string;
+const linePick = stableHash(variationKey) % 5;
+
+/** Five equivalent disclosures; `__PLACE__` = localized area label. */
+const LINE_TEMPLATES = [
+  "National Dispatch Hub - Connecting to Local __PLACE__ Response Team.",
+  "Nationwide dispatch desk — aligning your request with a __PLACE__ area response crew.",
+  "Central dispatch routing: we bridge the intake queue to __PLACE__ local responders.",
+  "National coordination hub: intake is matched to an on-call __PLACE__ response unit.",
+  "Dispatch hub (national scope): connects this session to __PLACE__ field-response coverage.",
+] as const;
+
+/** NPO / church verticals: informational neighbor desk (avoids commercial dispatch hub phrasing). */
+const STEWARDSHIP_LINE_TEMPLATES = [
+  "Neighbor stewardship reference desk — educational context for __PLACE__ (informational only).",
+  "Community coordination notes for __PLACE__ — volunteer intake framing; not a paid-service marketplace.",
+  "ZIP-sector education reference for __PLACE__ — neighbors arrange licensed help directly.",
+  "Regional stewardship briefing context for __PLACE__ — no live queue or contractor matching on this page.",
+  "Volunteer neighbor desk — __PLACE__ area reference materials only (non-commercial).",
+] as const;
+
+const disclaimerText = stewardshipReference
+  ? STEWARDSHIP_LINE_TEMPLATES[linePick]!.replace("__PLACE__", place)
+  : LINE_TEMPLATES[linePick]!.replace("__PLACE__", place);
+---
+
+<p class="national-dispatch-disclaimer">{disclaimerText}</p>
+
+<style>
+  .national-dispatch-disclaimer {
+    margin: 0.4rem 0 0;
+    padding: 0 0.35rem;
+    font-size: 9px;
+    line-height: 1.35;
+    color: #6b7280; /* gray-500 */
+    text-align: center;
+  }
+</style>

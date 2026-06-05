@@ -1,0 +1,34 @@
+---
+import CommercialTermsOfServiceBody from "../components/legal/CommercialTermsOfServiceBody.astro";
+import StewardshipTermsOfServiceBody from "../components/legal/StewardshipTermsOfServiceBody.astro";
+import LegalDocumentLayout from "../components/LegalDocumentLayout.astro";
+import { ACTIVE_COLLECTION } from "../active-collection";
+import { getBrand, siteConfig } from "../site-config";
+import { isStewardshipCollection, STEWERSHIP_LEGAL_OPERATOR } from "../lib/stewardship-legal";
+
+function hostnameForBrand(astroHost: string): string {
+  if (astroHost) return astroHost;
+  try {
+    return new URL(siteConfig.canonicalOrigin).hostname;
+  } catch {
+    return "";
+  }
+}
+
+const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+const stewardship = isStewardshipCollection(ACTIVE_COLLECTION);
+---
+
+<LegalDocumentLayout
+  title="Terms of Service"
+  metaDescription={
+    stewardship
+      ? `Terms of Service for ${STEWERSHIP_LEGAL_OPERATOR}. Educational content only — no paid dispatch or contractor marketplace.`
+      : `Terms of Service for ${brand.name}. Dispatch coordination, disclaimers, and acceptable use for home-service intake pages.`
+  }
+  canonicalPath="terms-of-service"
+>
+  <Fragment slot="body">
+    {stewardship ? <StewardshipTermsOfServiceBody /> : <CommercialTermsOfServiceBody />}
+  </Fragment>
+</LegalDocumentLayout>

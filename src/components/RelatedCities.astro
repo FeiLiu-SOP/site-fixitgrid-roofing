@@ -1,0 +1,288 @@
+---
+import { getCollection } from "astro:content";
+import { ACTIVE_COLLECTION, type ActiveCollectionKey } from "../active-collection";
+import { getNicheLabelForSeed, internalPath, siteConfig } from "../site-config";
+import {
+  entryPublicPathSegments,
+  cityFromNearMeSlug,
+  isFixitgridNearMeBuild,
+  isNearMeEntrySlug,
+  stateAbbrFromNearMeSlug,
+} from "../lib/fixitgrid-near-me-url";
+
+interface Props {
+  currentSlug: string;
+  /** Two-letter US state, uppercase (from resolvePageLocation) */
+  state: string | null | undefined;
+  domPrefix?: string | null;
+  themeAccent?: string;
+  titleText?: string;
+  /** Current page coordinates when present — used to rank nearest cities */
+  originLat?: number | null;
+  originLng?: number | null;
+  /** Dev stewardship hub: align with URL collection (default = ACTIVE_COLLECTION). */
+  collectionKey?: ActiveCollectionKey;
+}
+
+const { currentSlug, state, domPrefix, themeAccent, titleText, originLat, originLng, collectionKey } =
+  Astro.props as Props;
+const col = collectionKey ?? ACTIVE_COLLECTION;
+const linkColor = themeAccent ?? "#2563eb";
+
+const relatedSectionClass = domPrefix ? `${domPrefix}--related-cities` : "related-cities";
+const relatedTitleId = domPrefix ? `${domPrefix}-related-cities-title` : "related-cities-title";
+
+const st = (state ?? "").trim().toUpperCase().slice(0, 2);
+
+function stableHash(input: string) {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function titleCase(s: string) {
+  return s
+    .split(/\s+/g)
+    .filter(Boolean)
+    .map((w) => w.slice(0, 1).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function cityFromSlug(slug: string) {
+  if (isFixitgridNearMeBuild() || isNearMeEntrySlug(slug)) {
+    const near = cityFromNearMeSlug(slug);
+    if (near) return near;
+  }
+  const m = slug.match(/^(.*)-([a-z]{2})-(\d{5})$/i);
+  if (!m) return null;
+  let prefixAndCity = m[1]!;
+  const prefixByCollection: Record<ActiveCollectionKey, string> = {
+    roofing: "roofing-",
+    plumbing: "plumbing-",
+    pestcontrol: "pest-control-",
+    "water-damage": "water-damage-",
+    "siding-services": "siding-services-",
+    "plumbing-v2": "plumbing-v2-",
+    "community-stewardship-water": "community-stewardship-water-",
+    "community-stewardship-siding": "community-stewardship-siding-",
+    "community-stewardship-plumbing": "community-stewardship-plumbing-",
+  };
+  const pfx = prefixByCollection[col] ?? "";
+  if (pfx && prefixAndCity.toLowerCase().startsWith(pfx)) {
+    prefixAndCity = prefixAndCity.slice(pfx.length);
+  } else {
+    const parts0 = prefixAndCity.split("-");
+    if (parts0.length > 1) {
+      prefixAndCity = parts0.slice(1).join("-");
+    }
+  }
+  const city = prefixAndCity.split("-").filter(Boolean).join(" ");
+  if (!city) return null;
+  return titleCase(city.replace(/\s+/g, " ").trim());
+}
+
+function zipFromSlug(slug: string): number | null {
+  const m = slug.match(/-(\d{5})$/);
+  if (!m) return null;
+  const n = parseInt(m[1]!, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const r = 3958.7613;
+  const toR = (d: number) => (d * Math.PI) / 180;
+  const dLat = toR(lat2 - lat1);
+  const dLng = toR(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toR(lat1)) * Math.cos(toR(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return r * c;
+}
+
+const currentCity = cityFromSlug(currentSlug) ?? "your area";
+const pageAlias = getNicheLabelForSeed(currentSlug);
+
+const PREFIXES = [
+  "Local Pros in",
+  "Emergency Dispatch for",
+  "Verified Techs in",
+  "Reliable Support for",
+] as const;
+
+/** Church stewardship: forbid commercial anchors like Verified Techs / Emergency Dispatch */
+const PREFIXES_STEWARDSHIP = [
+  "Neighbor education page —",
+  "Additional stewardship brief —",
+  "ZIP reference context —",
+  "Related community page —",
+] as const;
+
+const isStewardshipCollection = col.startsWith("community-stewardship-");
+const anchorPrefixes = isStewardshipCollection ? PREFIXES_STEWARDSHIP : PREFIXES;
+
+function toLinkRow(c: { slug: string; title: string; state?: string | null }): { href: string; title: string } {
+  const city = cityFromSlug(c.slug) ?? c.title;
+  const prefix = anchorPrefixes[stableHash(`${currentSlug}|${c.slug}|anchor`) % anchorPrefixes.length]!;
+  const href = isFixitgridNearMeBuild()
+    ? internalPath(...entryPublicPathSegments(c.slug, c.state ?? st))
+    : internalPath(c.slug);
+  return {
+    href,
+    title: `${prefix} ${city}`,
+  };
+}
+
+let links: { href: string; title: string }[] = [];
+let overflowLinks: { href: string; title: string }[] = [];
+
+if (st.length === 2) {
+  const posts = await getCollection(col);
+  const originZ = zipFromSlug(currentSlug);
+  const oLat = typeof originLat === "number" && Number.isFinite(originLat) ? originLat : null;
+  const oLng = typeof originLng === "number" && Number.isFinite(originLng) ? originLng : null;
+  const hasOriginGeo = oLat != null && oLng != null;
+
+  type Cand = { slug: string; title: string; state?: string | null; lat: number | null; lng: number | null; zipN: number | null };
+  const candidates: Cand[] = [];
+
+  for (const p of posts) {
+    const slug = (p.slug ?? p.id ?? "").replace(/\.(md|mdx)$/i, "");
+    if (!slug || slug === currentSlug) continue;
+    const slugSt = (
+      p.data.state?.trim().toUpperCase().slice(0, 2) ??
+      stateAbbrFromNearMeSlug(slug) ??
+      slug.match(/-([A-Za-z]{2})-\d{5}$/)?.[1]?.toUpperCase() ??
+      ""
+    ).slice(0, 2);
+    if (slugSt !== st) continue;
+    const lat = typeof p.data.lat === "number" && Number.isFinite(p.data.lat) ? p.data.lat : null;
+    const lng = typeof p.data.lng === "number" && Number.isFinite(p.data.lng) ? p.data.lng : null;
+    candidates.push({
+      slug,
+      title: p.data.title,
+      state: p.data.state ?? slugSt,
+      lat,
+      lng,
+      zipN: zipFromSlug(slug),
+    });
+  }
+
+  function score(c: Cand): number {
+    if (hasOriginGeo && c.lat != null && c.lng != null) {
+      return haversineMiles(oLat!, oLng!, c.lat, c.lng);
+    }
+    if (originZ != null && c.zipN != null) {
+      return Math.abs(originZ - c.zipN);
+    }
+    return stableHash(`${currentSlug}|${c.slug}|dist`) % 10000;
+  }
+
+  candidates.sort((a, b) => score(a) - score(b));
+
+  /** Above-fold count: more than legacy 5–8 cap when many peers; rest in collapse */
+  const inlineCap = Math.min(
+    candidates.length,
+    Math.min(18, 10 + (stableHash(`${currentSlug}|relatedCap`) % 9)),
+  );
+  const primary = candidates.slice(0, inlineCap);
+  const overflow = candidates.slice(inlineCap);
+
+  links = primary.map((c) => toLinkRow(c));
+  overflowLinks = overflow.map((c) => toLinkRow(c));
+}
+---
+
+{
+  links.length > 0 ? (
+    <section
+      class={relatedSectionClass}
+      aria-labelledby={relatedTitleId}
+      style={`--related-link-color:${linkColor};`}
+    >
+      <h2 id={relatedTitleId}>{titleText ?? `Nearby ${pageAlias} nodes (${st})`}</h2>
+      <ul>
+        {links.map((l) => (
+          <li>
+            <a href={l.href}>{l.title}</a>
+          </li>
+        ))}
+      </ul>
+      {overflowLinks.length > 0 ? (
+        <details class="related-cities-more">
+          <summary>
+            More links ({overflowLinks.length})
+          </summary>
+          <ul>
+            {overflowLinks.map((l) => (
+              <li>
+                <a href={l.href}>{l.title}</a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </section>
+  ) : null
+}
+
+<style>
+  .related-cities,
+  [class$="--related-cities"] {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+  }
+  .related-cities h2,
+  [class$="--related-cities"] h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    color: #0f172a;
+  }
+  .related-cities ul,
+  [class$="--related-cities"] ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: #334155;
+  }
+  .related-cities li,
+  [class$="--related-cities"] li {
+    margin: 0.35rem 0;
+  }
+  .related-cities a,
+  [class$="--related-cities"] a {
+    color: var(--related-link-color, #2563eb);
+    text-decoration: none;
+  }
+  .related-cities a:hover,
+  [class$="--related-cities"] a:hover {
+    text-decoration: underline;
+  }
+  .related-cities-more,
+  [class$="--related-cities"] .related-cities-more {
+    margin-top: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+  }
+  .related-cities-more summary,
+  [class$="--related-cities"] .related-cities-more summary {
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+    list-style: none;
+  }
+  .related-cities-more summary::-webkit-details-marker,
+  [class$="--related-cities"] .related-cities-more summary::-webkit-details-marker {
+    display: none;
+  }
+  .related-cities-more > ul,
+  [class$="--related-cities"] .related-cities-more > ul {
+    margin-top: 0.65rem;
+  }
+</style>

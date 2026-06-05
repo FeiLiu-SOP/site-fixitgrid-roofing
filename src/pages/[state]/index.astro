@@ -1,0 +1,239 @@
+---
+import { getCollection } from "astro:content";
+import Footer from "../../components/Footer.astro";
+import SiteFavicon from "../../components/SiteFavicon.astro";
+import ComplianceMatrix from "../../components/ComplianceMatrix.astro";
+import { ACTIVE_COLLECTION } from "../../active-collection";
+import { canonicalPageUrl, getNicheLabelForSeed, internalPath, siteConfig } from "../../site-config";
+import {
+  entryPublicPathSegments,
+  stateAbbrFromNearMeSlug,
+} from "../../lib/fixitgrid-near-me-url";
+import {
+  buildDispatchComplianceSchema,
+  getDispatchCompliance,
+} from "../../lib/compliance-matrix";
+import { matchesFixitGridEntity } from "../../domain-templates/fixitgrid.com-entity";
+import { matchesRealtorsEntity } from "../../domain-templates/realtorsatthebeach.com-entity";
+import {
+  REALTORS_AT_THE_BEACH_WATER_DAMAGE,
+  matchesRealtorsAtTheBeachWaterDamage,
+} from "../../domain-templates/realtorsatthebeach.com-water-damage";
+import {
+  REALTORS_AT_THE_BEACH_PLUMBING_V2,
+} from "../../domain-templates/realtorsatthebeach.com-plumbing-v2";
+
+type EntryLike = {
+  id?: string;
+  slug?: string;
+  data: {
+    title: string;
+    city?: string;
+  };
+};
+
+export async function getStaticPaths() {
+  const posts = (await getCollection(ACTIVE_COLLECTION)) as EntryLike[];
+  const stateSet = new Set<string>();
+  for (const post of posts) {
+    const slug = (post.slug ?? post.id ?? "").replace(/\.(md|mdx)$/i, "");
+    const m = slug.match(/-([a-z]{2})-\d{5}$/i);
+    const st = m ? m[1]!.toUpperCase() : null;
+    if (st) stateSet.add(st.toLowerCase());
+  }
+  return Array.from(stateSet)
+    .sort()
+    .map((state) => ({ params: { state } }));
+}
+
+const stateParam = (Astro.params.state ?? "").toLowerCase();
+const stateCode = stateParam.toUpperCase();
+if (!/^[a-z]{2}$/.test(stateParam)) {
+  throw new Error(`[state-index] Invalid state param: "${stateParam}"`);
+}
+
+const posts = (await getCollection(ACTIVE_COLLECTION)) as EntryLike[];
+const statePosts = posts
+  .filter((post) => {
+    const slug = (post.slug ?? post.id ?? "").replace(/\.(md|mdx)$/i, "");
+    const m = slug.match(/-([a-z]{2})-\d{5}$/i);
+    const st = m ? m[1]!.toUpperCase() : null;
+    return st === stateCode;
+  })
+  .sort((a, b) => {
+    const sa = (a.slug ?? a.id ?? "").replace(/\.(md|mdx)$/i, "");
+    const sb = (b.slug ?? b.id ?? "").replace(/\.(md|mdx)$/i, "");
+    return sa.localeCompare(sb);
+  });
+
+function entryPath(entry: Pick<EntryLike, "id" | "slug">) {
+  const raw = entry.slug ?? entry.id ?? "";
+  return raw.replace(/\.(md|mdx)$/i, "");
+}
+
+function entryHref(entry: Pick<EntryLike, "id" | "slug">): string {
+  const slug = entryPath(entry);
+  const st = stateAbbrFromNearMeSlug(slug) ?? stateCode;
+  return internalPath(...entryPublicPathSegments(slug, st));
+}
+
+const serviceLabel = getNicheLabelForSeed(`state:${stateCode}`);
+const canonicalUrl = canonicalPageUrl(stateParam);
+const pageUrl = canonicalUrl;
+
+const isFixitGridSite = matchesFixitGridEntity({ domainOrUrl: siteConfig.canonicalOrigin });
+const isRealtorsSite =
+  !isFixitGridSite && matchesRealtorsEntity({ domainOrUrl: siteConfig.canonicalOrigin });
+const fixitGridDispatchCompliance = isFixitGridSite
+  ? getDispatchCompliance({
+      stateCode,
+      niche: ACTIVE_COLLECTION,
+      citySlug: `state-hub:${stateCode}`,
+      domainKey: "fixitgrid",
+    })
+  : null;
+const realtorsDispatchCompliance = isRealtorsSite
+  ? getDispatchCompliance({
+      stateCode,
+      niche: ACTIVE_COLLECTION,
+      citySlug: `state-hub:${stateCode}`,
+      domainKey: "realtors",
+    })
+  : null;
+const dispatchComplianceForPage = fixitGridDispatchCompliance ?? realtorsDispatchCompliance;
+
+const enableRealtorsAtTheBeachWaterDamageIsolation = matchesRealtorsAtTheBeachWaterDamage({
+  domainOrUrl: siteConfig.canonicalOrigin,
+  activeCollection: ACTIVE_COLLECTION,
+});
+
+const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
+  ? REALTORS_AT_THE_BEACH_PLUMBING_V2.theme.accent
+  : enableRealtorsAtTheBeachWaterDamageIsolation
+    ? REALTORS_AT_THE_BEACH_WATER_DAMAGE.theme.accent
+    : "#1d4ed8";
+
+const themeFontFamily = ACTIVE_COLLECTION === "plumbing-v2"
+  ? REALTORS_AT_THE_BEACH_PLUMBING_V2.theme.fontFamily
+  : enableRealtorsAtTheBeachWaterDamageIsolation
+    ? REALTORS_AT_THE_BEACH_WATER_DAMAGE.theme.fontFamily
+    : "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: `${serviceLabel} in ${stateCode}`,
+  description: `Browse all ${serviceLabel.toLowerCase()} city pages in ${stateCode}.`,
+  url: pageUrl,
+};
+
+const complianceSchema =
+  dispatchComplianceForPage != null
+    ? buildDispatchComplianceSchema({
+        pageUrl,
+        compliance: dispatchComplianceForPage,
+        cityDisplay: `${stateCode} statewide`,
+        brandName: isRealtorsSite ? "Realtors at the Beach" : "FixitGrid",
+      })
+    : null;
+---
+
+<html
+  lang="en"
+  style={`--theme-accent:${themeAccent};font-family:${themeFontFamily};`}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SiteFavicon />
+    <meta name="google-site-verification" content="e8639489520c639b" />
+    <title>{serviceLabel} in {stateCode} | State Index</title>
+    <meta
+      name="description"
+      content={`Browse all ${serviceLabel.toLowerCase()} city pages in ${stateCode}.`}
+    />
+    <meta name="robots" content={siteConfig.robotsContent} />
+    <link rel="canonical" href={canonicalUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
+    {complianceSchema ? (
+      <script type="application/ld+json" set:html={JSON.stringify(complianceSchema)} />
+    ) : null}
+    <style>
+      :root {
+        /* font-family is set on <html> via inline style for Astro CSS stability */
+      }
+      body {
+        margin: 0;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      main {
+        width: min(980px, 94vw);
+        margin: 2rem auto;
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 26px rgba(2, 6, 23, 0.08);
+      }
+      h1 {
+        margin: 0 0 0.4rem;
+      }
+      .meta {
+        color: #475569;
+        margin-bottom: 1rem;
+      }
+      .links {
+        margin: 0;
+        padding-left: 1.2rem;
+        columns: 2;
+        column-gap: 2rem;
+      }
+      .links li {
+        break-inside: avoid;
+        margin: 0.2rem 0;
+      }
+      a {
+        color: var(--theme-accent, #1d4ed8);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 900px) {
+        .links {
+          columns: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>All {serviceLabel} Pages in {stateCode}</h1>
+      <p class="meta">Total pages: {statePosts.length}</p>
+      <ul class="links">
+        {statePosts.map((post) => (
+          <li>
+            <a href={entryHref(post)}>{post.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    </main>
+    {
+      dispatchComplianceForPage ? (
+        <ComplianceMatrix
+          compliance={dispatchComplianceForPage}
+          cityDisplay={`${stateCode} statewide`}
+          stateCode={stateCode}
+          nicheLabel={serviceLabel}
+          brandName={isRealtorsSite ? "Realtors at the Beach" : "FixitGrid"}
+          sectionTitle={
+            isRealtorsSite
+              ? "Buyer & Service Network Compliance Audit"
+              : "Dispatch Gateway Compliance Audit"
+          }
+        />
+      ) : null
+    }
+    <Footer />
+  </body>
+</html>

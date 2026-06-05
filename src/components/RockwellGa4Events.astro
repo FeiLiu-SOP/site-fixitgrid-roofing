@@ -1,0 +1,57 @@
+---
+/**
+ * Optional GA4 + conversion clicks (tel + mobile dispatch bar).
+ * Loads only when PUBLIC_GA4_MEASUREMENT_ID is set at build time (Cloudflare Pages env).
+ * No ID → no script, no network, no build failure.
+ */
+export interface Props {
+  collection: string;
+  pageSlug: string;
+}
+
+const { collection, pageSlug } = Astro.props;
+const ga4Id = (import.meta.env.PUBLIC_GA4_MEASUREMENT_ID as string | undefined)?.trim() ?? "";
+---
+
+{
+  ga4Id ? (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+      <script is:inline define:vars={{ ga4Id, collection, pageSlug }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+        gtag("config", ga4Id, { send_page_view: true });
+
+        function rockwellTelSource(el) {
+          if (!el) return "tel_other";
+          if (el.classList && el.classList.contains("dispatch-cmd-tel")) return "dispatch_bar";
+          if (el.closest && el.closest(".dispatch-cmd-root")) return "dispatch_bar";
+          if (el.classList && el.classList.contains("phone-dispatch-btn")) return "phone_hero";
+          return "tel_other";
+        }
+
+        document.addEventListener(
+          "click",
+          function (e) {
+            var t = e.target;
+            if (!t || !t.closest) return;
+            var link = t.closest('a[href^="tel:"]');
+            if (!link) return;
+            var source = rockwellTelSource(link);
+            var eventName = source === "dispatch_bar" ? "dispatch_bar_click" : "tel_click";
+            gtag("event", eventName, {
+              link_source: source,
+              page_path: location.pathname,
+              page_slug: pageSlug,
+              collection: collection,
+            });
+          },
+          { passive: true }
+        );
+      </script>
+    </>
+  ) : null
+}

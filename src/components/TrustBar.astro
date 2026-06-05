@@ -1,0 +1,48 @@
+---
+import { ACTIVE_COLLECTION, type ActiveCollectionKey } from "../active-collection";
+
+interface Props {
+  collectionKey?: ActiveCollectionKey;
+}
+
+function trustCopy(collection: ActiveCollectionKey): string {
+  if (
+    collection === "community-stewardship-water" ||
+    collection === "community-stewardship-siding" ||
+    collection === "community-stewardship-plumbing"
+  ) {
+    return "● Education-first framing | ● No paid routing or pricing claims | ● Community reference only";
+  }
+  if (collection === "water-damage") {
+    return "● Direct Insurance Billing | ● $0 Out-of-Pocket | ● IICRC Certified";
+  }
+  if (collection === "pestcontrol") {
+    return "● 100% Clear Guarantee | ● Child & Pet Safe | ● Free Inspection";
+  }
+  return "● Zero trip framing | ● Upfront scope notes | ● Licensed & Insured";
+}
+
+const { collectionKey } = Astro.props as Props;
+const text = trustCopy(collectionKey ?? ACTIVE_COLLECTION);
+---
+
+<p class="trust-bar">{text}</p>
+
+<style>
+  .trust-bar {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 0.55rem;
+    padding: 0 0.2rem;
+    font-size: clamp(8px, 2.65vw, 12px); /* ~text-[10px]–xs on typical phones */
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+    line-height: 1.25;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+</style>

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "heroPathPrefix": "/brand/images/brand-thumbnails",
+  "r2KeyPrefix": "brand/images/brand-thumbnails",
+  "heroCacheBust": "20260525",
+  "entities": {
+    "rockwell_cluster": {
+      "id": "rockwell_cluster",
+      "domains": ["rockwellpropertiesmaine.com"],
+      "auditMode": "commercial",
+      "theme": "audit",
+      "colorKey": "red",
+      "watermark": "Rockwell Home Infrastructure Audit",
+      "headline": "National Infrastructure Risk Coverage",
+      "subline": "2026 Asset Warning · Nationwide Service Grid",
+      "heroFilename": "rockwell_cluster-hero.jpg",
+      "foreignWatermarks": [
+        "Coastal Property Defense Network",
+        "Coastal Property Defense",
+        "Newtown Community Stewardship"
+      ]
+    },
+    "realtors_cluster": {
+      "id": "realtors_cluster",
+      "domains": ["realtorsatthebeach.com"],
+      "auditMode": "commercial",
+      "theme": "coastal",
+      "colorKey": "blue",
+      "watermark": "Coastal Property Defense Network",
+      "headline": "Coastal Asset Preservation Audit",
+      "subline": "Salt-Spray Defense · Property Value Shield",
+      "heroFilename": "realtors_cluster-hero.jpg",
+      "foreignWatermarks": [
+        "Rockwell Home Infrastructure Audit",
+        "Rockwell Infrastructure Audit",
+        "Newtown Community Stewardship"
+      ]
+    },
+    "newtown_stewardship": {
+      "id": "newtown_stewardship",
+      "domains": ["newtownbaptistfellowship.com", "newtownfellowship.org"],
+      "auditMode": "church",
+      "theme": "community",
+      "colorKey": "warm",
+      "watermark": "Newtown Community Stewardship",
+      "headline": "Community Infrastructure Stewardship",
+      "subline": "Neighborhood Care · Water System Support",
+      "heroFilename": "newtown_stewardship-hero.jpg",
+      "foreignWatermarks": [
+        "Rockwell Home Infrastructure Audit",
+        "Coastal Property Defense Network",
+        "FixitGrid Local Dispatch Network"
+      ]
+    }
+  },
+  "collectionEntity": {
+    "roofing": "rockwell_cluster",
+    "plumbing": "rockwell_cluster",
+    "pestcontrol": "rockwell_cluster",
+    "water-damage": "realtors_cluster",
+    "siding-services": "realtors_cluster",
+    "siding": "realtors_cluster",
+    "plumbing-v2": "realtors_cluster",
+    "community-stewardship-water": "newtown_stewardship",
+    "community-stewardship-siding": "newtown_stewardship",
+    "community-stewardship-plumbing": "newtown_stewardship"
+  }
+}

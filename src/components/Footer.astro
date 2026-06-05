@@ -1,0 +1,309 @@
+---
+import { getBrand, hubPublicPath, internalPath, siteConfig } from "../site-config";
+import { ACTIVE_COLLECTION, type ActiveCollectionKey } from "../active-collection";
+import { matchesFixitGridEntity } from "../domain-templates/fixitgrid.com-entity";
+import { matchesRockwellMaine } from "../domain-templates/rockwell-maine-entity";
+
+type FooterLink = { href: string; label: string };
+const { extraLink, notice, variantSeed, slug, auditStateCode, auditZipCode, auditNodeVersion, collectionKey } =
+  Astro.props as {
+  extraLink?: FooterLink | null;
+  notice?: string | null;
+  variantSeed?: string | null;
+  /** Page slug; drives `stableHash(slug) % 5` compliance line picks (detail pages). */
+  slug?: string | null;
+  /** Two-letter US state; with `auditZipCode` enables invisible audit-node fingerprint. */
+  auditStateCode?: string | null;
+  auditZipCode?: string | null;
+  auditNodeVersion?: string | null;
+  /** Dev stewardship hub: align with page collection. */
+  collectionKey?: ActiveCollectionKey | null;
+};
+
+function hostnameForBrand(astroHost: string): string {
+  if (astroHost) return astroHost;
+  try {
+    return new URL(siteConfig.canonicalOrigin).hostname;
+  } catch {
+    return "";
+  }
+}
+
+const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+
+function stableHash(input: string) {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+/** Per user spec: one bucket from slug (fallback when absent: variantSeed or static). */
+const variationKey = (slug?.trim() || variantSeed?.trim() || "footer") as string;
+const linePick = stableHash(variationKey) % 5;
+const baseUrl = import.meta.env.BASE_URL ?? "/";
+const logoSrc = `${baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`}bbb-a-plus.svg`;
+
+/** Per-vertical compliance copy (5 variants each) — index from `stableHash(variationKey) % 5`. */
+const NICHE_COMPLIANCE_LINES: Record<
+  ActiveCollectionKey,
+  readonly [string, string, string, string, string]
+> = {
+  roofing: [
+    "Roofing coordination disclosures: estimates depend on verified access, weather windows, and material lead times; not all slopes qualify for same-day tarping.",
+    "Roofing intake compliance: we route licensed contractors where available; manufacturer warranties remain separate from dispatch scheduling.",
+    "Roofing scope clarity: flashing, penetrations, and decking notes may change after on-roof inspection; pricing is confirmed before work authorization.",
+    "Roofing service boundaries: emergency triage prioritizes active leaks; cosmetic or deferred maintenance may be scheduled on a different timeline.",
+    "Roofing documentation: photo capture may be offered when available; insurance questions are informational and not a coverage determination.",
+  ],
+  plumbing: [
+    "Plumbing compliance: pressurized repairs require visible shutoff access; concealed leaks may need exploratory openings with revised scope.",
+    "Plumbing disclosures: code-minimum parts vs upgrade paths are reviewed before dispatch; permit needs vary by jurisdiction.",
+    "Plumbing intake: drain cleaning outcomes depend on line condition; jetting is not guaranteed where pipe integrity is unknown.",
+    "Plumbing safety: gas odor events require utility escalation first; this desk coordinates only after confirmed safe entry conditions.",
+    "Plumbing pricing: after-hours premiums and trip diagnostics may apply separately from quoted repair bundles.",
+  ],
+  pestcontrol: [
+    "Pest control compliance: treatment intervals follow label directions; tenant/HOA notice rules may apply before interior applications.",
+    "Pest disclosures: termite findings are not insurance endorsements; wood repair scopes are estimated separately from liquid treatments.",
+    "Pest routing: licensed applicators vary by county; same-week windows are not guaranteed during peak swarm seasons.",
+    "Pest safety: aquariums, bee allergies, and pet re-entry intervals must be confirmed during intake.",
+    "Pest documentation: service reports describe visible evidence only; hidden galleries may require follow-up inspection.",
+  ],
+  "water-damage": [
+    "Water mitigation compliance: drying goals use industry readings; demolition is limited to unsalvageable materials identified on site.",
+    "Restoration disclosures: mold sampling is not automatic; clearance steps depend on insurer protocol and local rules.",
+    "Emergency routing: standing water extraction prioritizes slip hazards; contents pack-outs may be deferred by capacity.",
+    "Billing clarity: carrier pay vs homeowner pay segments are separated before equipment set; documentation is client-provided.",
+    "Moisture monitoring: equipment rental days adjust with psychrometric progress; hidden cavities may extend timelines.",
+  ],
+  "siding-services": [
+    "Siding compliance: color lot matching is not guaranteed for partial elevations; HOA packets are homeowner-supplied.",
+    "Exterior disclosures: WRB continuity cannot be verified until strip-off; change orders follow visible substrate conditions.",
+    "Installation routing: scaffold and ladder-set days affect sequencing; cap metal may ship separately from panels.",
+    "Safety intake: silica controls apply to fiber cement cutting; jobsite containment may add setup time.",
+    "Warranty clarity: manufacturer wind ratings assume correct fastener schedules; field verification is part of final walkthrough.",
+  ],
+  "plumbing-v2": [
+    "Plumbing-v2 compliance: coastal humidity increases condensation risk; PRV settings are verified with gauge where accessible.",
+    "Intake disclosures: slab leaks may require listening equipment; repipe quotes exclude finish restoration unless noted.",
+    "Fixture scope: supply stops and angle valves are itemized separately from trap assemblies.",
+    "Water quality: filtration recommendations are educational; laboratory testing is not included in standard dispatch.",
+    "Scheduling: permit pulls for water heater replacements vary by AHJ; same-day swap is not universal.",
+  ],
+  "community-stewardship-water": [
+    "Stewardship water notes: figures are planning anchors only; licensed work follows separate agreements.",
+    "Education-first intake: this page summarizes voluntary prep topics; it does not assign contractors.",
+    "Pressure and chemistry: guidance assumes typical municipal supply; private wells need separate testing.",
+    "Documentation: photos and shutoff locations help neighbors prepare questions for qualified pros.",
+    "Timing: volunteer-led walkthroughs depend on availability; this is not a guarantee of same-calendar-day visits.",
+  ],
+  "community-stewardship-siding": [
+    "Stewardship exterior notes: plans assume visible cladding; hidden substrate repairs are outside this brief.",
+    "HOA and color: architectural packets are neighbor-supplied; this page does not file HOA requests.",
+    "Weather windows: manufacturer temperature limits may shift sequencing; schedules are illustrative.",
+    "Safety: silica and cutting protocols apply to fiber cement; containment may add setup time.",
+    "Warranty language on labels refers to manufacturer docs verified during walkthroughs—not a sales pitch here.",
+  ],
+  "community-stewardship-plumbing": [
+    "Stewardship plumbing notes: drain outcomes depend on line condition; outcomes are discussed with qualified pros.",
+    "Permits: heater swaps and PRV changes may need AHJ approval; this page does not pull permits.",
+    "Slab and concealed lines: exploratory work can change scope; listening passes narrow but do not remove all risk.",
+    "Fixture lists: stops, supplies, and traps are planning vocabulary—not a bundled quote on this page.",
+    "Water quality: hardness tables are educational; laboratory testing is arranged outside this brief.",
+  ],
+};
+
+const effectiveCollection = (collectionKey ?? ACTIVE_COLLECTION) as ActiveCollectionKey;
+const nicheLineBucket =
+  NICHE_COMPLIANCE_LINES[effectiveCollection] ?? NICHE_COMPLIANCE_LINES.roofing;
+const nicheComplianceLine = nicheLineBucket[linePick]!;
+
+const brandUpper = brand.name.toUpperCase();
+
+/** Church stewardship: decouple FixitGrid dispatch fingerprint; same Footer layout */
+const STEWARDSHIP_BRAND_AUDIT_LINES = [
+  "Community reference desk — Newtown Fellowship (informational outreach only).",
+  "Neighborhood stewardship page — faith-rooted education context (not a contractor marketplace).",
+  "ZIP-local briefing — volunteer-facing notes (no paid routing or queue simulation).",
+  "501(c)(3) outreach framing — maintenance-burden illustrations for neighbors (non-transactional).",
+  "Public education anchor — housing stewardship vocabulary only (separate from commercial intake desks).",
+] as const;
+
+const STEWARDSHIP_AUTHORITY_ANCHOR_LINES = [
+  "Newtown Fellowship — community housing stewardship education (non-commercial reference).",
+  "Neighborhood education routing — Newtown Fellowship volunteer context (informational).",
+  "Faith-rooted stewardship brief — local ZIP labeling for neighbor education only.",
+  "Community desk reference — Newtown Fellowship (not a nationwide contractor coordination network).",
+  "ZIP-sector education note — stewardship volunteers; third-party pros are engaged off-page when applicable.",
+] as const;
+
+/** Placeholder `__BRAND__` = uppercased brand inside styled span. */
+const brandAuditLines = [
+  "Official Property Audit Node: __BRAND__ — routing reference only.",
+  "Property audit routing node: __BRAND__ (informational desk label).",
+  "Official audit-node label: __BRAND__ — not a field inspection report.",
+  "Audit coordination node: __BRAND__ — intake and scheduling context.",
+  "Registry-style audit node: __BRAND__ — documentation and dispatch alignment.",
+] as const;
+
+const authorityAnchorLines = [
+  "Official Property Audit Node: FixitGrid: Nationwide Local Infrastructure & Home Repair Dispatch Network",
+  "Property audit node — FixitGrid nationwide infrastructure desk linking local repair dispatch partners.",
+  "Audit-node disclosure: FixitGrid coordinates nationwide local infrastructure and residential repair dispatch coverage.",
+  "FixitGrid audit routing: nationwide local-infrastructure and home-repair dispatch network (informational).",
+  "Official audit routing: FixitGrid — nationwide desk for local infrastructure and home repair dispatch alignment.",
+] as const;
+
+const verifyLines = [
+  "Verification for Lead Smart: Fei Liu — April 6, 2026",
+  "Lead Smart verification record: Fei Liu — Apr 6, 2026",
+  "Verification log (Lead Smart): Fei Liu — 2026-04-06",
+  "Lead Smart compliance verification: Fei Liu — 06 Apr 2026",
+  "Lead Smart verification entry: Fei Liu — April 2026",
+] as const;
+
+const fixitGridVerifyLines = [
+  "Verification for FixitGrid Audits: Lead Analyst Team — May 28, 2026",
+  "FixitGrid audit verification record: Lead Analyst Team — May 2026",
+  "Verification log (FixitGrid): Lead Analyst Team — 2026-05-28",
+  "FixitGrid compliance verification: Lead Analyst Team — 28 May 2026",
+  "FixitGrid verification entry: Lead Analyst Team — May 2026",
+] as const;
+
+const isFixitGridFooter = matchesFixitGridEntity({ domainOrUrl: siteConfig.canonicalOrigin });
+
+const isStewardshipFooter =
+  effectiveCollection === "community-stewardship-water" ||
+  effectiveCollection === "community-stewardship-siding" ||
+  effectiveCollection === "community-stewardship-plumbing";
+
+const waterDamageFixedAuditHtml =
+  'Official Property Audit Node: <span class="brand-fingerprint-name">FIXITGRID LOCAL DISPATCH NETWORK</span>';
+
+const brandAuditHtml = isStewardshipFooter
+  ? STEWARDSHIP_BRAND_AUDIT_LINES[linePick]!
+  : effectiveCollection === "water-damage"
+    ? waterDamageFixedAuditHtml
+    : brandAuditLines[linePick]!.replace(
+        "__BRAND__",
+        `<span class="brand-fingerprint-name">${brandUpper}</span>`,
+      );
+const authorityAnchorLine = isStewardshipFooter
+  ? STEWARDSHIP_AUTHORITY_ANCHOR_LINES[linePick]!
+  : authorityAnchorLines[linePick]!;
+const verifyLine = isFixitGridFooter ? fixitGridVerifyLines[linePick]! : verifyLines[linePick]!;
+const legalLinksAtHubRoot = matchesRockwellMaine({ domainOrUrl: siteConfig.canonicalOrigin });
+const privacyHref = legalLinksAtHubRoot
+  ? hubPublicPath("privacy-policy")
+  : internalPath("privacy-policy");
+const termsHref = legalLinksAtHubRoot
+  ? hubPublicPath("terms-of-service")
+  : internalPath("terms-of-service");
+---
+<footer>
+  <div
+    style="text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #ccc;"
+  >
+    <img
+      src={logoSrc}
+      width="120"
+      height="52"
+      alt="A+ Rated"
+      style="width: 120px; height: auto; display: block; margin: 0 auto;"
+      loading="lazy"
+      decoding="async"
+    />
+    <p class="brand-footer-text" set:html={brandAuditHtml} />
+    <p style="font-size: 14px; color: #555; margin: 16px 0 8px;">
+      {nicheComplianceLine}
+    </p>
+    <p style="font-size: 12px; color: #999; margin: 0;">
+      {verifyLine}
+    </p>
+    <p class="footer-brand-authority-anchor">
+      {authorityAnchorLine}
+    </p>
+    {isStewardshipFooter ? (
+      <p class="footer-stewardship-legal-tagline">
+        Community stewardship reference — not a contractor marketplace.
+      </p>
+    ) : null}
+    <p class="footer-legal-links">
+      <a href={privacyHref}>Privacy Policy</a>
+      <span aria-hidden="true"> · </span>
+      <a href={termsHref}>Terms of Service</a>
+    </p>
+    {notice ? (
+      <p style="font-size: 12px; color: #666; margin: 10px 0 0;">
+        {notice}
+      </p>
+    ) : null}
+    {extraLink ? (
+      <p style="font-size: 12px; margin: 12px 0 0;">
+        <a href={extraLink.href} style="color: #2563eb; text-decoration: none;">
+          {extraLink.label}
+        </a>
+      </p>
+    ) : null}
+    {auditStateCode && auditZipCode && !isStewardshipFooter ? (
+      <div class="audit-node-id" style="font-size: 1px; color: transparent;">
+        Audit Node ID: FG-{auditStateCode}-{auditZipCode}-{auditNodeVersion ?? "1"}
+      </div>
+    ) : null}
+  </div>
+  <style>
+    .brand-footer-text {
+      font-size: clamp(0.9375rem, 2.9vw, 1.0625rem);
+      font-weight: 600;
+      color: #0f172a;
+      margin: 14px auto 10px;
+      line-height: 1.45;
+      padding: 0 0.75rem;
+      max-width: 42rem;
+      text-align: center;
+      -webkit-text-size-adjust: 100%;
+    }
+    .brand-fingerprint-name {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .footer-brand-authority-anchor {
+      margin: 1rem auto 0;
+      padding: 0 0.75rem;
+      max-width: 42rem;
+      font-size: 10px;
+      line-height: 1.45;
+      color: #9ca3af;
+      text-align: center;
+      -webkit-text-size-adjust: 100%;
+    }
+    .footer-legal-links {
+      margin: 0.85rem auto 0;
+      padding: 0 0.75rem;
+      max-width: 42rem;
+      font-size: 12px;
+      line-height: 1.45;
+      text-align: center;
+    }
+    .footer-legal-links a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .footer-legal-links a:hover {
+      text-decoration: underline;
+    }
+    .footer-stewardship-legal-tagline {
+      margin: 0.65rem auto 0;
+      padding: 0 0.75rem;
+      max-width: 42rem;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</footer>

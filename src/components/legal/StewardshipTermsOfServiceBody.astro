@@ -1,0 +1,96 @@
+---
+import { siteConfig } from "../../site-config";
+import { STEWERSHIP_LEGAL_OPERATOR } from "../../lib/stewardship-legal";
+
+const phone = siteConfig.phoneDisplay?.trim();
+const tel = siteConfig.phoneE164?.trim();
+const hasPhone = Boolean(phone && tel);
+---
+
+<h1>Terms of Service</h1>
+<p class="legal-updated"><strong>Last updated:</strong> May 30, 2026</p>
+
+<div class="legal-disclaimer-box">
+  <strong>Educational content only</strong>
+  Community stewardship pages are provided for <strong>general neighbor education and voluntary
+  reference</strong> only. Content — including charts, indexes, and ZIP-local notes — is{" "}
+  <strong>illustrative</strong>. It is <strong>not</strong> a licensed contractor estimate,
+  engineering report, insurance determination, appraisal, or government bulletin. Confirm conditions
+  with qualified professionals before acting on any maintenance decision.
+</div>
+
+<h2>1. Acceptance</h2>
+<p>By using this website, you agree to these Terms of Service.</p>
+
+<h2>2. What we provide (and do not provide)</h2>
+<p>
+  {STEWERSHIP_LEGAL_OPERATOR} publishes <strong>non-commercial stewardship briefings</strong> for
+  neighbors and volunteers.
+</p>
+<p>We do <strong>not</strong> provide:</p>
+<ul>
+  <li>paid dispatch, emergency routing, or on-call contractor assignment</li>
+  <li>service scheduling, trip fees, or quote guarantees</li>
+  <li>contractor handoffs, lead sales, or marketplace matching from these pages</li>
+  <li>insurance, legal, or engineering certifications</li>
+</ul>
+<p>
+  Neighbors who need licensed trade work should engage qualified professionals independently. This
+  site does <strong>not</strong> replace on-site inspection or municipal code review.
+</p>
+
+<h2>3. Not an emergency services agency</h2>
+<p>
+  For life-threatening emergencies (fire, gas leak, immediate medical danger), contact{" "}
+  <strong>911</strong> or your utility emergency line first.
+</p>
+
+<h2>4. Volunteer and fellowship context</h2>
+<p>
+  References to volunteer desks, neighbor intake, or fellowship outreach describe{" "}
+  <strong>informational coordination only</strong>. Participation is voluntary and may depend on
+  local availability. No queue depth, arrival time, or outcome is guaranteed.
+</p>
+
+<h2>5. Website content</h2>
+<p>
+  Maps, trend lines, median-style anchors, and educational blocks are planning vocabulary — not
+  site-specific measurements, bids, or insurer findings.
+</p>
+
+<h2>6. Acceptable use</h2>
+<p>
+  You agree not to misuse the site, misrepresent affiliation with the fellowship, scrape at scale, or
+  attempt to disrupt hosting.
+</p>
+
+<h2>7. Disclaimer of warranties</h2>
+<p>
+  Materials are provided <strong>&ldquo;as is&rdquo;</strong> to the fullest extent permitted by law.
+</p>
+
+<h2>8. Limitation of liability</h2>
+<p>
+  To the fullest extent permitted by law, we are not liable for indirect or consequential damages arising
+  from use of these educational materials.
+</p>
+
+<h2>9. Governing law</h2>
+<p>
+  These Terms are governed by the laws of the <strong>Commonwealth of Pennsylvania</strong> and
+  applicable U.S. federal law, without regard to conflict-of-law rules, except where mandatory
+  consumer protections in your state apply.
+</p>
+
+<h2>10. Contact</h2>
+<p>
+  {STEWERSHIP_LEGAL_OPERATOR}
+  {hasPhone ? (
+    <>
+      <br />
+      Volunteer reference desk: <a href={`tel:${tel!.replace(/^\+/, "")}`}>{phone}</a>
+    </>
+  ) : null}
+  <br />
+  Website: {siteConfig.canonicalOrigin}
+</p>

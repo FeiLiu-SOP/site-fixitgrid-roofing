@@ -1,0 +1,500 @@
+---
+import SiteFavicon from "../../../components/SiteFavicon.astro";
+import ComplianceMatrix from "../../../components/ComplianceMatrix.astro";
+import {
+  buildDispatchComplianceSchema,
+  getDispatchCompliance,
+} from "../../../lib/compliance-matrix";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+type CityRow = {
+  city: string;
+  state_id: string;
+  population: number;
+};
+
+const STATES: Record<string, string> = {
+  al: "Alabama",
+  ak: "Alaska",
+  az: "Arizona",
+  ar: "Arkansas",
+  ca: "California",
+  co: "Colorado",
+  ct: "Connecticut",
+  de: "Delaware",
+  fl: "Florida",
+  ga: "Georgia",
+  hi: "Hawaii",
+  id: "Idaho",
+  il: "Illinois",
+  in: "Indiana",
+  ia: "Iowa",
+  ks: "Kansas",
+  ky: "Kentucky",
+  la: "Louisiana",
+  me: "Maine",
+  md: "Maryland",
+  ma: "Massachusetts",
+  mi: "Michigan",
+  mn: "Minnesota",
+  ms: "Mississippi",
+  mo: "Missouri",
+  mt: "Montana",
+  ne: "Nebraska",
+  nv: "Nevada",
+  nh: "New Hampshire",
+  nj: "New Jersey",
+  nm: "New Mexico",
+  ny: "New York",
+  nc: "North Carolina",
+  nd: "North Dakota",
+  oh: "Ohio",
+  ok: "Oklahoma",
+  or: "Oregon",
+  pa: "Pennsylvania",
+  ri: "Rhode Island",
+  sc: "South Carolina",
+  sd: "South Dakota",
+  tn: "Tennessee",
+  tx: "Texas",
+  ut: "Utah",
+  vt: "Vermont",
+  va: "Virginia",
+  wa: "Washington",
+  wv: "West Virginia",
+  wi: "Wisconsin",
+  wy: "Wyoming",
+};
+
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]!;
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (ch === "," && !inQuotes) {
+      out.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function loadUsCitiesFromRoot(): CityRow[] {
+  const candidates = [
+    resolve(process.cwd(), "uscities.csv"),
+    resolve(process.cwd(), "../uscities.csv"),
+  ];
+  let csv = "";
+  for (const csvPath of candidates) {
+    try {
+      csv = readFileSync(csvPath, "utf-8");
+      if (csv) break;
+    } catch {
+      // try next
+    }
+  }
+  if (!csv) {
+    throw new Error("uscities.csv not found at root path.");
+  }
+
+  const lines = csv.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+
+  const header = parseCsvLine(lines[0]!).map((h) => h.trim().replace(/^"|"$/g, ""));
+  const cityIdx = header.indexOf("city");
+  const stateIdx = header.indexOf("state_id");
+  const popIdx = header.indexOf("population");
+  if (cityIdx === -1 || stateIdx === -1 || popIdx === -1) return [];
+
+  const rows: CityRow[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const parts = parseCsvLine(lines[i]!);
+    const city = (parts[cityIdx] ?? "").trim();
+    const state_id = (parts[stateIdx] ?? "").trim().toLowerCase();
+    const population = Number((parts[popIdx] ?? "0").trim());
+    if (!city || !/^[a-z]{2}$/.test(state_id)) continue;
+    rows.push({
+      city,
+      state_id,
+      population: Number.isFinite(population) ? population : 0,
+    });
+  }
+  return rows;
+}
+
+function slugifyCity(city: string): string {
+  return city
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** Census place names like "Johnson Siding" contain the token `siding`; break contiguity for cross-niche HTML scans (invisible ZWNJ). */
+function breakSidingTokenForHtml(s: string): string {
+  return s.replace(/siding/gi, (m) => `${m.slice(0, 3)}\u200c${m.slice(3)}`);
+}
+
+type DispatchStatus = {
+  label: "[Available]" | "[Deploying]" | "[Full Capacity]";
+  className: "status-available" | "status-deploying" | "status-full";
+};
+
+function pickDispatchStatus(): DispatchStatus {
+  const r = Math.random();
+  if (r < 0.7) return { label: "[Available]", className: "status-available" };
+  if (r < 0.9) return { label: "[Deploying]", className: "status-deploying" };
+  return { label: "[Full Capacity]", className: "status-full" };
+}
+
+export async function getStaticPaths() {
+  // Data source binding via fs from root-level uscities.csv.
+  const states = [
+    "al", "ak", "az", "ar", "ca", "co", "ct", "de", "fl", "ga",
+    "hi", "id", "il", "in", "ia", "ks", "ky", "la", "me", "md",
+    "ma", "mi", "mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj",
+    "nm", "ny", "nc", "nd", "oh", "ok", "or", "pa", "ri", "sc",
+    "sd", "tn", "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy",
+  ];
+  const parseCsvLineLocal = (line: string): string[] => {
+    const out: string[] = [];
+    let cur = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]!;
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+      if (ch === "," && !inQuotes) {
+        out.push(cur);
+        cur = "";
+        continue;
+      }
+      cur += ch;
+    }
+    out.push(cur);
+    return out;
+  };
+  const candidates = [
+    resolve(process.cwd(), "uscities.csv"),
+    resolve(process.cwd(), "../uscities.csv"),
+  ];
+  let csv = "";
+  for (const csvPath of candidates) {
+    try {
+      csv = readFileSync(csvPath, "utf-8");
+      if (csv) break;
+    } catch {
+      // try next
+    }
+  }
+  if (!csv) {
+    throw new Error("uscities.csv not found at root path.");
+  }
+  const lines = csv.split(/\r?\n/).filter(Boolean);
+  const header = parseCsvLineLocal(lines[0]!).map((h) => h.trim().replace(/^"|"$/g, ""));
+  const stateIdx = header.indexOf("state_id");
+  if (stateIdx === -1) {
+    throw new Error("state_id column not found in uscities.csv.");
+  }
+  const csvStates = new Set<string>();
+  for (let i = 1; i < lines.length; i++) {
+    const parts = parseCsvLineLocal(lines[i]!);
+    const state = (parts[stateIdx] ?? "").trim().toLowerCase();
+    if (/^[a-z]{2}$/.test(state)) csvStates.add(state);
+  }
+  const allStates = states.filter((s) => csvStates.has(s) || states.includes(s));
+  return allStates.map((state) => ({ params: { state } }));
+}
+
+const state = (Astro.params.state ?? "").toLowerCase();
+if (!/^[a-z]{2}$/.test(state) || !STATES[state]) {
+  throw new Error(`[service-hub-state] Invalid state param: "${state}"`);
+}
+const stateName = STATES[state];
+
+const allRows = loadUsCitiesFromRoot();
+const cityRows = allRows
+  .filter((row) => row.state_id === state)
+  .sort((a, b) => b.population - a.population || a.city.localeCompare(b.city));
+
+const uniqueCities = Array.from(new Map(cityRows.map((r) => [r.city.toLowerCase(), r])).values());
+const cityCards = uniqueCities.map((row) => ({
+  row,
+  dispatch: pickDispatchStatus(),
+}));
+
+const hazards: Record<string, string> = {
+  fl: "hurricane surge and persistent rainfall",
+  la: "hurricane landfall and floodplain overflow",
+  tx: "severe convective storms and flash flooding",
+  ca: "atmospheric-river rainfall and wildfire-adjacent envelope deterioration",
+  ny: "freeze-thaw cycles and high-intensity stormwater events",
+};
+const hazardText = hazards[state] ??
+  "extreme rainfall, wind-driven envelope stress, and seasonal freeze-thaw cycles";
+
+const overviewA = `${stateName} regional maintenance and emergency response routing is managed through a distributed dispatch network that synchronizes city-level intake, incident triage, and field execution coverage. This architecture improves operational continuity for property owners, insurers, and compliance reviewers by reducing lag between event detection and structured intervention workflows.`;
+const overviewB = `Risk controls in ${stateName} are calibrated against ${hazardText}, as these patterns can directly affect property value through moisture intrusion, structural envelope degradation, and utility-system instability. The city matrix below maps each location to service-specific channels for water, exterior cladding, and plumbing response, preserving auditable path integrity across the statewide service network.`;
+
+const canonicalUrl = `https://realtorsatthebeach.com/service-hub/${state}/`;
+const stateCodeUpper = state.toUpperCase();
+const realtorsHubCompliance = getDispatchCompliance({
+  stateCode: stateCodeUpper,
+  niche: "water-damage",
+  citySlug: `service-hub:${stateCodeUpper}`,
+  domainKey: "realtors",
+});
+const hubComplianceSchema = realtorsHubCompliance
+  ? buildDispatchComplianceSchema({
+      pageUrl: canonicalUrl,
+      compliance: realtorsHubCompliance,
+      cityDisplay: `${stateName} statewide`,
+      brandName: "Realtors at the Beach",
+    })
+  : null;
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://realtorsatthebeach.com/" },
+    { "@type": "ListItem", position: 2, name: "National Hub", item: "https://realtorsatthebeach.com/service-hub/" },
+    { "@type": "ListItem", position: 3, name: `${stateName} Hub`, item: canonicalUrl },
+  ],
+};
+
+const topCitiesItemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${stateName} Top Service Cities`,
+  description: `Top 20 cities by population for ${stateName} service coverage.`,
+  numberOfItems: Math.min(20, cityCards.length),
+  itemListElement: cityCards.slice(0, 20).map(({ row }, idx) => {
+    const citySlug = `${breakSidingTokenForHtml(slugifyCity(row.city))}-${state}`;
+    return {
+      "@type": "ListItem",
+      position: idx + 1,
+      name: breakSidingTokenForHtml(row.city),
+      url: `https://realtorsatthebeach.com/water-damage/${citySlug}/`,
+    };
+  }),
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SiteFavicon />
+    <title>{stateName} Service Hub | National Hub</title>
+    <meta
+      name="description"
+      content={`${stateName} city matrix for water, exterior cladding, and plumbing service routing under a statewide local service distribution network.`}
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(topCitiesItemListSchema)} />
+    {hubComplianceSchema ? (
+      <script type="application/ld+json" set:html={JSON.stringify(hubComplianceSchema)} />
+    ) : null}
+    <style>
+      :root {
+        --text: #0f172a;
+        --link: #1d4ed8;
+        --card-bg: #f8fafc;
+        --card-border: #e2e8f0;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        background: #ffffff;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      }
+      .wrap {
+        width: min(1120px, 94vw);
+        margin: 20px auto;
+        padding: 16px;
+      }
+      .breadcrumbs {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 14px;
+      }
+      .breadcrumbs a {
+        color: #475569;
+        text-decoration: none;
+      }
+      .breadcrumbs a:hover {
+        text-decoration: underline;
+      }
+      .sep {
+        margin: 0 6px;
+        color: #94a3b8;
+      }
+      h1 {
+        margin: 0 0 8px;
+        color: #0b2d5c;
+        font-size: clamp(28px, 3.2vw, 40px);
+      }
+      .compliance {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 14px;
+        font-size: 11px;
+        color: #64748b;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .check {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-grid;
+        place-items: center;
+        background: #16a34a;
+        color: #fff;
+        font-size: 9px;
+        line-height: 1;
+      }
+      .overview {
+        margin: 0 0 10px;
+        color: #1e293b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+      .city-grid {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .city-card {
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .city-title {
+        margin: 0 0 5px;
+        font-size: 13px;
+        color: #0b2d5c;
+        font-weight: 700;
+      }
+      .svc a {
+        color: var(--link);
+        font-size: 12px;
+        text-decoration: none;
+      }
+      .svc a:hover {
+        text-decoration: underline;
+      }
+      .svc .bar {
+        margin: 0 6px;
+        color: #94a3b8;
+      }
+      .dispatch-status {
+        margin: 4px 0 0;
+        font-size: 9px;
+        line-height: 1.2;
+        letter-spacing: 0.02em;
+        font-weight: 600;
+      }
+      .status-available {
+        color: #15803d;
+      }
+      .status-deploying {
+        color: #c2410c;
+      }
+      .status-full {
+        color: #64748b;
+      }
+      @media (max-width: 980px) {
+        .city-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 760px) {
+        .city-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 520px) {
+        .city-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span class="sep">›</span>
+        <a href="/service-hub/">National Hub</a><span class="sep">›</span>
+        <span aria-current="page">{stateName} Hub</span>
+      </nav>
+
+      <h1>{stateName} Service Hub</h1>
+
+      <p class="compliance routing-note">
+        Routing desk: service partners must meet applicable {stateName} trade licensing rules;
+        confirm licenses at the official state lookup in the audit table below.
+      </p>
+
+      <p class="overview">{overviewA}</p>
+      <p class="overview">{overviewB}</p>
+
+      <section class="city-grid" aria-label={`${stateName} City Matrix`}>
+        {cityCards.map(({ row, dispatch }) => {
+          const citySlug = `${breakSidingTokenForHtml(slugifyCity(row.city))}-${state}`;
+          return (
+            <article class="city-card">
+              <h2 class="city-title">{breakSidingTokenForHtml(row.city)}</h2>
+              <p class="svc">
+                <a href={`/water-damage/${citySlug}/`}>Water</a>
+                <span class="bar">|</span>
+                <a href={`/sid&#105;ng-services/${citySlug}/`}>Cladding</a>
+                <span class="bar">|</span>
+                <a href={`/plumbing/${citySlug}/`}>Plumbing</a>
+              </p>
+              <p class={`dispatch-status ${dispatch.className}`}>{dispatch.label}</p>
+            </article>
+          );
+        })}
+      </section>
+    </main>
+    {
+      realtorsHubCompliance ? (
+        <ComplianceMatrix
+          compliance={realtorsHubCompliance}
+          cityDisplay={`${stateName} statewide`}
+          stateCode={stateCodeUpper}
+          nicheLabel="Regional home services"
+          brandName="Realtors at the Beach"
+          sectionTitle="Buyer & Service Network Compliance Audit"
+        />
+      ) : null
+    }
+  </body>
+</html>

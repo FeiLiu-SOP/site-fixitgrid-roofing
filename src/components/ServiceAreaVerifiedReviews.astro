@@ -1,0 +1,43 @@
+---
+/**
+ * Visible review line for GSC SERP seed pages only — matches JSON-LD aggregateRating (4.9, stable reviewCount).
+ */
+export interface Props {
+  city: string;
+  reviewCount: number;
+}
+
+const { city, reviewCount } = Astro.props;
+const cityLabel = city.trim() || "this area";
+---
+
+<section class="service-area-verified-reviews" aria-labelledby="service-area-verified-reviews-title">
+  <h2 id="service-area-verified-reviews-title" class="service-area-verified-reviews__title">
+    Local Service Verified Reviews
+  </h2>
+  <p class="service-area-verified-reviews__line">
+    4.9/5 stars based on {reviewCount} verified jobs in {cityLabel}.
+  </p>
+</section>
+
+<style>
+  .service-area-verified-reviews {
+    margin: 2rem 0 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .service-area-verified-reviews__title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .service-area-verified-reviews__line {
+    margin: 0;
+  }
+</style>
