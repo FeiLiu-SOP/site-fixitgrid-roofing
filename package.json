@@ -82,5 +82,6 @@
     "dependencies":  {
                          "@astrojs/sitemap":  "^3.7.2",
                          "astro":  "^6.2.2"
-                     }
+                     },
+    "deploy_nonce": "478b934249da8344"
 }
