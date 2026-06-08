@@ -1,8 +1,6 @@
 ---
-import { getBrand, hubPublicPath, internalPath, siteConfig } from "../site-config";
+import { getBrand, siteConfig } from "../site-config";
 import { ACTIVE_COLLECTION, type ActiveCollectionKey } from "../active-collection";
-import { matchesFixitGridEntity } from "../domain-templates/fixitgrid.com-entity";
-import { matchesRockwellMaine } from "../domain-templates/rockwell-maine-entity";
 
 type FooterLink = { href: string; label: string };
 const { extraLink, notice, variantSeed, slug, auditStateCode, auditZipCode, auditNodeVersion, collectionKey } =
@@ -164,16 +162,6 @@ const verifyLines = [
   "Lead Smart verification entry: Fei Liu — April 2026",
 ] as const;
 
-const fixitGridVerifyLines = [
-  "Verification for FixitGrid Audits: Lead Analyst Team — May 28, 2026",
-  "FixitGrid audit verification record: Lead Analyst Team — May 2026",
-  "Verification log (FixitGrid): Lead Analyst Team — 2026-05-28",
-  "FixitGrid compliance verification: Lead Analyst Team — 28 May 2026",
-  "FixitGrid verification entry: Lead Analyst Team — May 2026",
-] as const;
-
-const isFixitGridFooter = matchesFixitGridEntity({ domainOrUrl: siteConfig.canonicalOrigin });
-
 const isStewardshipFooter =
   effectiveCollection === "community-stewardship-water" ||
   effectiveCollection === "community-stewardship-siding" ||
@@ -193,14 +181,7 @@ const brandAuditHtml = isStewardshipFooter
 const authorityAnchorLine = isStewardshipFooter
   ? STEWARDSHIP_AUTHORITY_ANCHOR_LINES[linePick]!
   : authorityAnchorLines[linePick]!;
-const verifyLine = isFixitGridFooter ? fixitGridVerifyLines[linePick]! : verifyLines[linePick]!;
-const legalLinksAtHubRoot = matchesRockwellMaine({ domainOrUrl: siteConfig.canonicalOrigin });
-const privacyHref = legalLinksAtHubRoot
-  ? hubPublicPath("privacy-policy")
-  : internalPath("privacy-policy");
-const termsHref = legalLinksAtHubRoot
-  ? hubPublicPath("terms-of-service")
-  : internalPath("terms-of-service");
+const verifyLine = verifyLines[linePick]!;
 ---
 <footer>
   <div
@@ -225,16 +206,6 @@ const termsHref = legalLinksAtHubRoot
     <p class="footer-brand-authority-anchor">
       {authorityAnchorLine}
     </p>
-    {isStewardshipFooter ? (
-      <p class="footer-stewardship-legal-tagline">
-        Community stewardship reference — not a contractor marketplace.
-      </p>
-    ) : null}
-    <p class="footer-legal-links">
-      <a href={privacyHref}>Privacy Policy</a>
-      <span aria-hidden="true"> · </span>
-      <a href={termsHref}>Terms of Service</a>
-    </p>
     {notice ? (
       <p style="font-size: 12px; color: #666; margin: 10px 0 0;">
         {notice}
@@ -247,7 +218,7 @@ const termsHref = legalLinksAtHubRoot
         </a>
       </p>
     ) : null}
-    {auditStateCode && auditZipCode && !isStewardshipFooter ? (
+    {auditStateCode && auditZipCode ? (
       <div class="audit-node-id" style="font-size: 1px; color: transparent;">
         Audit Node ID: FG-{auditStateCode}-{auditZipCode}-{auditNodeVersion ?? "1"}
       </div>
@@ -280,30 +251,6 @@ const termsHref = legalLinksAtHubRoot
       color: #9ca3af;
       text-align: center;
       -webkit-text-size-adjust: 100%;
-    }
-    .footer-legal-links {
-      margin: 0.85rem auto 0;
-      padding: 0 0.75rem;
-      max-width: 42rem;
-      font-size: 12px;
-      line-height: 1.45;
-      text-align: center;
-    }
-    .footer-legal-links a {
-      color: #2563eb;
-      text-decoration: none;
-    }
-    .footer-legal-links a:hover {
-      text-decoration: underline;
-    }
-    .footer-stewardship-legal-tagline {
-      margin: 0.65rem auto 0;
-      padding: 0 0.75rem;
-      max-width: 42rem;
-      font-size: 11px;
-      line-height: 1.45;
-      color: #64748b;
-      text-align: center;
     }
   </style>
 </footer>

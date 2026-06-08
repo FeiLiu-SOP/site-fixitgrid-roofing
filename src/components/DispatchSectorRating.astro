@@ -1,0 +1,74 @@
+---
+import { buildDispatchSectorRatingLine } from "../lib/dispatch-sector-rating";
+
+export interface Props {
+  city: string;
+  county: string;
+  state?: string | null;
+  entrySlug: string;
+  localPaths?: string[];
+}
+
+const { city, county, state = null, entrySlug, localPaths = [] } = Astro.props;
+const line = buildDispatchSectorRatingLine({ city, county, state, entrySlug, localPaths });
+const cityLabel = city.trim() || "Local";
+---
+
+<div class="dispatch-sector-rating" role="group" aria-label={`${cityLabel} dispatch sector rating`}>
+  <div class="dispatch-sector-rating__stars" aria-hidden="true" title="4.9 out of 5">
+    <span class="dispatch-sector-rating__star">★</span>
+    <span class="dispatch-sector-rating__star">★</span>
+    <span class="dispatch-sector-rating__star">★</span>
+    <span class="dispatch-sector-rating__star">★</span>
+    <span class="dispatch-sector-rating__star">★</span>
+  </div>
+  <p class="dispatch-sector-rating__line">{line}</p>
+</div>
+
+<style>
+  .dispatch-sector-rating {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 0.65rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fcd34d;
+    min-height: 3.25rem;
+  }
+  .dispatch-sector-rating__stars {
+    display: flex;
+    justify-content: center;
+    gap: 0.12rem;
+    margin: 0 0 0.35rem;
+    line-height: 1;
+  }
+  .dispatch-sector-rating__star {
+    color: #d97706;
+    font-size: 1.05rem;
+    text-shadow: 0 1px 0 #fef3c7;
+  }
+  .dispatch-sector-rating__line {
+    margin: 0;
+    font-size: clamp(10px, 2.8vw, 12px);
+    font-weight: 600;
+    color: #78350f;
+    text-align: center;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 479px) {
+    .dispatch-sector-rating {
+      padding: 0.5rem 0.45rem;
+      min-height: 0;
+    }
+    .dispatch-sector-rating__star {
+      font-size: 0.95rem;
+    }
+    .dispatch-sector-rating__line {
+      font-size: 11px;
+      line-height: 1.4;
+      hyphens: auto;
+    }
+  }
+</style>

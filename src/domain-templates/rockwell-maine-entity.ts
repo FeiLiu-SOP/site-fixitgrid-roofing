@@ -8,6 +8,7 @@
 import type { ActiveCollectionKey } from "../active-collection";
 import type { ParsedLocation } from "../lib/location";
 import { buildServiceAreaAggregateRating } from "../lib/seo";
+import { detailOpeningHoursSpecification, liveDispatchStatusEnabled } from "../lib/live-dispatch-status";
 import { getCanonicalBase, normalizePhoneE164, siteConfig } from "../site-config";
 
 export const ROCKWELL_MAINE_DOMAIN = "rockwellpropertiesmaine.com";
@@ -117,7 +118,7 @@ export function buildRockwellMaineEntityGraph(params: {
       : undefined;
 
   const hours = parseHours();
-  const openingHoursSpecification =
+  const legacyOpeningHoursSpecification =
     hours != null
       ? hours.days.map((day) => ({
           "@type": "OpeningHoursSpecification",
@@ -126,6 +127,10 @@ export function buildRockwellMaineEntityGraph(params: {
           closes: hours.closes,
         }))
       : undefined;
+
+  const openingHoursSpecification = liveDispatchStatusEnabled()
+    ? detailOpeningHoursSpecification(params.entrySlug)
+    : legacyOpeningHoursSpecification;
 
   const priceRange = envTrim("PUBLIC_ORG_PRICE_RANGE") ?? "$$–$$$";
   const logo = envTrim("PUBLIC_ORG_LOGO_URL");

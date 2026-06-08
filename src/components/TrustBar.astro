@@ -24,25 +24,61 @@ function trustCopy(collection: ActiveCollectionKey): string {
 
 const { collectionKey } = Astro.props as Props;
 const text = trustCopy(collectionKey ?? ACTIVE_COLLECTION);
+const items = text.split(/\s*\|\s*/).filter(Boolean);
 ---
 
-<p class="trust-bar">{text}</p>
+<ul class="trust-bar" role="list" aria-label="Service trust signals">
+  {
+    items.map((item) => (
+      <li class="trust-bar__item" role="listitem">
+        {item}
+      </li>
+    ))
+  }
+</ul>
 
 <style>
   .trust-bar {
     box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem 0.45rem;
     width: 100%;
     margin: 0 0 0.55rem;
-    padding: 0 0.2rem;
-    font-size: clamp(8px, 2.65vw, 12px); /* ~text-[10px]–xs on typical phones */
+    padding: 0;
+    list-style: none;
+  }
+  .trust-bar__item {
+    flex: 0 1 auto;
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0;
+    padding: 0.22rem 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.72);
+    font-size: clamp(9px, 2.5vw, 11px);
     font-weight: 700;
     color: #0f172a;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
     text-align: center;
-    line-height: 1.25;
-    letter-spacing: 0.03em;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+  }
+  @media (max-width: 479px) {
+    .trust-bar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.3rem;
+    }
+    .trust-bar__item {
+      width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      font-size: 10px;
+      padding: 0.28rem 0.55rem;
+    }
   }
 </style>

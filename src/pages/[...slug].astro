@@ -9,9 +9,14 @@ import RelatedCities from "../components/RelatedCities.astro";
 import ValueProtectionCalculator from "../components/ValueProtectionCalculator.astro";
 import OfficialRiskNodeHeader from "../components/OfficialRiskNodeHeader.astro";
 import TrustBar from "../components/TrustBar.astro";
+import DispatchSectorRating from "../components/DispatchSectorRating.astro";
+import DispatchRadar from "../components/DispatchRadar.astro";
 import NationalDispatchDisclaimer from "../components/NationalDispatchDisclaimer.astro";
 import NichePartnerLogos from "../components/NichePartnerLogos.astro";
 import DispatchCommandBar from "../components/DispatchCommandBar.astro";
+import LiveDispatchStatus from "../components/LiveDispatchStatus.astro";
+import { liveDispatchStatusEnabled } from "../lib/live-dispatch-status";
+import { resolveContentEntrySlug, stateAbbrFromNearMeSlug } from "../lib/fixitgrid-near-me-url";
 import RockwellGa4Events from "../components/RockwellGa4Events.astro";
 import ServiceAreaVerifiedReviews from "../components/ServiceAreaVerifiedReviews.astro";
 import ServiceAreaLocalLandmarks from "../components/ServiceAreaLocalLandmarks.astro";
@@ -20,7 +25,6 @@ import { ogThumbnailUrl } from "../lib/og-thumbnail-url";
 import { ACTIVE_COLLECTION } from "../active-collection";
 import {
   BRAND_CONFIG,
-  PUBLIC_NICHE_LABEL,
   canonicalPageUrl,
   getCanonicalBase,
   getNicheLabelForSeed,
@@ -41,8 +45,14 @@ import {
   buildLocalBusinessSchema,
   buildNewtownFellowshipLocalBusinessSchema,
   buildServiceAreaAggregateRating,
-  getFaqByCollection,
+  getFaqPoolByCollection,
 } from "../lib/seo";
+import { buildHydratedPageFaqs, type FaqHydrationContext } from "../lib/faq-hydration";
+import {
+  buildTechnicalAuditBodyHtml,
+  resolveCollectionEntryMarkdownBody,
+  usesTechnicalAuditReport,
+} from "../lib/technical-audit-report";
 import { resolvePageLocation } from "../lib/location";
 import {
   buildBaitPool2TitlesRoofing,
@@ -92,28 +102,11 @@ import {
   buildFixitGridEntityGraph,
   matchesFixitGridEntity,
 } from "../domain-templates/fixitgrid.com-entity";
-import {
-  buildRealtorsEntityGraph,
-  matchesRealtorsEntity,
-} from "../domain-templates/realtorsatthebeach.com-entity";
-import ComplianceMatrix from "../components/ComplianceMatrix.astro";
-import LocalInfrastructureBrief from "../components/LocalInfrastructureBrief.astro";
-import { getDispatchCompliance } from "../lib/compliance-matrix";
-import { buildFixitGridFlClimateLead } from "../lib/fixitgrid-fl-climate";
-import {
-  buildFixitgridServiceReference,
-  isFixitgridInfraBriefPanel,
-} from "../lib/fixitgrid-infra-brief";
-import {
-  entryPublicPathSegments,
-  isFixitgridNearMeBuild,
-  resolveContentEntrySlug,
-  stateAbbrFromNearMeSlug,
-} from "../lib/fixitgrid-near-me-url";
-import {
-  appendCommercialContactFaqIfSeed,
-  shouldForceFaqSectionVisible,
-} from "../lib/commercial-contact-faq";
+import PestBiodiversityPanel from "../components/PestBiodiversityPanel.astro";
+import FlashCouponAnchor from "../components/FlashCouponAnchor.astro";
+import FlashCouponVpcBridge from "../components/FlashCouponVpcBridge.astro";
+import { collectionUsesFlashCoupon } from "../lib/flash-coupon";
+import { buildPestBiodiversityBundle } from "../lib/pest-biodiversity";
 
 /** Physical-value tier: deterministic title/H1 (no stableHash) when home value clears bar. */
 const HIGH_VALUE_USD_TRIGGER = 300_000;
@@ -132,17 +125,18 @@ const isRoofingHub = ACTIVE_COLLECTION === "roofing";
 const isPestControlHub = ACTIVE_COLLECTION === "pestcontrol";
 /** Newtown Fellowship / church city pages (`npm run build:community-stewardship-*`). */
 const isCommunityStewardshipNpo = ACTIVE_COLLECTION.startsWith("community-stewardship-");
+/** Red Flash Offer bar — all 6 commercial hubs (not church / NPO). */
+const showFlashCoupon = collectionUsesFlashCoupon(ACTIVE_COLLECTION);
 
 export async function getStaticPaths() {
+  const { entryPublicPathSegments } = await import("../lib/fixitgrid-near-me-url");
   const posts = await getCollection(ACTIVE_COLLECTION);
   return posts.map((post) => {
     const entrySlug = (post.slug ?? post.id ?? "").replace(/\.(md|mdx)$/i, "");
-    if (isFixitgridNearMeBuild()) {
-      const st = (post.data.state ?? stateAbbrFromNearMeSlug(entrySlug) ?? "FL").trim();
-      const segments = entryPublicPathSegments(entrySlug, st);
-      return { params: { slug: segments.join("/") } };
-    }
-    return { params: { slug: entrySlug } };
+    const stateAbbr =
+      typeof post.data.state === "string" ? post.data.state.trim().slice(0, 2).toUpperCase() : undefined;
+    const segments = entryPublicPathSegments(entrySlug, stateAbbr);
+    return { params: { slug: segments.join("/") } };
   });
 }
 
@@ -154,22 +148,15 @@ const entry =
 if (!entry) {
   return new Response(null, { status: 404, statusText: "Not Found" });
 }
+const { Content } = await render(entry);
 const post = entry;
+const markdownBody = resolveCollectionEntryMarkdownBody(entry, ACTIVE_COLLECTION);
 const entrySlug = entrySlugParam || (post.slug ?? post.id ?? "").replace(/\.(md|mdx)$/i, "");
-const pageUrl = isFixitgridNearMeBuild()
-  ? canonicalPageUrl(
-      ...entryPublicPathSegments(
-        entrySlug,
-        post.data.state ?? stateAbbrFromNearMeSlug(entrySlug) ?? "FL",
-      ),
-    )
-  : canonicalPageUrl(entrySlug);
+const pageUrl = canonicalPageUrl(entrySlug);
 const ogImageUrl = ogThumbnailUrl(entrySlug);
 const pageNicheLabel = getNicheLabelForSeed(entrySlug);
 const isRockwellMaine = matchesRockwellMaine({ domainOrUrl: siteConfig.canonicalOrigin });
 const isFixitGridSite = matchesFixitGridEntity({ domainOrUrl: siteConfig.canonicalOrigin });
-const isRealtorsSite =
-  !isFixitGridSite && matchesRealtorsEntity({ domainOrUrl: siteConfig.canonicalOrigin });
 const pageLocation = resolvePageLocation({
   collection: ACTIVE_COLLECTION,
   title: post.data.title,
@@ -189,31 +176,45 @@ function cityFromSlug(slugText: string) {
   const m = slugText.match(/^(.*)-([a-z]{2})-(\d{5})$/i);
   if (!m) return null;
   let prefixAndCity = m[1]!;
-  const pfx = `${String(ACTIVE_COLLECTION)}-`.toLowerCase();
-  if (prefixAndCity.toLowerCase().startsWith(pfx)) {
-    prefixAndCity = prefixAndCity.slice(pfx.length);
+  const stripPrefixes = [`${String(ACTIVE_COLLECTION)}-`.toLowerCase()];
+  if (ACTIVE_COLLECTION === "pestcontrol") stripPrefixes.push("pest-control-");
+  for (const pfx of stripPrefixes) {
+    if (prefixAndCity.toLowerCase().startsWith(pfx)) {
+      prefixAndCity = prefixAndCity.slice(pfx.length);
+      break;
+    }
   }
   const city = prefixAndCity.split("-").filter(Boolean).join(" ").trim();
   return city ? titleCase(city) : null;
 }
-const pageCity = cityFromSlug(entrySlug);
+const pageCityFromSlug = cityFromSlug(entrySlug);
+const pageCity = String(post.data.city ?? "").trim() || pageCityFromSlug;
+/** Opt-in live OPEN / after-hours bar — PUBLIC_LIVE_DISPATCH_STATUS=1; never on church pages. */
+const showLiveDispatchStatus =
+  liveDispatchStatusEnabled() && !isCommunityStewardshipNpo && Boolean(pageCity?.trim());
 const trustDispatchPlace = pageCity?.trim() ? pageCity.trim() : "Area";
 const desktopDispatchZip =
   String(pageLocation?.zip ?? post.data.zipCode ?? "")
     .replace(/\D/g, "")
     .slice(0, 5) || "00000";
 const stateCodeFromSlug = (() => {
-  if (isFixitgridNearMeBuild()) {
-    const nearMeSt =
-      stateAbbrFromNearMeSlug(entrySlug) ??
-      String(post.data.state ?? "")
-        .trim()
-        .toUpperCase();
-    if (/^[A-Z]{2}$/.test(nearMeSt)) return nearMeSt;
-  }
   const m = entrySlug.match(/-([a-z]{2})-\d{5}$/i);
   return m ? m[1]!.toUpperCase() : null;
 })();
+const technicalAuditBodyHtml =
+  usesTechnicalAuditReport(ACTIVE_COLLECTION) && markdownBody
+    ? buildTechnicalAuditBodyHtml({
+        body: markdownBody,
+        fm: {
+          city: pageCity,
+          state: stateCodeFromSlug ?? String(post.data.state ?? ""),
+          county: String(post.data.county ?? ""),
+          zipCode: String(post.data.zipCode ?? ""),
+        },
+        slug: entrySlug,
+        nicheLabel: pageNicheLabel,
+      })
+    : null;
 // Action 1: footer random internal link from backup pool (state index + random city)
 const backupCandidates: { href: string; label: string }[] = [];
 if (stateCodeFromSlug) {
@@ -276,7 +277,7 @@ const slugDispatchFeedRecords: DispatchFeedRecord[] = (() => {
     }));
 })();
 
-const faqItems = getFaqByCollection(ACTIVE_COLLECTION);
+const faqPool = getFaqPoolByCollection(ACTIVE_COLLECTION);
 function stableHash(input: string) {
   let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
@@ -507,16 +508,16 @@ const waterVisualLine = pageCity
 const h1ComplianceLead = "No surprise trip framing · upfront scope notes — ";
 
 const plumbingVisualLine = pageCity
-  ? `Educational dispatch context for ${pageCity}. Public terrain references are illustrative only—not engineering reports or licensed contractor estimates.`
-  : `Educational dispatch context for this area. Public terrain references are illustrative only—not engineering reports or licensed contractor estimates.`;
+  ? `Our ${pageCity} dispatch node ensures state-compliant pricing. Cross-referenced with USGS infrastructure risk scores to prevent plumbing scams.`
+  : `Our dispatch node ensures state-compliant pricing. Cross-referenced with USGS infrastructure risk scores to prevent plumbing scams.`;
 
 const sidingVisualLine = pageCity
-  ? `Educational dispatch context for ${pageCity}. Envelope and exterior notes are illustrative only—not engineering reports or licensed contractor estimates.`
-  : `Educational dispatch context for this area. Envelope and exterior notes are illustrative only—not engineering reports or licensed contractor estimates.`;
+  ? `Our ${pageCity} dispatch node ensures state-compliant pricing. Cross-referenced with envelope risk scores to prevent exterior contractor scams.`
+  : `Our dispatch node ensures state-compliant pricing. Cross-referenced with envelope risk scores to prevent exterior contractor scams.`;
 
 const roofTerrainNotice = isRoofingHub
   ? pageCity
-    ? `Planning note for ${pageCity}: terrain-context on this page is illustrative only. Confirm scope, timing, and insurance questions with qualified professionals on site.`
+    ? `NOTICE: Your ${pageCity} property has a specific terrain-risk profile. Delaying repair could impact insurance eligibility.`
     : null
   : null;
 
@@ -714,8 +715,6 @@ function pickFaqSubset<T>(items: T[], seedText: string, count: number): T[] {
   }
   return copy.slice(0, Math.min(count, copy.length));
 }
-const faqCount = 3 + (stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|faqCount`) % 3); // 3–5
-const pageFaqItems = pickFaqSubset(faqItems, `${ACTIVE_COLLECTION}|${entrySlug}|faq`, faqCount);
 const ctaVariantsCommercial = [
   {
     title: `24/7 Local ${pageNicheLabel} Emergency Service`,
@@ -897,11 +896,13 @@ const relatedTitleVariants = [
 ] as const;
 const relatedTitle =
   relatedTitleVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|relatedTitle`) % relatedTitleVariants.length]!;
-const forceFaqForContactSeed = shouldForceFaqSectionVisible(ACTIVE_COLLECTION, entrySlug);
-const showFaq =
-  forceFaqForContactSeed ||
-  stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|showFaq`) % 10 >= 3;
-const showRelated = stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|showRelated`) % 10 >= 3;
+/** Commercial hubs: always render FAQ + related; avoids “empty bottom” on ~30% of slugs. */
+const showFaq = isCommunityStewardshipNpo
+  ? stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|showFaq`) % 10 >= 3
+  : true;
+const showRelated = isCommunityStewardshipNpo
+  ? stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|showRelated`) % 10 >= 3
+  : true;
 const stateNotice = stateCodeFromSlug
   ? `Notice: This ${stateCodeFromSlug} page summarizes regional infrastructure maintenance coordination and local topographic context; it is not a government bulletin.`
   : "Notice: This page summarizes regional infrastructure maintenance coordination and local topographic context; it is not a government bulletin.";
@@ -947,6 +948,16 @@ const pestLatestDispatchLine =
     ? `Educational note for ZIP ${pageZipForPestPulse}: termite pressure varies by season—ask your coordinator for inspection-backed guidance (not a live incident feed).`
     : null;
 
+const pestBiodiversityBundle =
+  isPestControlHub && pageCity && stateCodeFromSlug
+    ? buildPestBiodiversityBundle({
+        entrySlug,
+        city: pageCity,
+        stateCode: stateCodeFromSlug,
+        stateLabel: stateLabelForBait(stateCodeFromSlug, post.data.state),
+      })
+    : null;
+
 // Action 3: Geo brief section data from frontmatter (truthy only; Astro just displays)
 const geo = {
   county: post.data.county as string | undefined,
@@ -970,6 +981,8 @@ const geoPhysicalEnvLine = stateCodeFromSlug
   ? `Physical environment context (${stateGeoFact.label}): ${stateGeoFact.narrative}`
   : null;
 const showGeoSection = Boolean(geoCoordsLine || geoPhysicalEnvLine);
+/** Production: city detail pages with geo lat/lng render DispatchRadar. */
+const showDispatchRadar = typeof geo.lat === "number" && typeof geo.lng === "number";
 const localPathsText =
   geo.localPaths && geo.localPaths.length
     ? `Regional access notes: ${geo.localPaths.slice(0, 5).join(", ")}.`
@@ -989,21 +1002,45 @@ function addendumForFaq(seedText: string) {
   return stableHash(seedText) % 2 === 0 ? pool[stableHash(seedText + "|p") % pool.length]! : null;
 }
 
-const pageFaqItemsBase = pageFaqItems.map((item, idx) => {
-  const add = addendumForFaq(`${ACTIVE_COLLECTION}|${entrySlug}|faqAdd|${idx}`);
-  return {
-    question: item.question,
-    answer: add ? `${item.answer} ${add}` : item.answer,
-  };
-});
-const { items: pageFaqItemsFinal } = appendCommercialContactFaqIfSeed({
-  collection: ACTIVE_COLLECTION,
-  entrySlug,
-  city: String(post.data.city ?? pageCity ?? "").trim() || null,
-  stateCode: String(post.data.state ?? stateCodeFromSlug ?? "").trim() || null,
-  phoneDisplay: siteConfig.phoneDisplay,
-  items: pageFaqItemsBase,
-});
+const pageFaqItemsFinal = isRoofingHub
+  ? buildHydratedPageFaqs(
+      faqPool,
+      {
+        collection: ACTIVE_COLLECTION,
+        entrySlug,
+        city: pageCity,
+        county: String(post.data.county ?? geo.county ?? "").trim(),
+        state: stateCodeFromSlug,
+        zillowHomeValueUsd: zUsd,
+        localPaths: Array.isArray(post.data.localPaths)
+          ? (post.data.localPaths as string[])
+          : Array.isArray(geo.localPaths)
+            ? geo.localPaths
+            : [],
+        elevationFt:
+          typeof post.data.elevationFt === "number"
+            ? post.data.elevationFt
+            : typeof geo.elevationFt === "number"
+              ? geo.elevationFt
+              : null,
+      } satisfies FaqHydrationContext,
+      5,
+    )
+  : (() => {
+      const faqCount = 3 + (stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|faqCount`) % 3); // 3–5
+      const pageFaqItems = pickFaqSubset(
+        faqPool.map(({ question, answer }) => ({ question, answer })),
+        `${ACTIVE_COLLECTION}|${entrySlug}|faq`,
+        faqCount,
+      );
+      return pageFaqItems.map((item, idx) => {
+        const add = addendumForFaq(`${ACTIVE_COLLECTION}|${entrySlug}|faqAdd|${idx}`);
+        return {
+          question: item.question,
+          answer: add ? `${item.answer} ${add}` : item.answer,
+        };
+      });
+    })();
 
 const enableRealtorsAtTheBeachWaterDamageIsolation = matchesRealtorsAtTheBeachWaterDamage({
   domainOrUrl: siteConfig.canonicalOrigin,
@@ -1032,6 +1069,7 @@ const domPrefix = ACTIVE_COLLECTION === "plumbing-v2"
       )}`
     : null;
 
+const vpcCalculatorRootId = domPrefix ? `${domPrefix}-value-calculator` : "value-calculator-root";
 const articleBodyId = domPrefix ? `${domPrefix}-article-md-body` : "article-md-body";
 const articleBodyClass = domPrefix ? `${domPrefix}--article-content` : "article-content";
 
@@ -1043,75 +1081,7 @@ const faqClass = domPrefix ? `${domPrefix}--faq` : "faq";
 const geoBriefTitleId = domPrefix ? `${domPrefix}-geo-brief-title` : "geo-brief-title";
 const faqTitleId = domPrefix ? `${domPrefix}-faq-title` : "faq-title";
 
-const fixitGridDispatchCompliance =
-  isFixitGridSite && stateCodeFromSlug
-    ? getDispatchCompliance({
-        stateCode: stateCodeFromSlug,
-        niche: ACTIVE_COLLECTION,
-        citySlug: entrySlug,
-        domainKey: "fixitgrid",
-      })
-    : null;
-
-const realtorsDispatchCompliance =
-  isRealtorsSite && stateCodeFromSlug
-    ? getDispatchCompliance({
-        stateCode: stateCodeFromSlug,
-        niche: ACTIVE_COLLECTION,
-        citySlug: entrySlug,
-        domainKey: "realtors",
-      })
-    : null;
-
-const dispatchComplianceForPage = fixitGridDispatchCompliance ?? realtorsDispatchCompliance;
-
-const infraBriefPanelActive = isFixitgridInfraBriefPanel({
-  isFixitGridSite,
-  infraBriefPanel: post.data.infraBriefPanel,
-});
-
-const fixitGridClimateLead =
-  infraBriefPanelActive && stateCodeFromSlug && pageCity
-    ? buildFixitGridFlClimateLead({
-        collection: ACTIVE_COLLECTION,
-        city: pageCity,
-        stateCode: stateCodeFromSlug,
-      })
-    : null;
-
-const fixitGridServiceReference =
-  infraBriefPanelActive && stateCodeFromSlug
-    ? buildFixitgridServiceReference({
-        niche: ACTIVE_COLLECTION,
-        city: pageCity ?? String(post.data.city ?? "").trim(),
-        stateCode: stateCodeFromSlug,
-        zip: String(post.data.zipCode ?? "").trim(),
-      })
-    : null;
-
-const { Content } = await render(entry);
-
-const localBusinessSchema = isFixitGridSite
-  ? buildFixitGridEntityGraph({
-      collection: ACTIVE_COLLECTION,
-      pageDescription: pageMetaDescription,
-      pageUrl,
-      location: pageLocation,
-      entrySlug,
-      dispatchCompliance: fixitGridDispatchCompliance,
-      cityDisplay: pageLocation?.city ?? pageCity ?? null,
-    })
-  : isRealtorsSite
-    ? buildRealtorsEntityGraph({
-        collection: ACTIVE_COLLECTION,
-        pageDescription: pageMetaDescription,
-        pageUrl,
-        location: pageLocation,
-        entrySlug,
-        dispatchCompliance: realtorsDispatchCompliance,
-        cityDisplay: pageLocation?.city ?? pageCity ?? null,
-      })
-  : isRockwellMaine
+const localBusinessSchema = isRockwellMaine
   ? buildRockwellMaineEntityGraph({
       collection: ACTIVE_COLLECTION,
       pageDescription: pageMetaDescription,
@@ -1127,7 +1097,17 @@ const localBusinessSchema = isFixitGridSite
         pageUrl,
         location: pageLocation,
       })
-    : buildLocalBusinessSchema({
+    : isFixitGridSite
+      ? buildFixitGridEntityGraph({
+          collection: ACTIVE_COLLECTION,
+          pageDescription: pageMetaDescription,
+          pageUrl,
+          location: pageLocation,
+          entrySlug,
+          cityDisplay: pageCity,
+          countyDisplay: String(post.data.county ?? geo.county ?? "").trim() || null,
+        })
+      : buildLocalBusinessSchema({
         collection: ACTIVE_COLLECTION,
         pageTitle,
         pageDescription: pageMetaDescription,
@@ -1135,7 +1115,7 @@ const localBusinessSchema = isFixitGridSite
         location: pageLocation,
         entrySlug,
       });
-const faqSchema = showFaq ? buildFaqSchema(pageFaqItemsFinal) : null;
+const faqSchema = buildFaqSchema(pageFaqItemsFinal);
 const seedAggregateRating = buildServiceAreaAggregateRating(entrySlug);
 const seedReviewCityDisplay = pageLocation?.city ?? pageCity ?? "Local";
 const seedLandmarks = getGscSeedLandmarks(entrySlug);
@@ -1147,44 +1127,25 @@ const seedLandmarksState =
 const breadcrumbListSchema = buildBreadcrumbListSchema(
   buildSlugPageBreadcrumbItems({
     canonicalPageUrl,
-    serviceHubLabel: PUBLIC_NICHE_LABEL,
+    serviceHubLabel: getNicheLabelForSeed("breadcrumb-hub"),
     stateCode: stateCodeFromSlug,
     cityDisplayName: pageCity,
     entrySlug,
   }),
 );
 
-// Action 3: stable DOM section randomizer for 4 blocks (content / geo / faq / related)
-const blocks = ["content", "geo", "faq", "related"] as const;
+// Reading order: audit body → FAQ → map → related (no shuffle — map no longer jumps above content).
+const blocks = ["content", "faq", "geo", "related"] as const;
 const visibleBlocks = blocks.filter((k) => {
   if (k === "faq") return showFaq;
   if (k === "related") return showRelated;
   return true;
 });
-const blockOrder = infraBriefPanelActive
-  ? (["content", "faq", "geo", "related"] as const).filter((k) =>
-      visibleBlocks.includes(k),
-    )
-  : ACTIVE_COLLECTION === "plumbing-v2"
+const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
   ? REALTORS_AT_THE_BEACH_PLUMBING_V2.blockOrder.filter((k) => visibleBlocks.includes(k))
   : enableRealtorsAtTheBeachWaterDamageIsolation
   ? REALTORS_AT_THE_BEACH_WATER_DAMAGE.blockOrder.filter((k) => visibleBlocks.includes(k))
-  : (() => {
-      const orderSeed = stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|order`);
-      const order = [...visibleBlocks];
-      {
-        let s = orderSeed;
-        for (let i = order.length - 1; i > 0; i--) {
-          s = Math.imul(s ^ (s >>> 13), 1274126177) >>> 0;
-          const j = s % (i + 1);
-          const a = order[i]!;
-          const b = order[j]!;
-          order[i] = b;
-          order[j] = a;
-        }
-      }
-      return order;
-    })();
+  : visibleBlocks;
 ---
 
 <html
@@ -1214,9 +1175,7 @@ const blockOrder = infraBriefPanelActive
     <meta name="twitter:image" content={ogImageUrl} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbListSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
-    {faqSchema ? (
-      <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
-    ) : null}
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
     <style>
       :root {
         color-scheme: light;
@@ -1273,24 +1232,15 @@ const blockOrder = infraBriefPanelActive
       .service-meta {
         font-size: 0.95rem;
       }
-      @keyframes ctaUrgencyFlash {
+      @keyframes ctaMobileShadowPulse {
         0%,
         100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.82;
-        }
-      }
-      @keyframes ctaPressurePulse {
-        0%,
-        100% {
-          transform: scale(1);
           box-shadow: 0 2px 10px rgba(185, 28, 28, 0.28);
         }
         50% {
-          transform: scale(1.02);
-          box-shadow: 0 6px 18px rgba(185, 28, 28, 0.45);
+          box-shadow:
+            0 0 0 10px rgba(185, 28, 28, 0),
+            0 4px 16px rgba(185, 28, 28, 0.38);
         }
       }
       .phone-btn,
@@ -1299,17 +1249,24 @@ const blockOrder = infraBriefPanelActive
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        width: 100%;
+        max-width: 100%;
         margin-top: 0.45rem;
         background: #b91c1c;
         color: #fff;
         padding: 0.7rem 1rem;
-        border-radius: 0;
+        border-radius: 8px;
         text-decoration: none;
         font-weight: 700;
         border: none;
         transform-origin: center;
-        animation: ctaUrgencyFlash 1.15s ease-in-out infinite, ctaPressurePulse 2.2s ease-in-out infinite;
+        animation: ctaMobileShadowPulse 3s ease-in-out infinite;
         box-sizing: border-box;
+        transition: transform 0.12s ease;
+      }
+      .phone-btn:active,
+      [class$="--phone-btn"]:active {
+        transform: scale(0.95);
       }
       .phone-btn__main {
         display: inline-flex;
@@ -1366,7 +1323,8 @@ const blockOrder = infraBriefPanelActive
           transition:
             filter 0.2s ease,
             box-shadow 0.2s ease,
-            background-color 0.2s ease;
+            background-color 0.2s ease,
+            transform 0.12s ease;
         }
         .phone-btn:hover,
         [class$="--phone-btn"]:hover {
@@ -1410,11 +1368,29 @@ const blockOrder = infraBriefPanelActive
           text-decoration: none;
         }
       }
+      @media (prefers-reduced-motion: reduce) {
+        .phone-btn,
+        [class$="--phone-btn"] {
+          animation: none;
+          transition: none;
+        }
+        .phone-btn:active,
+        [class$="--phone-btn"]:active {
+          transform: none;
+        }
+      }
       .dispatcher-hookup-line {
         margin: 0.55rem 0 0;
         font-size: 0.88rem;
         color: #475569;
         line-height: 1.4;
+      }
+      .dispatcher-scheduling-visibility {
+        margin: 0.2rem 0 0;
+        font-size: 10px;
+        opacity: 0.6;
+        line-height: 1.35;
+        color: #475569;
       }
       .pest-equity-insurance-note {
         margin: 0.55rem 0 0;
@@ -1445,16 +1421,49 @@ const blockOrder = infraBriefPanelActive
         border-radius: 8px;
         background: #f8fafc;
         margin-bottom: 0.6rem;
-        padding: 0.6rem 0.8rem;
+        padding: 0;
+        overflow: hidden;
       }
       .faq summary,
       [class$="--faq"] summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+        width: 100%;
+        min-height: 2.75rem;
+        padding: 0.7rem 0.85rem;
+        box-sizing: border-box;
         cursor: pointer;
         font-weight: 600;
+        list-style: none;
+        -webkit-tap-highlight-color: rgba(29, 78, 216, 0.12);
+      }
+      .faq summary::-webkit-details-marker,
+      [class$="--faq"] summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq summary::after,
+      [class$="--faq"] summary::after {
+        flex: 0 0 auto;
+        content: "+";
+        font-size: 1.1rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #64748b;
+      }
+      .faq details[open] summary::after,
+      [class$="--faq"] details[open] summary::after {
+        content: "−";
+      }
+      .faq details[open] summary,
+      [class$="--faq"] details[open] summary {
+        border-bottom: 1px solid #e2e8f0;
       }
       .faq p,
       [class$="--faq"] p {
-        margin: 0.55rem 0 0.1rem;
+        margin: 0;
+        padding: 0.65rem 0.85rem 0.75rem;
         color: #334155;
       }
       .geo-brief,
@@ -1480,20 +1489,23 @@ const blockOrder = infraBriefPanelActive
         overflow-wrap: anywhere;
         word-break: break-word;
       }
-      /* Engineering Notice highlight — suppressed when brief panel owns that data */
-      [id$="article-md-body"]:not(.infra-brief-demo-body) p:first-child {
+      /* Engineering Notice: always first paragraph emitted by generator */
+      [id$="article-md-body"] p:first-child,
+      [id$="article-md-body"] p.engineering-notice {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
           monospace;
         font-size: 0.92rem;
-        line-height: 1.45;
+        line-height: 1.68;
+        letter-spacing: 0.02em;
         background: #0b1220;
         color: #e2e8f0;
         border: 1px solid rgba(226, 232, 240, 0.18);
         border-radius: 10px;
-        padding: 0.75rem 0.9rem;
+        padding: 0.85rem 0.95rem;
         margin: 0 0 1rem;
       }
-      [id$="article-md-body"] p:first-child strong {
+      [id$="article-md-body"] p:first-child strong,
+      [id$="article-md-body"] p.engineering-notice strong {
         color: #f8fafc;
         font-weight: 700;
       }
@@ -1505,6 +1517,271 @@ const blockOrder = infraBriefPanelActive
       }
       [id$="article-md-body"] strong {
         color: #0f172a;
+      }
+      [id$="article-md-body"] .certified-technical-audit {
+        box-sizing: border-box;
+        margin: 0.25rem 0 1.1rem;
+        padding: 0;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #fff;
+        font-size: 0.9rem;
+        line-height: 1.62;
+        color: #334155;
+        overflow: hidden;
+      }
+      [id$="article-md-body"] .cta-audit-header {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #f8fafc;
+        background: #2d3436;
+        margin: 0;
+        padding: 0.55rem 0.75rem;
+      }
+      [id$="article-md-body"] .cta-node-sync {
+        margin: 0;
+        padding: 0.4rem 0.75rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #475569;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      [id$="article-md-body"] .cta-node-sync__dot {
+        color: #00b894;
+        margin-right: 0.25rem;
+        animation: cta-node-pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes cta-node-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        [id$="article-md-body"] .cta-node-sync__dot {
+          animation: none;
+        }
+      }
+      [id$="article-md-body"] .cta-audit-body {
+        padding: 0.65rem 0.75rem 0.75rem;
+      }
+      [id$="article-md-body"] .cta-layer {
+        margin: 0 0 0.85rem;
+      }
+      [id$="article-md-body"] .cta-layer:last-child {
+        margin-bottom: 0;
+      }
+      [id$="article-md-body"] .cta-layer__title {
+        margin: 0 0 0.45rem;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #0f172a;
+      }
+      [id$="article-md-body"] .cta-layer--environment {
+        background: transparent;
+        border-radius: 8px;
+        padding: 0;
+      }
+      [id$="article-md-body"] .cta-env-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.45rem;
+      }
+      @media (min-width: 480px) {
+        [id$="article-md-body"] .cta-env-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      [id$="article-md-body"] .cta-env-card {
+        display: flex;
+        gap: 0.4rem;
+        align-items: flex-start;
+        background: #f1f9f5;
+        border: 1px solid #d1f2e5;
+        border-left: 4px solid #00b894;
+        border-radius: 4px;
+        padding: 0.45rem 0.5rem;
+      }
+      [id$="article-md-body"] .cta-env-icon {
+        flex: 0 0 auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #00896f;
+        margin-top: 0.12rem;
+      }
+      [id$="article-md-body"] .cta-env-card p,
+      [id$="article-md-body"] .cta-field-row p,
+      [id$="article-md-body"] .cta-directive-row p {
+        margin: 0;
+        font-size: 0.88rem;
+        line-height: 1.55;
+      }
+      [id$="article-md-body"] .cta-layer--field {
+        background: #f0f3ff;
+        border-radius: 8px;
+        padding: 0.5rem 0.55rem;
+      }
+      [id$="article-md-body"] .cta-field-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.45rem 0.55rem;
+        align-items: start;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #c7d2fe;
+      }
+      [id$="article-md-body"] .cta-field-row:last-child {
+        border-bottom: 0;
+      }
+      [id$="article-md-body"] .cta-field-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        white-space: nowrap;
+      }
+      [id$="article-md-body"] .cta-directive-panel {
+        border: 1px dashed #d4a017;
+        border-radius: 8px;
+        padding: 0.55rem 0.65rem;
+        background: #fefce8;
+      }
+      [id$="article-md-body"] .cta-directive-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.35rem 0.55rem;
+        align-items: start;
+        margin: 0 0 0.4rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.82rem;
+      }
+      [id$="article-md-body"] .cta-directive-row:last-child {
+        margin-bottom: 0;
+      }
+      [id$="article-md-body"] .cta-directive-code {
+        color: #92400e;
+        font-weight: 700;
+      }
+      [id$="article-md-body"] .cta-directive-row p {
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+      [id$="article-md-body"] .cta-audit-verdict {
+        margin: 0;
+        padding: 0.65rem 0.75rem;
+        background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%);
+        border-top: 2px solid #f43f5e;
+      }
+      [id$="article-md-body"] .cta-audit-verdict__label {
+        display: block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #be123c;
+        margin-bottom: 0.35rem;
+      }
+      [id$="article-md-body"] .cta-audit-verdict__text {
+        margin: 0;
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1.45;
+        color: #881337;
+      }
+      [id$="article-md-body"] .cta-loc {
+        color: #1e3a5f;
+        font-weight: 700;
+      }
+      @media (max-width: 479px) {
+        main {
+          padding: 1.35rem 0.85rem;
+        }
+        [id$="article-md-body"] .cta-env-grid {
+          grid-template-columns: 1fr;
+        }
+        [id$="article-md-body"] .cta-env-card {
+          flex-direction: column;
+          gap: 0.3rem;
+          border-left: none;
+          border-top: 4px solid #00b894;
+          padding: 0.55rem 0.6rem 0.6rem;
+        }
+        [id$="article-md-body"] .cta-env-icon {
+          margin-top: 0;
+        }
+        [id$="article-md-body"] .cta-field-row,
+        [id$="article-md-body"] .cta-directive-row {
+          grid-template-columns: 1fr;
+          gap: 0.25rem;
+        }
+        [id$="article-md-body"] .cta-field-code,
+        [id$="article-md-body"] .cta-directive-code {
+          white-space: normal;
+          word-break: break-word;
+        }
+        [id$="article-md-body"] .cta-layer--field,
+        [id$="article-md-body"] .cta-directive-panel {
+          padding: 0.45rem 0.5rem;
+        }
+        [id$="article-md-body"] .cta-audit-header {
+          font-size: 0.6rem;
+          letter-spacing: 0.04em;
+          padding: 0.5rem 0.55rem;
+          overflow-wrap: anywhere;
+        }
+        [id$="article-md-body"] .cta-node-sync {
+          font-size: 0.58rem;
+          padding: 0.35rem 0.55rem;
+          overflow-wrap: anywhere;
+          line-height: 1.45;
+        }
+        [id$="article-md-body"] .cta-audit-body {
+          padding: 0.45rem 0.5rem 0.55rem;
+        }
+        [id$="article-md-body"] .cta-audit-verdict {
+          padding: 0.55rem 0.55rem;
+        }
+        [id$="article-md-body"] .cta-audit-verdict__text {
+          font-size: 0.82rem;
+          overflow-wrap: anywhere;
+        }
+        .faq summary,
+        [class$="--faq"] summary {
+          font-size: 0.92rem;
+          line-height: 1.4;
+          min-height: 3rem;
+          padding: 0.75rem 0.7rem;
+          overflow-wrap: anywhere;
+        }
+        .faq p,
+        [class$="--faq"] p {
+          font-size: 0.9rem;
+          padding: 0.6rem 0.7rem 0.7rem;
+          overflow-wrap: anywhere;
+        }
+        [id$="article-md-body"] p:first-child,
+        [id$="article-md-body"] p.engineering-notice {
+          font-size: 0.88rem;
+          line-height: 1.72;
+          letter-spacing: 0.02em;
+          padding: 0.8rem 0.85rem;
+        }
       }
       .h1-zmoney {
         color: #b91c1c;
@@ -1533,6 +1810,24 @@ const blockOrder = infraBriefPanelActive
     <main>
       <article>
         {
+          showFlashCoupon ? (
+            <>
+              <FlashCouponAnchor
+                city={pageCity}
+                entrySlug={entrySlug}
+                nicheLabel={pageNicheLabel}
+                phoneDisplay={siteConfig.phoneDisplay}
+                telHref={telHref}
+              />
+              <FlashCouponVpcBridge
+                city={pageCity}
+                entrySlug={entrySlug}
+                calculatorRootId={vpcCalculatorRootId}
+              />
+            </>
+          ) : null
+        }
+        {
           isWaterDamageHub ? (
             <>
               <OfficialRiskNodeHeader />
@@ -1543,6 +1838,7 @@ const blockOrder = infraBriefPanelActive
                 accent={themeAccent}
                 domPrefix={domPrefix}
                 visualizedAssessmentLine={waterVisualLine}
+                couponLinkEnabled={showFlashCoupon}
               />
               <NichePartnerLogos />
               {pestInsuranceEquityNote ? <p class="pest-equity-insurance-note">{pestInsuranceEquityNote}</p> : null}
@@ -1589,6 +1885,7 @@ const blockOrder = infraBriefPanelActive
                 visualizedAssessmentLine={
                   isSidingHub ? sidingVisualLine : plumbingVisualLine
                 }
+                couponLinkEnabled={showFlashCoupon}
               />
               <NichePartnerLogos />
               {pestInsuranceEquityNote ? <p class="pest-equity-insurance-note">{pestInsuranceEquityNote}</p> : null}
@@ -1622,6 +1919,7 @@ const blockOrder = infraBriefPanelActive
                 domPrefix={domPrefix}
                 terrainRiskNotice={pestNestNotice}
                 presentation="value_protection"
+                couponLinkEnabled={showFlashCoupon}
               />
               <NichePartnerLogos />
               {pestInsuranceEquityNote ? <p class="pest-equity-insurance-note">{pestInsuranceEquityNote}</p> : null}
@@ -1643,6 +1941,9 @@ const blockOrder = infraBriefPanelActive
                   accent={themeAccent}
                 />
               ) : null}
+              {pestBiodiversityBundle ? (
+                <PestBiodiversityPanel bundle={pestBiodiversityBundle} city={pageCity} />
+              ) : null}
             </>
           ) : (
             <>
@@ -1660,6 +1961,7 @@ const blockOrder = infraBriefPanelActive
                     domPrefix={domPrefix}
                     terrainRiskNotice={roofTerrainNotice}
                     presentation={isCommunityStewardshipNpo ? "stewardship_provision_guide" : "value_protection"}
+                    couponLinkEnabled={showFlashCoupon}
                   />
                   <NichePartnerLogos />
                 </>
@@ -1699,6 +2001,7 @@ const blockOrder = infraBriefPanelActive
                     domPrefix={domPrefix}
                     terrainRiskNotice={roofTerrainNotice}
                     presentation={isCommunityStewardshipNpo ? "stewardship_provision_guide" : "value_protection"}
+                    couponLinkEnabled={showFlashCoupon}
                   />
                   <NichePartnerLogos />
                 </>
@@ -1724,6 +2027,38 @@ const blockOrder = infraBriefPanelActive
           <p>{serviceLine}</p>
           <p class="service-meta">{ctaVariant.meta}</p>
           <TrustBar collectionKey={ACTIVE_COLLECTION} />
+          {
+            showLiveDispatchStatus ? (
+              <LiveDispatchStatus
+                city={pageCity}
+                stateCode={
+                  stateCodeFromSlug ??
+                  stateAbbrFromNearMeSlug(entrySlug) ??
+                  (String(post.data.state ?? "").trim().slice(0, 2).toUpperCase() || null)
+                }
+                entrySlug={entrySlug}
+                lat={geo.lat}
+                lng={geo.lng}
+              />
+            ) : null
+          }
+          {
+            !isCommunityStewardshipNpo ? (
+              <DispatchSectorRating
+                city={pageCity}
+                county={String(post.data.county ?? geo.county ?? "").trim()}
+                state={stateCodeFromSlug}
+                entrySlug={entrySlug}
+                localPaths={
+                  Array.isArray(post.data.localPaths)
+                    ? (post.data.localPaths as string[])
+                    : Array.isArray(geo.localPaths)
+                      ? geo.localPaths
+                      : []
+                }
+              />
+            ) : null
+          }
           <a class={`${phoneBtnClass} phone-dispatch-btn`} href={telHref} aria-label={phoneBtnAriaLabel}>
             <span class="phone-btn__main">
               <svg
@@ -1751,49 +2086,49 @@ const blockOrder = infraBriefPanelActive
             <NationalDispatchDisclaimer city={pageCity} slug={entrySlug} stewardshipReference={isCommunityStewardshipNpo} />
           </div>
           <p class="dispatcher-hookup-line">
-            Regional coordination desk ({dispatcherCountyLabel}): {dispatcherClaimsLineDisplay}
+            Regional coordination desk ({dispatcherCountyLabel}):
           </p>
+          <p class="dispatcher-scheduling-visibility">{dispatcherClaimsLineDisplay}</p>
           {pestLatestDispatchLine ? <p class="pest-zip-dispatch-pulse">{pestLatestDispatchLine}</p> : null}
         </div>
         {
           blockOrder.map((k) => {
             if (k === "content") {
               return (
-                <div
-                  id={articleBodyId}
-                  class:list={[articleBodyClass, infraBriefPanelActive && "infra-brief-demo-body"]}
-                >
+                <div id={articleBodyId} class={articleBodyClass}>
                   {sidingServiceLeadHtml ? <div set:html={sidingServiceLeadHtml} /> : null}
-                  <Content />
+                  {
+                    technicalAuditBodyHtml ? (
+                      <>
+                        {technicalAuditBodyHtml.engineeringHtml ? (
+                          <div set:html={technicalAuditBodyHtml.engineeringHtml} />
+                        ) : null}
+                        <div set:html={technicalAuditBodyHtml.auditHtml} />
+                      </>
+                    ) : (
+                      <Content />
+                    )
+                  }
                 </div>
               );
             }
             if (k === "geo") {
-              if (infraBriefPanelActive && fixitGridServiceReference) {
-                return (
-                  <LocalInfrastructureBrief
-                    cityDisplay={pageLocation?.city ?? pageCity ?? "Local"}
-                    stateCode={stateCodeFromSlug ?? "US"}
-                    nicheLabel={pageNicheLabel}
-                    county={geo.county}
-                    lat={geo.lat}
-                    lng={geo.lng}
-                    elevationFt={geo.elevationFt}
-                    zipCode={String(post.data.zipCode ?? pageLocation?.zip ?? "").trim() || undefined}
-                    zipSample={geo.zipSample}
-                    zipCodes={geo.zipCodes}
-                    localPaths={geo.localPaths}
-                    stateGeoFact={stateGeoFact}
-                    serviceReference={fixitGridServiceReference}
-                    dispatchCompliance={fixitGridDispatchCompliance}
-                    climateLine={fixitGridClimateLead}
-                    compact={true}
-                  />
-                );
-              }
               return showGeoSection ? (
                 <section class={geoBriefClass} aria-labelledby={geoBriefTitleId}>
                   <h2 id={geoBriefTitleId}>{geoTitle}</h2>
+                  {
+                    showDispatchRadar ? (
+                      <DispatchRadar
+                        lat={geo.lat}
+                        lng={geo.lng}
+                        city={pageCity}
+                        stateCode={stateCodeFromSlug ?? ""}
+                        county={String(post.data.county ?? geo.county ?? "").trim() || null}
+                        entrySlug={entrySlug}
+                        zipCode={pageZipForPestPulse ?? post.data.zipCode ?? null}
+                      />
+                    ) : null
+                  }
                   {geoCoordsLine ? <p>{geoCoordsLine}</p> : null}
                   {geoPhysicalEnvLine ? <p>{geoPhysicalEnvLine}</p> : null}
                   {localPathsText ? <p>{localPathsText}</p> : null}
@@ -1879,22 +2214,6 @@ const blockOrder = infraBriefPanelActive
         }
       </article>
     </main>
-    {
-      dispatchComplianceForPage && stateCodeFromSlug ? (
-        <ComplianceMatrix
-          compliance={dispatchComplianceForPage}
-          cityDisplay={pageLocation?.city ?? pageCity ?? "Local"}
-          stateCode={stateCodeFromSlug}
-          nicheLabel={pageNicheLabel}
-          brandName={isRealtorsSite ? "Realtors at the Beach" : "FixitGrid"}
-          sectionTitle={
-            isRealtorsSite
-              ? "Buyer & Service Network Compliance Audit"
-              : "Dispatch Gateway Compliance Audit"
-          }
-        />
-      ) : null
-    }
     <Footer
       extraLink={footerExtraLink}
       notice={stateNotice}

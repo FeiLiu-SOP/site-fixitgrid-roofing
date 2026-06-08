@@ -12,11 +12,6 @@ import {
   internalPath,
   siteConfig,
 } from "../site-config";
-import {
-  entryPublicPathSegments,
-  stateAbbrFromNearMeSlug,
-} from "../lib/fixitgrid-near-me-url";
-import { isStewardshipCollection, STEWERSHIP_BRAND_NAME } from "../lib/stewardship-legal";
 import { REALTORS_AT_THE_BEACH_PLUMBING_V2 } from "../domain-templates/realtorsatthebeach.com-plumbing-v2";
 
 function hostnameForBrand(astroHost: string): string {
@@ -31,11 +26,7 @@ function hostnameForBrand(astroHost: string): string {
 const posts = await getCollection(ACTIVE_COLLECTION);
 const pageNicheLabel = getNicheLabelForSeed("home");
 const brand = getBrand(hostnameForBrand(Astro.url.hostname));
-const stewardshipHome = isStewardshipCollection(ACTIVE_COLLECTION);
-const homeBrandName = stewardshipHome ? STEWERSHIP_BRAND_NAME : brand.name;
-const homeMetaDescription = stewardshipHome
-  ? `${pageNicheLabel} education pages for neighbors. Browse local ZIP stewardship briefings (non-commercial).`
-  : `${brand.name}: The official audit node for local ${pageNicheLabel} risks. Browse all local service pages.`;
+const homeMetaDescription = `${brand.name}: The official audit node for local ${pageNicheLabel} risks. Browse all local service pages.`;
 const pageUrl = canonicalPageUrl();
 const collectionSchema = {
   "@context": "https://schema.org",
@@ -52,17 +43,9 @@ const sortedPosts = [...posts].sort((a, b) => entryPath(a).localeCompare(entryPa
 
 function entryStateFromSlug(entry: { id?: string; slug?: string }): string | null {
   const slug = entryPath(entry);
-  const nearMe = stateAbbrFromNearMeSlug(slug);
-  if (nearMe) return nearMe;
   const m = slug.match(/-([a-z]{2})-\d{5}$/i);
   if (!m) return null;
   return m[1]!.toUpperCase();
-}
-
-function entryHref(entry: { id?: string; slug?: string }): string {
-  const slug = entryPath(entry);
-  const st = entryStateFromSlug(entry);
-  return internalPath(...entryPublicPathSegments(slug, st ?? undefined));
 }
 
 const stateCounts = new Map<string, number>();
@@ -176,7 +159,7 @@ const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
     <main>
       <h1>
         All {pageNicheLabel} Pages |{" "}
-        <span class="brand-home-title-suffix">{homeBrandName}</span>
+        <span class="brand-home-title-suffix">{brand.name}</span>
       </h1>
       <p class="meta">Total pages: {sortedPosts.length}</p>
       <p class="meta">Hub tunnel mode: centralized entry with weighted deep links.</p>
@@ -200,7 +183,7 @@ const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
       <ul>
         {sortedPosts.map((post) => (
           <li>
-            <a href={entryHref(post)}>{post.data.title}</a>
+            <a href={internalPath(entryPath(post))}>{post.data.title}</a>
           </li>
         ))}
       </ul>

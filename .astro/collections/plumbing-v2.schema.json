@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "pubDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "heroImage": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "zipCode": {
+      "type": "string"
+    },
+    "templateVersion": {
+      "type": "string"
+    },
+    "county": {
+      "type": "string"
+    },
+    "elevationFt": {
+      "type": "number"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "zipSample": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "zipCodes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "localPaths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "zillowHomeValueUsd": {
+      "type": "number"
+    },
+    "data_fidelity": {
+      "type": "string",
+      "enum": [
+        "estimated",
+        "synthetic"
+      ]
+    },
+    "infraBriefPanel": {
+      "type": "boolean"
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "description"
+  ]
+}

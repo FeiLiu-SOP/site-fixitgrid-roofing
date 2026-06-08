@@ -11,7 +11,7 @@ lng: -80.3565
 zipSample: ["33178", "33126", "33191", "33122", "33166"]
 zipCodes: ["33178", "33191", "33126", "33166", "33122", "33172"]
 localPaths: ["Miami-Dade County / coords 25.8152, -80.3565", "Miami-Dade County / ZIP 33126 sector", "Miami-Dade County / elevation 345 ft band", "Miami-Dade County / ZIP 33178 sector", "Miami-Dade County / primary ZIP 33178"]
-zillowHomeValueUsd: 549014
+zillowHomeValueUsd: 559318
 ---
 
 **Engineering Notice for Doral:** Structural loading calculated based on 345 ft terrain assessment. Regional dispatch grid: Miami-Dade County.

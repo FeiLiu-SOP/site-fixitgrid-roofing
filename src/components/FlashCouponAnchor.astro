@@ -1,0 +1,197 @@
+---
+import { ACTIVE_COLLECTION } from "../active-collection";
+import { buildFlashCouponBundle, collectionUsesFlashCoupon } from "../lib/flash-coupon";
+
+const { city, entrySlug, nicheLabel, phoneDisplay, telHref } = Astro.props as {
+  city: string;
+  entrySlug: string;
+  nicheLabel: string;
+  phoneDisplay: string;
+  telHref: string;
+};
+
+if (!collectionUsesFlashCoupon(ACTIVE_COLLECTION)) {
+  throw new Error(`[FlashCouponAnchor] unsupported ACTIVE_COLLECTION=${ACTIVE_COLLECTION}`);
+}
+
+const coupon = buildFlashCouponBundle({
+  entrySlug,
+  city,
+  nicheLabel,
+  collection: ACTIVE_COLLECTION,
+});
+const anchorId = `flash-offer-${entrySlug.replace(/[^a-z0-9-]/gi, "").slice(0, 48)}`;
+---
+
+<!-- CLS: full bar + timer text are SSR'd; script only ticks — no late DOM injection -->
+<div
+  class="pest-flash-offer"
+  id={anchorId}
+  role="region"
+  aria-label={coupon.ariaLabel}
+  data-ssr-coupon="1"
+  data-flash-collection={ACTIVE_COLLECTION}
+  data-initial-seconds={String(coupon.initialSeconds)}
+>
+  <div class="pest-flash-offer__inner">
+    <p class="pest-flash-offer__copy">
+      <strong class="pest-flash-offer__tag">Flash Offer</strong>
+      <span class="pest-flash-offer__sep" aria-hidden="true">:</span>
+      <span class="pest-flash-offer__deal">{coupon.dealLine}</span>
+      <span class="pest-flash-offer__if"> if booked within the next </span>
+      <time class="pest-flash-offer__timer" datetime={`PT${coupon.initialSeconds}S`} data-role="timer">
+        {coupon.initialLabel}
+      </time>
+      <span class="pest-flash-offer__if">.</span>
+    </p>
+    <a
+      class="pest-flash-offer__cta"
+      href={telHref}
+      aria-label={`Call ${phoneDisplay} to claim flash offer`}
+    >
+      Claim now
+    </a>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    document.querySelectorAll(".pest-flash-offer[data-initial-seconds]").forEach(function (root) {
+      const timerEl = root.querySelector('[data-role="timer"]');
+      if (!timerEl) return;
+      let remaining = parseInt(root.getAttribute("data-initial-seconds") || "1200", 10);
+      if (!Number.isFinite(remaining) || remaining < 0) remaining = 1200;
+
+      function pad(n) {
+        return String(n).padStart(2, "0");
+      }
+      function render() {
+        const mm = Math.floor(remaining / 60);
+        const ss = remaining % 60;
+        timerEl.textContent = pad(mm) + ":" + pad(ss);
+        timerEl.setAttribute("datetime", "PT" + remaining + "S");
+      }
+      const tick = window.setInterval(function () {
+        if (remaining <= 0) {
+          window.clearInterval(tick);
+          root.classList.add("pest-flash-offer--expired");
+          timerEl.textContent = "00:00";
+          timerEl.setAttribute("datetime", "PT0S");
+          return;
+        }
+        remaining -= 1;
+        render();
+      }, 1000);
+    });
+  })();
+</script>
+
+<style is:global>
+  .pest-flash-offer {
+    width: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(90deg, #b91c1c 0%, #dc2626 48%, #b91c1c 100%);
+    background-size: 200% 100%;
+    animation: pest-flash-offer-pulse 2.8s ease-in-out infinite;
+    color: #fff;
+    border-bottom: 2px solid #7f1d1d;
+    box-shadow: 0 2px 10px rgba(127, 29, 29, 0.35);
+  }
+  .pest-flash-offer--expired {
+    animation: none;
+    background: #7f1d1d;
+  }
+  .pest-flash-offer__inner {
+    width: min(980px, 94vw);
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem 1rem;
+  }
+  .pest-flash-offer__copy {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+  .pest-flash-offer__tag {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 800;
+  }
+  .pest-flash-offer__sep {
+    margin: 0 0.15rem;
+  }
+  .pest-flash-offer__deal {
+    font-weight: 700;
+  }
+  .pest-flash-offer__timer {
+    display: inline-block;
+    min-width: 3.35em;
+    padding: 0.08rem 0.35rem;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.22);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+  }
+  .pest-flash-offer__cta {
+    flex: 0 0 auto;
+    display: inline-block;
+    padding: 0.42rem 0.85rem;
+    border-radius: 999px;
+    background: #fff;
+    color: #b91c1c;
+    font-weight: 800;
+    font-size: 0.86rem;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  }
+  .pest-flash-offer__cta:hover {
+    background: #fef2f2;
+  }
+  @keyframes pest-flash-offer-pulse {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  @media (max-width: 520px) {
+    .pest-flash-offer__copy {
+      flex: 0 1 auto;
+      font-size: 0.86rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    .pest-flash-offer__inner {
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      gap: 0.5rem;
+      padding: 0.55rem 0.65rem 0.65rem;
+    }
+    .pest-flash-offer__cta {
+      flex: 0 0 auto;
+      align-self: center;
+      width: 100%;
+      max-width: 14rem;
+      text-align: center;
+      box-sizing: border-box;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pest-flash-offer {
+      animation: none;
+    }
+  }
+</style>

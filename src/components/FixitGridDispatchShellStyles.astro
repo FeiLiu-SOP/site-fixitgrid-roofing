@@ -1,0 +1,186 @@
+---
+/** FixitGrid-only dispatch shell styles — when fixitgridDispatchShell / infraBriefPanel active. */
+---
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style is:global>
+  html.fixitgrid-dispatch-shell {
+    color-scheme: dark;
+    --fg-dispatch-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --fg-dispatch-accent: #38bdf8;
+    --fg-dispatch-bg: #0b1120;
+    --fg-dispatch-panel: #111827;
+    --fg-dispatch-border: #334155;
+    --fg-dispatch-text: #e2e8f0;
+    --fg-dispatch-muted: #94a3b8;
+    --theme-accent: var(--fg-dispatch-accent);
+  }
+  html.fixitgrid-dispatch-shell body {
+    background: var(--fg-dispatch-bg);
+    color: var(--fg-dispatch-text);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  html.fixitgrid-dispatch-shell main {
+    background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+    border: 1px solid var(--fg-dispatch-border);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    color: var(--fg-dispatch-text);
+  }
+  html.fixitgrid-dispatch-shell a {
+    color: var(--fg-dispatch-accent);
+  }
+  html.fixitgrid-dispatch-shell h1,
+  html.fixitgrid-dispatch-shell h2 {
+    color: #f8fafc;
+  }
+  html.fixitgrid-dispatch-shell .hero-flood-alert-band {
+    display: none;
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.1rem 1.15rem;
+    border: 1px solid var(--fg-dispatch-border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--fg-dispatch-border);
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__sync {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--fg-dispatch-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #86efac;
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.7);
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__desk {
+    font-family: var(--fg-dispatch-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg-dispatch-muted);
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__meta p {
+    margin: 0.35rem 0 0;
+    font-size: 0.88rem;
+    color: var(--fg-dispatch-muted);
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__label {
+    display: inline-block;
+    min-width: 5.5rem;
+    margin-right: 0.35rem;
+    font-family: var(--fg-dispatch-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__title {
+    margin: 1rem 0 0.35rem;
+    font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+    line-height: 1.25;
+    font-weight: 700;
+  }
+  html.fixitgrid-dispatch-shell .fg-dispatch-shell-header__sub {
+    margin: 0;
+    color: var(--fg-dispatch-muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-intake,
+  html.fixitgrid-dispatch-shell .service-info {
+    background: var(--fg-dispatch-panel);
+    border: 1px solid var(--fg-dispatch-border);
+    border-left: 4px solid var(--fg-dispatch-accent);
+    color: var(--fg-dispatch-text);
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-intake h2,
+  html.fixitgrid-dispatch-shell .service-info h2 {
+    font-family: var(--fg-dispatch-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-dispatch-accent);
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-intake p,
+  html.fixitgrid-dispatch-shell .service-info p {
+    color: #cbd5e1;
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-body,
+  html.fixitgrid-dispatch-shell .infra-brief-demo-body {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--fg-dispatch-border);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.55);
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-body p,
+  html.fixitgrid-dispatch-shell .infra-brief-demo-body p {
+    color: #cbd5e1;
+    line-height: 1.55;
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-faq,
+  html.fixitgrid-dispatch-shell .faq {
+    margin-top: 1.5rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--fg-dispatch-border);
+    border-radius: 10px;
+    background: var(--fg-dispatch-panel);
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-faq h2,
+  html.fixitgrid-dispatch-shell .faq h2 {
+    font-family: var(--fg-dispatch-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-dispatch-accent);
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-faq details,
+  html.fixitgrid-dispatch-shell .faq details {
+    margin: 0.65rem 0 0;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    background: #0f172a;
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-faq summary,
+  html.fixitgrid-dispatch-shell .faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  html.fixitgrid-dispatch-shell .fixitgrid-dispatch-faq details p,
+  html.fixitgrid-dispatch-shell .faq details p {
+    margin: 0.5rem 0 0;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  html.fixitgrid-dispatch-shell .geo-brief {
+    border-color: var(--fg-dispatch-border);
+    background: var(--fg-dispatch-panel);
+    color: var(--fg-dispatch-text);
+  }
+</style>

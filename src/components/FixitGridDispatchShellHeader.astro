@@ -1,0 +1,62 @@
+---
+import type { DispatchCompliance } from "../lib/compliance-matrix";
+
+export interface Props {
+  city: string;
+  stateCode: string | null;
+  zip?: string | null;
+  nicheLabel: string;
+  pageH1: string;
+  headerVariant: string;
+  serviceReference?: string | null;
+  dispatchCompliance?: DispatchCompliance | null;
+}
+
+const {
+  city,
+  stateCode,
+  zip,
+  nicheLabel,
+  pageH1,
+  headerVariant,
+  serviceReference,
+  dispatchCompliance,
+} = Astro.props;
+
+const place =
+  stateCode && zip ? `${city}, ${stateCode} ${zip}` : stateCode ? `${city}, ${stateCode}` : city;
+---
+
+<header class="fg-dispatch-shell-header" aria-label="Dispatch dashboard header">
+  <div class="fg-dispatch-shell-header__bar">
+    <span class="fg-dispatch-shell-header__sync" aria-label="Registry sync status active">
+      <span class="fg-dispatch-shell-header__dot" aria-hidden="true"></span>
+      SYNC: ACTIVE
+    </span>
+    <span class="fg-dispatch-shell-header__desk">FixitGrid dispatch console</span>
+  </div>
+  <div class="fg-dispatch-shell-header__meta">
+    <p class="fg-dispatch-shell-header__route">
+      <span class="fg-dispatch-shell-header__label">route</span>
+      {nicheLabel} · {place}
+    </p>
+    {
+      dispatchCompliance ? (
+        <p class="fg-dispatch-shell-header__compliance">
+          <span class="fg-dispatch-shell-header__label">compliance</span>
+          <code>{dispatchCompliance.dispatchId}</code> · {dispatchCompliance.authorityShort}
+        </p>
+      ) : null
+    }
+    {
+      serviceReference ? (
+        <p class="fg-dispatch-shell-header__ref">
+          <span class="fg-dispatch-shell-header__label">ref</span>
+          {serviceReference}
+        </p>
+      ) : null
+    }
+  </div>
+  <h1 class="fg-dispatch-shell-header__title">{pageH1}</h1>
+  <p class="fg-dispatch-shell-header__sub">{headerVariant}</p>
+</header>

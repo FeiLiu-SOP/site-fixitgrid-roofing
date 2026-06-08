@@ -6,7 +6,7 @@ export type PlumbingV2DomainTemplate = {
     fontFamily: string;
   };
   domPrefixBase: string;
-  blockOrder: Array<"related" | "content">;
+  blockOrder: Array<"related" | "content" | "geo" | "faq">;
   phone: {
     e164: string;
     display: string;
@@ -26,7 +26,8 @@ export const REALTORS_AT_THE_BEACH_PLUMBING_V2: PlumbingV2DomainTemplate = {
     fontFamily: "Inter, system-ui, sans-serif",
   },
   domPrefixBase: "beach-plumb-v2",
-  blockOrder: ["related", "content"],
+  /** Geo (DispatchRadar) + FAQ included for parity with Rockwell hubs. */
+  blockOrder: ["geo", "related", "content", "faq"],
   phone: {
     e164: "+16074009375",
     display: "+1 (607) 400-9375",

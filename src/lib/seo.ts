@@ -1,118 +1,20 @@
 import type { ActiveCollectionKey } from "../active-collection";
 import type { ParsedLocation } from "./location";
+import type { FaqPoolItem } from "./faq-hydration";
+import { ROOFING_FAQ_POOL } from "./faq-roofing-pool";
 import { getPestcontrolSerpOverride } from "./pestcontrol-serp-overrides";
 import { getPlumbingSerpOverride } from "./plumbing-serp-overrides";
 import { getRoofingSerpOverride } from "./roofing-serp-overrides";
 import { normalizePhoneE164, siteConfig } from "../site-config";
+import { detailOpeningHoursSpecification } from "./live-dispatch-status";
 
 export type FaqItem = {
   question: string;
   answer: string;
 };
 
-const FAQ_BY_COLLECTION: Record<ActiveCollectionKey, FaqItem[]> = {
-  roofing: [
-    {
-      question: "Do you offer emergency roofing repairs?",
-      answer:
-        "Yes. We coordinate local emergency roofing response for leak mitigation and urgent storm-damage inspections.",
-    },
-    {
-      question: "How quickly can a roofer arrive?",
-      answer:
-        "Most service areas support same-day dispatch windows depending on technician availability and weather conditions.",
-    },
-    {
-      question: "Can you inspect roof leaks before full replacement?",
-      answer:
-        "Yes. We prioritize inspection-first recommendations so homeowners can compare repair vs replacement options.",
-    },
-    {
-      question: "Do you handle storm and wind roof damage?",
-      answer:
-        "Yes. We help with common storm damage scenarios including missing shingles, flashing issues, and active leaks.",
-    },
-    {
-      question: "Are estimates available for local roofing service?",
-      answer:
-        "Yes. Availability varies by city, but transparent estimate options are provided before work is scheduled.",
-    },
-    {
-      question: "Can you inspect flashing and vent penetrations?",
-      answer:
-        "Yes. Inspection requests often include flashing, vent boots, ridge caps, and other leak-prone transitions.",
-    },
-    {
-      question: "Do you work with asphalt shingle roofs?",
-      answer:
-        "Yes. Asphalt shingle systems are among the most common residential roofing requests in many service areas.",
-    },
-    {
-      question: "Can roof repairs help after hail exposure?",
-      answer:
-        "Yes. Many calls involve impact checks, missing granules, and moisture entry after hail or wind events.",
-    },
-    {
-      question: "Will you explain repair versus replacement options?",
-      answer:
-        "Yes. Homeowners are usually given a scope review so they can compare targeted repair and full replacement paths.",
-    },
-    {
-      question: "Are emergency tarping options available?",
-      answer:
-        "In some service areas, temporary weather protection may be available while a permanent repair plan is arranged.",
-    },
-    {
-      question: "Can roof issues affect attic moisture conditions?",
-      answer:
-        "Yes. Ongoing leaks and ventilation issues can contribute to attic moisture, insulation damage, and interior staining.",
-    },
-    {
-      question: "Do you provide written scope details before scheduling?",
-      answer:
-        "Yes. Scope, material notes, and scheduling expectations are typically reviewed before work is confirmed.",
-    },
-    {
-      question: "Can you check roof decking for soft spots?",
-      answer:
-        "Yes. When accessible, service teams may check for soft decking areas or visible moisture-related concerns.",
-    },
-    {
-      question: "Do you offer guidance on ventilation and intake/exhaust balance?",
-      answer:
-        "In many cases, yes. Ventilation notes are often part of a broader inspection conversation.",
-    },
-    {
-      question: "Can you help with gutter-related overflow contributing to leaks?",
-      answer:
-        "Yes. Water management issues can contribute to roof and fascia concerns in certain scenarios.",
-    },
-    {
-      question: "Do you handle chimney flashing leak points?",
-      answer:
-        "Yes. Chimney transitions are common leak-prone areas and are often checked during inspection requests.",
-    },
-    {
-      question: "Can you document findings with photos when available?",
-      answer:
-        "Often, yes. Some technicians provide photos of visible issues to help explain recommendations.",
-    },
-    {
-      question: "Are warranty details reviewed before approval?",
-      answer:
-        "Yes. When applicable, warranty scope and exclusions are typically discussed before work is scheduled.",
-    },
-    {
-      question: "Can seasonal ice or wind patterns affect roofing wear?",
-      answer:
-        "Yes. Seasonal conditions can influence wear patterns and may be mentioned during service discussions.",
-    },
-    {
-      question: "Will you confirm timeline expectations before dispatch?",
-      answer:
-        "Yes. Service windows and timing expectations are usually shared based on coverage and demand.",
-    },
-  ],
+const FAQ_BY_COLLECTION: Record<ActiveCollectionKey, FaqPoolItem[]> = {
+  roofing: ROOFING_FAQ_POOL,
   plumbing: [
     {
       question: "Do you provide emergency plumber service?",
@@ -737,6 +639,10 @@ const FAQ_BY_COLLECTION: Record<ActiveCollectionKey, FaqItem[]> = {
 };
 
 export function getFaqByCollection(collection: ActiveCollectionKey): FaqItem[] {
+  return FAQ_BY_COLLECTION[collection].map(({ question, answer }) => ({ question, answer }));
+}
+
+export function getFaqPoolByCollection(collection: ActiveCollectionKey): FaqPoolItem[] {
   return FAQ_BY_COLLECTION[collection];
 }
 
@@ -812,6 +718,8 @@ export function buildLocalBusinessSchema(params: {
         name: "US",
       };
 
+  const openingHoursSpecification = detailOpeningHoursSpecification(entrySlug);
+
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -829,6 +737,7 @@ export function buildLocalBusinessSchema(params: {
             "Emergency dispatch",
           ]
         : [collection, serviceType, "Emergency service"],
+    ...(openingHoursSpecification ? { openingHoursSpecification } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
   };
 }

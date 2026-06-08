@@ -11,7 +11,7 @@ lng: -80.1128
 zipSample: ["33468", "33458", "33477"]
 zipCodes: ["33477", "33468", "33458"]
 localPaths: ["Palm Beach County / primary ZIP 33477", "Palm Beach County / elevation 345 ft band", "Palm Beach County / ZIP 33477 sector", "Palm Beach County / ZIP 33468 sector", "Palm Beach County / coords 26.9200, -80.1128"]
-zillowHomeValueUsd: 693656
+zillowHomeValueUsd: 676962
 infraBriefPanel: true
 ---
 

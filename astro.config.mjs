@@ -67,6 +67,18 @@ export default defineConfig({
   build: {
     inlineStylesheets: churchStewardship ? "always" : "auto",
   },
+  vite: {
+    server: {
+      watch: {
+        /** Dev-only: skip massive thumbnail trees when running multiple hub servers. */
+        ignored: [
+          "**/public/images/thumbnails/**",
+          "**/public/images/thumbnails-legacy-v1/**",
+          "**/public/images/brand-thumbnails/**",
+        ],
+      },
+    },
+  },
   integrations: [
     /** Church stewardship: GSC uses static apex sitemap only — do not emit *.pages.dev sitemap XML. */
     ...(churchStewardship

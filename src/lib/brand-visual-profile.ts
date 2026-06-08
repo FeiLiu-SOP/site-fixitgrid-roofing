@@ -1,6 +1,12 @@
 import { ACTIVE_COLLECTION } from "../active-collection";
+import { matchesFixitGridEntity } from "../domain-templates/fixitgrid.com-entity";
 import { siteConfig } from "../site-config";
 import profilesDoc from "../../scripts/brand-visual-profiles.json";
+
+const TRUST_SHIELD_BY_ENTITY: Record<string, string> = {
+  rockwell_cluster: "/rockwell-trust-shield.svg",
+  realtors_cluster: "/realtors-trust-shield.svg",
+};
 
 export type BrandVisualProfile = {
   id: string;
@@ -55,6 +61,22 @@ export function brandHeroOgImageUrl(): string | null {
 
 export function brandHeroPathPrefix(): string {
   return String(profilesDoc.heroPathPrefix ?? "/brand/images/brand-thumbnails");
+}
+
+/** Brand-isolated green-shield favicon (SVG). Church / stewardship builds return null (no commercial trust shield). */
+export function trustShieldFaviconHref(): string | null {
+  const profile = brandProfileForActiveBuild();
+  if (profile?.auditMode === "church") {
+    return null;
+  }
+  if (matchesFixitGridEntity({ domainOrUrl: siteConfig.canonicalOrigin })) {
+    return "/fixitgrid-trust-shield.svg";
+  }
+  const entityId = entityIdForActiveCollection();
+  if (entityId && TRUST_SHIELD_BY_ENTITY[entityId]) {
+    return TRUST_SHIELD_BY_ENTITY[entityId];
+  }
+  return TRUST_SHIELD_BY_ENTITY.rockwell_cluster;
 }
 
 export { profilesDoc as BRAND_VISUAL_PROFILES_DOC };

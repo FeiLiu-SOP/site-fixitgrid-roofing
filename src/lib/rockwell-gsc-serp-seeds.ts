@@ -2,35 +2,17 @@ import type { ActiveCollectionKey } from "../active-collection";
 import { getPlumbingSerpOverride } from "./plumbing-serp-overrides";
 import { getPestcontrolSerpOverride } from "./pestcontrol-serp-overrides";
 import { getRoofingSerpOverride } from "./roofing-serp-overrides";
+import bulkDoc from "../../../data/bulk-write-protected-slugs.json";
 
 /**
- * Rockwell GSC SERP seed slugs (15) — SSOT aligned with:
- * - docs/Rockwell-GSC细粒度SERP覆盖页面清单.md
- * - *-serp-overrides.ts RAW keys
+ * Rockwell GSC SERP seed slugs (15) — subset of data/bulk-write-protected-slugs.json
+ * docs/Rockwell-GSC细粒度SERP覆盖页面清单.md
  */
-export const ROCKWELL_GSC_SERP_SEEDS = {
-  plumbing: [
-    "plumbing-columbus-oh-43109",
-    "plumbing-reynoldsburg-oh-43068",
-  ],
-  pestcontrol: [
-    "pest-control-temescal-valley-ca-92883",
-    "pest-control-coral-terrace-fl-33144",
-    "pest-control-moreno-valley-ca-92551",
-    "pest-control-flowing-wells-az-85705",
-    "pest-control-casa-de-oro-mount-helix-ca-91977",
-    "pest-control-the-acreage-fl-33411",
-    "pest-control-gladeview-fl-33147",
-  ],
-  roofing: [
-    "roofing-carlsbad-ca-92008",
-    "roofing-willowbrook-ca-90059",
-    "roofing-lochearn-md-21208",
-    "roofing-white-center-wa-98106",
-    "roofing-fullerton-pa-18052",
-    "roofing-temescal-valley-ca-92883",
-  ],
-} as const satisfies Record<"plumbing" | "pestcontrol" | "roofing", readonly string[]>;
+export const ROCKWELL_GSC_SERP_SEEDS = bulkDoc.sources.rockwellGscSerp.collections as {
+  plumbing: readonly string[];
+  pestcontrol: readonly string[];
+  roofing: readonly string[];
+};
 
 export type RockwellGscSerpSeedCollection = keyof typeof ROCKWELL_GSC_SERP_SEEDS;
 

@@ -1,0 +1,206 @@
+---
+import type { PestBiodiversityBundle } from "../lib/pest-biodiversity";
+
+const { bundle, city } = Astro.props as {
+  bundle: PestBiodiversityBundle;
+  city: string;
+};
+---
+
+<section class="pest-bio" aria-labelledby="pest-bio-title">
+  <h2 id="pest-bio-title">{bundle.sectionTitle}</h2>
+  <p class="pest-bio__lead">
+    Six priority species commonly routed for this ZIP sector (stable per city page).
+  </p>
+  <ul class="pest-bio__grid">
+    {
+      bundle.featured.map((pest) => (
+        <li class="pest-bio__card">
+          <div
+            class="pest-bio__icon-wrap"
+            role="img"
+            aria-label={pest.imageAlt}
+            style={`--pest-accent:${pest.displayAccent}`}
+          >
+            <svg
+              class="pest-bio__icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="48"
+              height="48"
+              aria-hidden="true"
+              focusable="false"
+              set:html={pest.svgPaths}
+            />
+          </div>
+          <div class="pest-bio__copy">
+            <h3 class="pest-bio__name">{pest.name}</h3>
+            <p class="pest-bio__desc">{pest.description}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="pest-bio__bottom-line">{bundle.bottomLine}</p>
+  <details class="pest-bio__details">
+    <summary class="pest-bio__details-summary">+ {bundle.detailsSummary}</summary>
+    <ul class="pest-bio__full-list">
+      {
+        bundle.detailsSubset.map((pest) => (
+          <li>
+            <strong>{pest.name}</strong>
+            <span> — {pest.description}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </details>
+</section>
+
+<style>
+  .pest-bio {
+    width: min(980px, 94vw);
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 1.25rem auto 1.5rem;
+    padding: 1.1rem 1.15rem 1.2rem;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  }
+  .pest-bio__lead {
+    margin: 0.35rem 0 0.9rem;
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .pest-bio__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.85rem;
+  }
+  .pest-bio__card {
+    margin: 0;
+    padding: 0.75rem 0.65rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .pest-bio__copy {
+    width: 100%;
+    min-width: 0;
+  }
+  .pest-bio__icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 0.45rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--pest-accent, #334155) 12%, #fff);
+    color: var(--pest-accent, #334155);
+  }
+  .pest-bio__icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+  }
+  .pest-bio__name {
+    margin: 0 0 0.35rem;
+    font-size: 0.92rem;
+    color: #0f172a;
+    line-height: 1.25;
+  }
+  .pest-bio__desc {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.35;
+  }
+  .pest-bio__bottom-line {
+    margin: 1rem 0 0.65rem;
+    padding: 0.75rem 0.85rem;
+    border-left: 4px solid #16a34a;
+    background: #f0fdf4;
+    color: #14532d;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .pest-bio__details {
+    margin-top: 0.35rem;
+  }
+  .pest-bio__details-summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #1d4ed8;
+    font-size: 0.92rem;
+  }
+  .pest-bio__full-list {
+    margin: 0.65rem 0 0;
+    padding-left: 1.15rem;
+    color: #334155;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+  .pest-bio__full-list li {
+    margin-bottom: 0.35rem;
+  }
+  @media (max-width: 479px) {
+    .pest-bio {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      padding: 0.95rem 0.85rem 1rem;
+    }
+    .pest-bio__grid {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    .pest-bio__card {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.6rem 0.65rem;
+      text-align: left;
+    }
+    .pest-bio__icon-wrap {
+      width: 44px;
+      height: 44px;
+      margin: 0;
+      border-radius: 10px;
+    }
+    .pest-bio__icon {
+      width: 32px;
+      height: 32px;
+    }
+    .pest-bio__copy {
+      flex: 1 1 auto;
+    }
+    .pest-bio__name {
+      font-size: 0.9rem;
+    }
+    .pest-bio__desc {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    .pest-bio__bottom-line {
+      border-left: none;
+      border-top: 4px solid #16a34a;
+      padding: 0.65rem 0.7rem;
+      overflow-wrap: anywhere;
+    }
+    .pest-bio__full-list {
+      overflow-wrap: anywhere;
+    }
+  }
+</style>

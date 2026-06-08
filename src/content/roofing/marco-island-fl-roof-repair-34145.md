@@ -11,7 +11,7 @@ lng: -81.6993
 zipSample: ["34145", "34146", "34140"]
 zipCodes: ["34145", "34146", "34140"]
 localPaths: ["Collier County / ZIP 34140 sector", "Collier County / primary ZIP 34145", "Collier County / ZIP 34145 sector", "Collier County / ZIP 34146 sector", "Collier County / coords 25.9330, -81.6993"]
-zillowHomeValueUsd: 865675
+zillowHomeValueUsd: 867756
 infraBriefPanel: true
 ---
 

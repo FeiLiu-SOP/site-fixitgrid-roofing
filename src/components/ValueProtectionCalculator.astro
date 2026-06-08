@@ -15,6 +15,8 @@ interface Props {
   visualizedAssessmentLine?: string | null;
   /** Newtown Fellowship: Stewardship Provision Guide (not FixitGrid commercial calculator). */
   presentation?: "value_protection" | "stewardship_provision_guide";
+  /** Fleet flash-offer abandon → calculator popup bridge. */
+  couponLinkEnabled?: boolean;
 }
 
 const {
@@ -26,6 +28,7 @@ const {
   terrainRiskNotice = null,
   visualizedAssessmentLine = null,
   presentation = "value_protection",
+  couponLinkEnabled = false,
 } = Astro.props;
 const isProvisionGuide = presentation === "stewardship_provision_guide";
 const rootId = domPrefix ? `${domPrefix}-value-calculator` : "value-calculator-root";
@@ -62,6 +65,7 @@ const initialStressIndex = stressIndexFromPct(defaultPct);
   style={`--vpc-accent:${accent};`}
   data-vpc-usd={hasValue ? String(Math.round(homeUsd!)) : ""}
   data-vpc-default-pct={String(defaultPct)}
+  data-vpc-coupon-link={couponLinkEnabled ? "1" : undefined}
   data-module={isProvisionGuide ? "Stewardship_Provision_Guide" : undefined}
   aria-labelledby={`${rootId}-title`}
 >

@@ -14,7 +14,7 @@ export type DomainTemplateOverrides = {
    * Tail blocks after the fold stack: markdown + related cities only.
    * FAQ / Geo live in `layoutStack` on `[...slug].astro` (SimHash diversification).
    */
-  blockOrder: Array<"related" | "content">;
+  blockOrder: Array<"related" | "content" | "geo" | "faq">;
   /**
    * Phone defaults for this domain.
    * If Cloudflare env overrides are provided, env wins (handled in site-config.ts).
@@ -44,7 +44,7 @@ export const REALTORS_AT_THE_BEACH_WATER_DAMAGE: DomainTemplateOverrides = {
     fontFamily: "Inter, sans-serif",
   },
   domPrefixBase: "beach-container",
-  blockOrder: ["related", "content"],
+  blockOrder: ["geo", "related", "content", "faq"],
   phone: {
     // Screenshot value
     e164: "+18312301952",

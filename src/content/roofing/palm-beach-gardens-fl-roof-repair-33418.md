@@ -11,7 +11,7 @@ lng: -80.1679
 zipSample: ["33403", "33412", "33418", "33410"]
 zipCodes: ["33418", "33410", "33403", "33412"]
 localPaths: ["Palm Beach County / primary ZIP 33418", "Palm Beach County / ZIP 33410 sector", "Palm Beach County / ZIP 33418 sector", "Palm Beach County / ZIP 33403 sector", "Palm Beach County / elevation 345 ft band"]
-zillowHomeValueUsd: 675581
+zillowHomeValueUsd: 712870
 ---
 
 **Engineering Notice for Palm Beach Gardens:** Structural loading calculated based on 345 ft terrain assessment. Regional dispatch grid: Palm Beach County.
