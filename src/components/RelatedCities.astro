@@ -106,11 +106,51 @@ function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number):
 const currentCity = cityFromSlug(currentSlug) ?? "your area";
 const pageAlias = getNicheLabelForSeed(currentSlug);
 
-const PREFIXES = [
-  "Local Pros in",
-  "Emergency Dispatch for",
-  "Verified Techs in",
-  "Reliable Support for",
+/** Per-vertical business anchors — no shared dispatch/verified phrasing (串味-safe). */
+const COMMERCIAL_ANCHOR_PREFIXES: Partial<Record<ActiveCollectionKey, readonly string[]>> = {
+  roofing: [
+    "Roof repair in",
+    "Roofing contractors near",
+    "Shingle and leak service in",
+    "Local roofing in",
+  ],
+  plumbing: [
+    "Plumbing service in",
+    "Pipe repair near",
+    "Licensed plumber in",
+    "Drain and water service in",
+  ],
+  pestcontrol: [
+    "Pest control in",
+    "Exterminator service near",
+    "Rodent and insect treatment in",
+    "Local pest pros in",
+  ],
+  "water-damage": [
+    "Water damage restoration in",
+    "Flood cleanup near",
+    "Emergency dry-out in",
+    "Mitigation service in",
+  ],
+  "siding-services": [
+    "Siding repair in",
+    "Exterior cladding near",
+    "Siding installation in",
+    "Local siding contractors in",
+  ],
+  "plumbing-v2": [
+    "Plumbing repair in",
+    "Pipe and fixture service near",
+    "Licensed plumbing in",
+    "Water line service in",
+  ],
+};
+
+const COMMERCIAL_ANCHOR_FALLBACK = [
+  "Local service in",
+  "Contractors near",
+  "Repair coverage in",
+  "Service area —",
 ] as const;
 
 /** Church stewardship: forbid commercial anchors like Verified Techs / Emergency Dispatch */
@@ -122,7 +162,12 @@ const PREFIXES_STEWARDSHIP = [
 ] as const;
 
 const isStewardshipCollection = col.startsWith("community-stewardship-");
-const anchorPrefixes = isStewardshipCollection ? PREFIXES_STEWARDSHIP : PREFIXES;
+
+function commercialAnchorPrefixes(collection: ActiveCollectionKey): readonly string[] {
+  return COMMERCIAL_ANCHOR_PREFIXES[collection] ?? COMMERCIAL_ANCHOR_FALLBACK;
+}
+
+const anchorPrefixes = isStewardshipCollection ? PREFIXES_STEWARDSHIP : commercialAnchorPrefixes(col);
 
 function toLinkRow(c: { slug: string; title: string; state?: string | null }): { href: string; title: string } {
   const city = cityFromSlug(c.slug) ?? c.title;
@@ -183,10 +228,10 @@ if (st.length === 2) {
 
   candidates.sort((a, b) => score(a) - score(b));
 
-  /** Above-fold count: more than legacy 5–8 cap when many peers; rest in collapse */
+  /** P0 semantic pivot: 5–8 above-fold; overflow keeps business anchors in collapse */
   const inlineCap = Math.min(
     candidates.length,
-    Math.min(18, 10 + (stableHash(`${currentSlug}|relatedCap`) % 9)),
+    5 + (stableHash(`${currentSlug}|relatedCap`) % 4),
   );
   const primary = candidates.slice(0, inlineCap);
   const overflow = candidates.slice(inlineCap);
@@ -203,7 +248,7 @@ if (st.length === 2) {
       aria-labelledby={relatedTitleId}
       style={`--related-link-color:${linkColor};`}
     >
-      <h2 id={relatedTitleId}>{titleText ?? `Nearby ${pageAlias} nodes (${st})`}</h2>
+      <h2 id={relatedTitleId}>{titleText ?? `Nearby ${pageAlias} service areas (${st})`}</h2>
       <ul>
         {links.map((l) => (
           <li>

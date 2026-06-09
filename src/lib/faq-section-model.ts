@@ -38,7 +38,7 @@ export function surfaceFaqQuestion(slug: string, slotIndex: number, baseQuestion
       `What is the typical response window for ${rest}?`,
       `How soon can ${rest} in most service areas?`,
       `When should I expect updates on timing for ${rest}?`,
-      `Roughly how fast is dispatch coordination for ${rest}?`,
+      `Roughly how fast is service coordination for ${rest}?`,
     ];
     return alts[bucket]!;
   }
@@ -50,8 +50,8 @@ export function surfaceFaqQuestion(slug: string, slotIndex: number, baseQuestion
       `Do you ${rest}?`,
       `Can you coordinate ${rest}?`,
       `Is help available for ${rest}?`,
-      `Does routing cover ${rest}?`,
-      `Will intake address ${rest}?`,
+      `Does coverage include ${rest}?`,
+      `Will service include ${rest}?`,
     ];
     return alts[bucket]!;
   }
@@ -64,7 +64,7 @@ export function surfaceFaqQuestion(slug: string, slotIndex: number, baseQuestion
       `Are teams able to ${rest}?`,
       `Is it possible to ${rest}?`,
       `Do coordinators help with ${rest}?`,
-      `Will intake cover ${rest}?`,
+      `Will service cover ${rest}?`,
     ];
     return alts[bucket]!;
   }
@@ -73,7 +73,7 @@ export function surfaceFaqQuestion(slug: string, slotIndex: number, baseQuestion
     (s: string) => s,
     (s: string) => `Local FAQ: ${s}`,
     (s: string) => `Homeowner question: ${s}`,
-    (s: string) => `Intake context: ${s}`,
+    (s: string) => `Local question: ${s}`,
     (s: string) => `Service desk: ${s}`,
   ];
   return generic[bucket]!(q);
@@ -95,7 +95,7 @@ function addendumForFaq(
   const pool = [
     geo.county ? `Local note: County context — ${geo.county}.` : null,
     geo.zipSample?.length ? `Local note: Sample ZIP sectors — ${(geo.zipSample ?? []).slice(0, 5).join(", ")}.` : null,
-    stateCode ? `Local note: State routing node — ${stateCode}.` : null,
+    stateCode ? `Local note: State service area — ${stateCode}.` : null,
     typeof geo.lat === "number" && typeof geo.lng === "number"
       ? `Local note: Coordinate anchor — ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}.`
       : null,

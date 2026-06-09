@@ -219,9 +219,12 @@ const verifyLine = verifyLines[linePick]!;
       </p>
     ) : null}
     {auditStateCode && auditZipCode ? (
-      <div class="audit-node-id" style="font-size: 1px; color: transparent;">
-        Audit Node ID: FG-{auditStateCode}-{auditZipCode}-{auditNodeVersion ?? "1"}
-      </div>
+      <div
+        class="audit-node-id"
+        aria-hidden="true"
+        hidden
+        data-audit-id={`FG-${auditStateCode}-${auditZipCode}-${auditNodeVersion ?? "1"}`}
+      />
     ) : null}
   </div>
   <style>

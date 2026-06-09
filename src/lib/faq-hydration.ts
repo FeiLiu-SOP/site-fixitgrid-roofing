@@ -44,15 +44,15 @@ function buildSlot1Hook(ctx: FaqHydrationContext): string {
   return `local asset context in ${ctx.city} should be weighed before approving major replacement spend`;
 }
 
-/** Slot 2 — neighborhood dispatch (localPaths / sector markers). */
+/** Slot 2 — neighborhood coverage (localPaths / sector markers). */
 function buildSlot2Identity(ctx: FaqHydrationContext, seed: string): string {
   const paths = ctx.localPaths.filter((p) => p.trim().length > 0);
   if (paths.length > 0) {
     const idx = stableHash(`${seed}|slot2`) % paths.length;
     const marker = paths[idx]!.trim();
-    return `neighborhood dispatch markers include ${marker} for corridor routing and crew staging`;
+    return `service coverage notes reference ${marker} for residential routing in the area`;
   }
-  return `county-grid routing for ${ctx.county || ctx.city} anchors intake staging before crews mobilize`;
+  return `service area context for ${ctx.county || ctx.city} includes standard ZIP-sector coverage`;
 }
 
 /** Slot 3 — environmental load (elevation). */
@@ -145,7 +145,7 @@ function ensureLocalizationPlaceholders(text: string): string {
   const hasLocal = text.includes("{{localDataPoint}}");
   if (hasCity && hasCounty && hasLocal) return text;
   if (hasLocal && (!hasCity || !hasCounty)) {
-    return `${text.trim()} Intake context for {{city}}, {{county}}.`;
+    return `${text.trim()} In {{city}}, {{county}}, {{localDataPoint}}.`;
   }
   if (!hasLocal && hasCity && hasCounty) {
     return `${text.trim()} {{localDataPoint}}.`;

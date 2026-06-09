@@ -36,6 +36,15 @@ function escapeXml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function stableHash(input: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 type BrandEntry = { name: string; slug: string };
 
 const plumbingList: BrandEntry[] = [
@@ -114,12 +123,50 @@ const subtitle =
   SUBTITLE_BY_COLLECTION[col] ??
   "CERTIFIED INFRASTRUCTURE MATERIALS & COMPATIBLE SYSTEMS";
 
-/** Tooltip + a11y — siding uses crew/dispatch framing (avoid retail "Materials" drift). */
-function partnerOfficialTitle(brandName: string): string {
-  if (col === "siding-services") {
-    return `Local installation practices aligned with ${brandName} exterior systems`;
+/** SVG title / tooltip — short business labels (no wordmark boilerplate). */
+function partnerOfficialTitle(brandName: string, index: number): string {
+  const seed = stableHash(`${col}|${brandName}|${index}|svgTitle`);
+  if (col === "roofing") {
+    const opts = [
+      `${brandName} roofing shingles`,
+      `${brandName} roof materials`,
+      `${brandName} attic ventilation`,
+    ];
+    return opts[seed % opts.length]!;
   }
-  return `Official Service Standard for ${brandName} Materials`;
+  if (col === "plumbing" || col === "plumbing-v2" || col === "community-stewardship-plumbing") {
+    const opts = [
+      `${brandName} plumbing fixtures`,
+      `${brandName} water heater line`,
+      `${brandName} faucet and valve products`,
+    ];
+    return opts[seed % opts.length]!;
+  }
+  if (col === "pestcontrol") {
+    const opts = [
+      `${brandName} pest treatment products`,
+      `${brandName} perimeter application line`,
+      `${brandName} professional equipment`,
+    ];
+    return opts[seed % opts.length]!;
+  }
+  if (col === "water-damage" || col === "community-stewardship-water") {
+    const opts = [
+      `${brandName} drying and extraction gear`,
+      `${brandName} mitigation equipment`,
+      `${brandName} restoration tools`,
+    ];
+    return opts[seed % opts.length]!;
+  }
+  if (col === "siding-services" || col === "community-stewardship-siding") {
+    const opts = [
+      `${brandName} exterior cladding systems`,
+      `${brandName} siding panel line`,
+      `${brandName} facade materials`,
+    ];
+    return opts[seed % opts.length]!;
+  }
+  return `${brandName} compatible equipment`;
 }
 
 function fontSizeForName(name: string): number {
@@ -173,25 +220,22 @@ function genericBrandSvg(b: BrandEntry, index: number): string {
   const uid = `niche-lw-${b.slug}-${index}`;
   const te = escapeXml(b.name);
   const fs = fontSizeForName(b.name);
-  const ar = escapeXml(partnerOfficialTitle(b.name));
+  const ar = escapeXml(partnerOfficialTitle(b.name, index));
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" role="img" aria-labelledby="${uid}-title" width="260" height="56"><title id="${uid}-title">${ar}</title><text x="130" y="34" text-anchor="middle" font-family="Georgia,'Times New Roman',Times,serif" font-size="${fs}" font-weight="700" fill="currentColor" letter-spacing="0.04em">${te}</text></svg>`;
 }
 
 function brandSvgMarkup(b: BrandEntry, index: number): string {
   const uid = `niche-lw-${b.slug}-${index}`;
-  const ariaTitle = partnerOfficialTitle(b.name);
+  const ariaTitle = partnerOfficialTitle(b.name, index);
   if (col === "roofing") {
     return roofingBrandSvg(b.slug, uid, ariaTitle);
   }
   return genericBrandSvg(b, index);
 }
 
-/** SEO / caption — invisible on screen, exposed to document semantics. */
-function partnerFigcaption(b: BrandEntry): string {
-  if (col === "siding-services") {
-    return `${b.name} — compatible exterior systems referenced for local siding repair and installation dispatch on this service area page.`;
-  }
-  return `${b.name} certified partner wordmark for compatible systems and materials disclosure on this service area page.`;
+/** sr-only caption — short per-vertical alt (P0: no wordmark / disclosure boilerplate). */
+function partnerFigcaption(b: BrandEntry, index: number): string {
+  return partnerOfficialTitle(b.name, index);
 }
 
 const logoWallAriaLabel =
@@ -233,7 +277,7 @@ const logoWallAriaLabel =
                 </div>
               </div>
               <figcaption id={`niche-logo-wall-cap-${i}`} class="niche-logo-wall__caption">
-                {partnerFigcaption(b)}
+                {partnerFigcaption(b, i)}
               </figcaption>
             </figure>
           </li>
