@@ -7,10 +7,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ActiveCollectionKey } from "../active-collection";
 
-const repoScripts = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../../scripts",
-);
+/** Repo-local `scripts/` (FixitGrid child sites) or monorepo root `scripts/` (absent-apogee dev). */
+function resolveRepoScriptsDir(): string {
+  const libDir = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(libDir, "../../scripts"),
+    path.resolve(libDir, "../../../scripts"),
+  ];
+  for (const dir of candidates) {
+    if (fs.existsSync(dir)) return dir;
+  }
+  return candidates[0]!;
+}
 
 const PILOT_COLLECTIONS = new Set<ActiveCollectionKey>([
   "roofing",
@@ -28,7 +36,12 @@ export function loadFixitgridPilotSlugs(
   collection: ActiveCollectionKey,
 ): string[] {
   if (!isFixitgridPilotCollection(collection)) return [];
-  const file = path.join(repoScripts, `fixitgrid-pilot-slugs-${collection}.txt`);
+  const file = path.join(resolveRepoScriptsDir(), `fixitgrid-pilot-slugs-${collection}.txt`);
+  if (!fs.existsSync(file)) {
+    throw new Error(
+      `[fixitgrid-pilot] Missing ${file} (required when FIXITGRID_PILOT_BUILD=1; copy from monorepo scripts/ or unset FIXITGRID_PILOT_BUILD on Cloudflare Pages)`,
+    );
+  }
   const raw = fs.readFileSync(file, "utf8");
   return raw
     .split(/\r?\n/)
