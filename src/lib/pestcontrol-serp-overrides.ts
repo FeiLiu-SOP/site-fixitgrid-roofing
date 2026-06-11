@@ -68,6 +68,12 @@ const RAW: Record<string, Omit<PestcontrolSerpOverride, "metaDescription"> & { m
     metaDescription:
       "Pest control services in Gladeview, FL 33147. Ants, rodents & seasonal pests. Licensed local service — same-day help.",
   },
+  "pest-control-milford-mill-md-21244": {
+    pageTitle: "Milford Mill MD Pest Control | FixitGrid",
+    pageH1: "Pest Control — Milford Mill, MD",
+    metaDescription:
+      "Pest control services in Milford Mill, MD 21244. Ants, rodents & seasonal pests. Licensed local service — same-day help.",
+  },
 };
 
 export function getPestcontrolSerpOverride(slug: string): PestcontrolSerpOverride | null {
