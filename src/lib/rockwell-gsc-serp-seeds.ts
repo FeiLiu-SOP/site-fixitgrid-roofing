@@ -2,7 +2,7 @@ import type { ActiveCollectionKey } from "../active-collection";
 import { getPlumbingSerpOverride } from "./plumbing-serp-overrides";
 import { getPestcontrolSerpOverride } from "./pestcontrol-serp-overrides";
 import { getRoofingSerpOverride } from "./roofing-serp-overrides";
-import bulkDoc from "../../../data/bulk-write-protected-slugs.json";
+import bulkDoc from "../../data/bulk-write-protected-slugs.json";
 
 /**
  * Rockwell GSC SERP seed slugs (15) — subset of data/bulk-write-protected-slugs.json

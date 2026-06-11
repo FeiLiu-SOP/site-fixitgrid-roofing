@@ -1,0 +1,127 @@
+{
+  "version": 2,
+  "document": "SSOT: slugs whose city .md must NOT be overwritten by bulk `go run . -niche <collection>`. Astro细粒度（SERP override、地标、FAQ）不在此文件。强制重写：BULK_FORCE_REGEN_PROTECTED=1（兼容 ROCKWELL_FORCE_REGEN_SEEDS=1）。",
+  "forceRegenEnv": "BULK_FORCE_REGEN_PROTECTED",
+  "legacyForceRegenEnv": "ROCKWELL_FORCE_REGEN_SEEDS",
+  "requiredCollections": [
+    "roofing",
+    "plumbing",
+    "pestcontrol",
+    "water-damage",
+    "siding-services",
+    "plumbing-v2",
+    "community-stewardship-water",
+    "community-stewardship-siding",
+    "community-stewardship-plumbing"
+  ],
+  "sources": {
+    "rockwellGscSerp": {
+      "domain": "rockwellpropertiesmaine.com",
+      "collections": {
+        "plumbing": [
+          "plumbing-columbus-oh-43109",
+          "plumbing-reynoldsburg-oh-43068"
+        ],
+        "pestcontrol": [
+          "pest-control-temescal-valley-ca-92883",
+          "pest-control-coral-terrace-fl-33144",
+          "pest-control-moreno-valley-ca-92551",
+          "pest-control-flowing-wells-az-85705",
+          "pest-control-casa-de-oro-mount-helix-ca-91977",
+          "pest-control-the-acreage-fl-33411",
+          "pest-control-gladeview-fl-33147",
+          "pest-control-milford-mill-md-21244"
+        ],
+        "roofing": [
+          "roofing-carlsbad-ca-92008",
+          "roofing-willowbrook-ca-90059",
+          "roofing-lochearn-md-21208",
+          "roofing-white-center-wa-98106",
+          "roofing-fullerton-pa-18052",
+          "roofing-temescal-valley-ca-92883"
+        ]
+      }
+    },
+    "fixitgridCommercialContactFaq": {
+      "domain": "fixitgrid.com",
+      "collections": {
+        "roofing": [
+          "weston-fl-roof-repair-33326",
+          "boca-raton-fl-roof-repair-33496",
+          "davie-fl-roof-repair-33324",
+          "coral-gables-fl-roof-repair-33146",
+          "jupiter-fl-roof-repair-33477"
+        ],
+        "plumbing": [
+          "weston-fl-emergency-plumber-33326",
+          "boca-raton-fl-emergency-plumber-33496",
+          "davie-fl-emergency-plumber-33324",
+          "doral-fl-emergency-plumber-33178",
+          "jupiter-fl-emergency-plumber-33477"
+        ],
+        "pestcontrol": [
+          "weston-fl-pest-exterminator-33326",
+          "boca-raton-fl-pest-exterminator-33496",
+          "davie-fl-pest-exterminator-33324",
+          "coral-gables-fl-pest-exterminator-33146",
+          "parkland-fl-pest-exterminator-33076"
+        ]
+      }
+    },
+    "gscSeedLandmarks": {
+      "domain": "rockwellpropertiesmaine.com",
+      "note": "Keys in gsc-seed-landmarks.ts RAW must stay listed under collections.",
+      "collections": {
+        "plumbing": [
+          "plumbing-columbus-oh-43109",
+          "plumbing-reynoldsburg-oh-43068"
+        ]
+      }
+    }
+  },
+  "collections": {
+    "roofing": [
+      "roofing-carlsbad-ca-92008",
+      "roofing-willowbrook-ca-90059",
+      "roofing-lochearn-md-21208",
+      "roofing-white-center-wa-98106",
+      "roofing-fullerton-pa-18052",
+      "roofing-temescal-valley-ca-92883",
+      "weston-fl-roof-repair-33326",
+      "boca-raton-fl-roof-repair-33496",
+      "davie-fl-roof-repair-33324",
+      "coral-gables-fl-roof-repair-33146",
+      "jupiter-fl-roof-repair-33477"
+    ],
+    "plumbing": [
+      "plumbing-columbus-oh-43109",
+      "plumbing-reynoldsburg-oh-43068",
+      "weston-fl-emergency-plumber-33326",
+      "boca-raton-fl-emergency-plumber-33496",
+      "davie-fl-emergency-plumber-33324",
+      "doral-fl-emergency-plumber-33178",
+      "jupiter-fl-emergency-plumber-33477"
+    ],
+    "pestcontrol": [
+      "pest-control-temescal-valley-ca-92883",
+      "pest-control-coral-terrace-fl-33144",
+      "pest-control-moreno-valley-ca-92551",
+      "pest-control-flowing-wells-az-85705",
+      "pest-control-casa-de-oro-mount-helix-ca-91977",
+      "pest-control-the-acreage-fl-33411",
+      "pest-control-gladeview-fl-33147",
+      "pest-control-milford-mill-md-21244",
+      "weston-fl-pest-exterminator-33326",
+      "boca-raton-fl-pest-exterminator-33496",
+      "davie-fl-pest-exterminator-33324",
+      "coral-gables-fl-pest-exterminator-33146",
+      "parkland-fl-pest-exterminator-33076"
+    ],
+    "water-damage": [],
+    "siding-services": [],
+    "plumbing-v2": [],
+    "community-stewardship-water": [],
+    "community-stewardship-siding": [],
+    "community-stewardship-plumbing": []
+  }
+}

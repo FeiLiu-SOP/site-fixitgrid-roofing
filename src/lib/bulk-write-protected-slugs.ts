@@ -1,5 +1,5 @@
 import type { ActiveCollectionKey } from "../active-collection";
-import bulkDoc from "../../../data/bulk-write-protected-slugs.json";
+import bulkDoc from "../../data/bulk-write-protected-slugs.json";
 
 /** SSOT: data/bulk-write-protected-slugs.json — all domains / collections. */
 export const BULK_WRITE_PROTECTED_BY_COLLECTION = bulkDoc.collections as Record<
