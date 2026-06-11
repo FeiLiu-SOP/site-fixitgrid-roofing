@@ -12,6 +12,10 @@ import {
   internalPath,
   siteConfig,
 } from "../site-config";
+import {
+  entryPublicPathSegments,
+  stateAbbrFromNearMeSlug,
+} from "../lib/fixitgrid-near-me-url";
 import { REALTORS_AT_THE_BEACH_PLUMBING_V2 } from "../domain-templates/realtorsatthebeach.com-plumbing-v2";
 
 function hostnameForBrand(astroHost: string): string {
@@ -57,6 +61,14 @@ for (const p of posts) {
 const statesSorted = Array.from(stateCounts.entries())
   .sort((a, b) => a[0].localeCompare(b[0]))
   .map(([st, count]) => ({ st, count, href: internalPath(st.toLowerCase()) }));
+function entryHref(entry: { id?: string; slug?: string }) {
+  const slug = entryPath(entry);
+  const st = stateAbbrFromNearMeSlug(slug) ?? entryStateFromSlug(entry);
+  if (st) {
+    return internalPath(...entryPublicPathSegments(slug, st));
+  }
+  return internalPath(slug);
+}
 const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
   ? REALTORS_AT_THE_BEACH_PLUMBING_V2.theme.accent
   : "#1d4ed8";
@@ -183,7 +195,7 @@ const themeAccent = ACTIVE_COLLECTION === "plumbing-v2"
       <ul>
         {sortedPosts.map((post) => (
           <li>
-            <a href={internalPath(entryPath(post))}>{post.data.title}</a>
+            <a href={entryHref(post)}>{post.data.title}</a>
           </li>
         ))}
       </ul>
