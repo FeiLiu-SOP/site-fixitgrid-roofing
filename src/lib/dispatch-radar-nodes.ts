@@ -261,12 +261,11 @@ export function buildNodeLockTitle(city: string, stateCode: string): string {
 }
 
 function formatTickerClock(ms: number): string {
-  return new Date(ms).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
+  const d = new Date(ms);
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  const ss = String(d.getUTCSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
 }
 
 /** Live Dispatch Monitor — unique lines only; timestamps back-calculated from build-time clock. */

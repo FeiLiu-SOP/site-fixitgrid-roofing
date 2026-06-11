@@ -158,32 +158,32 @@ const tickerDurationSec = Math.max(
 
         <p class="dispatch-radar__node">{warRoom.nodeLabel}</p>
       </div>
+    </div>
 
-      <div
-        class="dispatch-radar__ticker"
-        aria-live="polite"
-        aria-label={`Live dispatch monitor — ${cityLabel}`}
-      >
-        <span class="dispatch-radar__online" aria-hidden="true">● ONLINE</span>
-        <div class="dispatch-radar__ticker-viewport">
-          <div
-            class="dispatch-radar__ticker-track"
-            style={`--dispatch-ticker-duration: ${tickerDurationSec}s`}
-          >
-            <div class="dispatch-radar__ticker-segment">
-              {
-                tickerLines.map((line) => (
-                  <span class="dispatch-radar__ticker-item">{line}</span>
-                ))
-              }
-            </div>
-            <div class="dispatch-radar__ticker-segment" aria-hidden="true">
-              {
-                tickerLines.map((line) => (
-                  <span class="dispatch-radar__ticker-item">{line}</span>
-                ))
-              }
-            </div>
+    <div
+      class="dispatch-radar__ticker"
+      aria-live="polite"
+      aria-label={`Live dispatch monitor — ${cityLabel}`}
+    >
+      <span class="dispatch-radar__online" aria-hidden="true">● ONLINE</span>
+      <div class="dispatch-radar__ticker-viewport">
+        <div
+          class="dispatch-radar__ticker-track"
+          style={`--dispatch-ticker-duration: ${tickerDurationSec}s`}
+        >
+          <div class="dispatch-radar__ticker-segment">
+            {
+              tickerLines.map((line) => (
+                <span class="dispatch-radar__ticker-item">{line}</span>
+              ))
+            }
+          </div>
+          <div class="dispatch-radar__ticker-segment" aria-hidden="true">
+            {
+              tickerLines.map((line) => (
+                <span class="dispatch-radar__ticker-item">{line}</span>
+              ))
+            }
           </div>
         </div>
       </div>
@@ -251,9 +251,10 @@ const tickerDurationSec = Math.max(
   }
   .dispatch-radar__stack {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 8px 8px 0 0;
     overflow: hidden;
     border: 1px solid #94a3b8;
+    border-bottom: 0;
     background: #0f172a;
   }
   .dispatch-radar__frame {
@@ -377,7 +378,10 @@ const tickerDurationSec = Math.max(
     width: 100%;
     margin: 0;
     background: #0f172a;
+    border: 1px solid #94a3b8;
     border-top: 1px solid #1e293b;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
   }
   .dispatch-radar__online {
     flex: 0 0 auto;
