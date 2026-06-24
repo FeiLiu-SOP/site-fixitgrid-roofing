@@ -198,8 +198,12 @@ const desktopDispatchZip =
     .replace(/\D/g, "")
     .slice(0, 5) || "00000";
 const stateCodeFromSlug = (() => {
+  const fromNearMe = stateAbbrFromNearMeSlug(entrySlug);
+  if (fromNearMe) return fromNearMe;
   const m = entrySlug.match(/-([a-z]{2})-\d{5}$/i);
-  return m ? m[1]!.toUpperCase() : null;
+  if (m) return m[1]!.toUpperCase();
+  const fm = String(post.data.state ?? "").trim().toUpperCase().slice(0, 2);
+  return /^[A-Z]{2}$/.test(fm) ? fm : null;
 })();
 const technicalAuditBodyHtml =
   usesTechnicalAuditReport(ACTIVE_COLLECTION) && markdownBody
