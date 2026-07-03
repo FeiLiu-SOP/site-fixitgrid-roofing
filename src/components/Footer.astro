@@ -1,6 +1,8 @@
 ---
 import { getBrand, siteConfig } from "../site-config";
 import { ACTIVE_COLLECTION, type ActiveCollectionKey } from "../active-collection";
+import FixitGridLegalFooterStrip from "./FixitGridLegalFooterStrip.astro";
+import { matchesFixitGridEntity } from "../domain-templates/fixitgrid.com-entity";
 
 type FooterLink = { href: string; label: string };
 const { extraLink, notice, variantSeed, slug, auditStateCode, auditZipCode, auditNodeVersion, collectionKey } =
@@ -28,6 +30,9 @@ function hostnameForBrand(astroHost: string): string {
 }
 
 const brand = getBrand(hostnameForBrand(Astro.url.hostname));
+const showFixitGridLegalStrip = matchesFixitGridEntity({
+  domainOrUrl: Astro.url.hostname || siteConfig.canonicalOrigin,
+});
 
 function stableHash(input: string) {
   let h = 2166136261;
@@ -226,6 +231,7 @@ const verifyLine = verifyLines[linePick]!;
         data-audit-id={`FG-${auditStateCode}-${auditZipCode}-${auditNodeVersion ?? "1"}`}
       />
     ) : null}
+    {showFixitGridLegalStrip ? <FixitGridLegalFooterStrip /> : null}
   </div>
   <style>
     .brand-footer-text {

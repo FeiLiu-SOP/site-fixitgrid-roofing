@@ -2,6 +2,7 @@ import type { ActiveCollectionKey } from "../active-collection";
 import type { ParsedLocation } from "./location";
 import type { FaqPoolItem } from "./faq-hydration";
 import { ROOFING_FAQ_POOL } from "./faq-roofing-pool";
+import { PLUMBING_FAQ_POOL } from "./faq-plumbing-pool";
 import { getPestcontrolSerpOverride } from "./pestcontrol-serp-overrides";
 import { getPlumbingSerpOverride } from "./plumbing-serp-overrides";
 import { getRoofingSerpOverride } from "./roofing-serp-overrides";
@@ -15,108 +16,7 @@ export type FaqItem = {
 
 const FAQ_BY_COLLECTION: Record<ActiveCollectionKey, FaqPoolItem[]> = {
   roofing: ROOFING_FAQ_POOL,
-  plumbing: [
-    {
-      question: "Do you provide emergency plumber service?",
-      answer:
-        "Yes. Emergency plumbing support is available for urgent leak, backup, and water flow issues.",
-    },
-    {
-      question: "Can you help with leaky pipe and clogged drain problems?",
-      answer:
-        "Yes. Local technicians handle pipe leaks, drain clogs, and standard residential plumbing repairs.",
-    },
-    {
-      question: "Are same-day plumbing appointments available?",
-      answer:
-        "In many cities, same-day scheduling is available based on demand and technician coverage.",
-    },
-    {
-      question: "Do you service both kitchen and bathroom plumbing?",
-      answer:
-        "Yes. Typical service includes sinks, toilets, faucets, supply lines, and drain line troubleshooting.",
-    },
-    {
-      question: "Will I get pricing details before work starts?",
-      answer:
-        "Yes. Service teams provide scope and pricing details before work begins whenever possible.",
-    },
-    {
-      question: "Can you inspect water heater supply and drain connections?",
-      answer:
-        "Yes. Water heater checks often include supply lines, shutoff valves, drain pans, and visible leak points.",
-    },
-    {
-      question: "Do you help with garbage disposal and sink line issues?",
-      answer:
-        "Yes. Many service calls involve kitchen sink backups, disposal jams, and under-sink connection leaks.",
-    },
-    {
-      question: "Can low water pressure be diagnosed on site?",
-      answer:
-        "Yes. Pressure complaints are commonly reviewed for valve restrictions, fixture issues, or supply-side problems.",
-    },
-    {
-      question: "Do you handle toilet seal and flange leak concerns?",
-      answer:
-        "Yes. Toilet leaks can involve wax ring failure, flange movement, or supply connection issues.",
-    },
-    {
-      question: "Can recurring drain clogs indicate a deeper line issue?",
-      answer:
-        "Yes. Repeated backups may point to branch-line buildup or a larger drain line obstruction requiring inspection.",
-    },
-    {
-      question: "Are shutoff valve and fixture checks part of routine service?",
-      answer:
-        "Often, yes. Shutoff valves, supply connections, and visible fixture wear are common parts of a service review.",
-    },
-    {
-      question: "Can plumbing leaks damage drywall or flooring quickly?",
-      answer:
-        "Yes. Even moderate leaks can spread into cabinets, drywall, or flooring if left unresolved.",
-    },
-    {
-      question: "Do you handle faucet cartridge and valve leak repairs?",
-      answer:
-        "Yes. Many calls involve faucet drips, valve wear, and replacement of common internal components.",
-    },
-    {
-      question: "Can you inspect supply lines for corrosion or wear?",
-      answer:
-        "Yes. Visible supply connections are commonly checked for wear, corrosion, or slow seepage.",
-    },
-    {
-      question: "Is drain odor troubleshooting included in service?",
-      answer:
-        "In some cases, yes. Odors may be evaluated for trap issues, venting, or buildup depending on symptoms.",
-    },
-    {
-      question: "Do you help with shower and tub drain backups?",
-      answer:
-        "Yes. Bathroom drain backups are common and may be assessed for local clogs or branch-line issues.",
-    },
-    {
-      question: "Can you review shutoff access and labeling best practices?",
-      answer:
-        "Often, yes. Technicians may point out shutoff access considerations during service visits.",
-    },
-    {
-      question: "Are follow-up recommendations provided after urgent service?",
-      answer:
-        "Yes. After urgent stabilization, additional recommendations may be provided to reduce repeat problems.",
-    },
-    {
-      question: "Can hard water contribute to fixture wear over time?",
-      answer:
-        "Yes. Mineral buildup can contribute to reduced flow and fixture wear depending on local water conditions.",
-    },
-    {
-      question: "Do you handle visible pipe joint leaks under sinks?",
-      answer:
-        "Yes. Under-sink joint leaks and connection issues are common service items in many homes.",
-    },
-  ],
+  plumbing: PLUMBING_FAQ_POOL,
   pestcontrol: [
     {
       question: "Do you provide fast pest control service?",

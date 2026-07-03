@@ -1,0 +1,84 @@
+---
+/** Hub-parity legal chrome for FixitGrid near-me / vertical detail pages (SSOT). */
+const base = (import.meta.env.BASE_URL ?? "/").replace(/\/?$/, "/");
+---
+<section class="fixitgrid-legal-strip" aria-label="FixitGrid office and legal notices">
+  <div class="fixitgrid-legal-strip__offices">
+    <div>
+      <h3>National Routing HQ</h3>
+      <p>418 Eagle Drive East<br />New Town, ND 58763</p>
+    </div>
+    <div>
+      <h3>Maine Properties Division</h3>
+      <p>PO BOX 555<br />Island Falls, ME 04747<br />License DB914432</p>
+    </div>
+    <div>
+      <h3>SC Coastal Hub</h3>
+      <p>Myrtle Beach, SC 29577<br />Atlantic corridor affiliate routing</p>
+    </div>
+  </div>
+  <p class="fixitgrid-legal-strip__compliance">
+    FixitGrid Group coordinates services with local independent contractor affiliates. Licensed real
+    estate brokerage is administered strictly within Maine under License DB914432. All other dispatch
+    services are subject to localized availability and licensing.
+  </p>
+  <p class="fixitgrid-legal-strip__links">
+    © FixitGrid National Service Network ·
+    <a href={`${base}privacy-policy/`}>Privacy Policy</a> ·
+    <a href={`${base}terms-of-service/`}>Terms of Service</a> ·
+    <a href={`${base}media-compliance/`}>Media Compliance</a> ·
+    <a href={`${base}sitemap-index.xml`}>Sitemap</a> ·
+    Verification for FixitGrid Audits: Lead Analyst Team — May 28, 2026
+  </p>
+</section>
+
+<style>
+  .fixitgrid-legal-strip {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+  }
+  .fixitgrid-legal-strip__offices {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    max-width: 52rem;
+    margin: 0 auto 1.25rem;
+    text-align: left;
+  }
+  .fixitgrid-legal-strip__offices h3 {
+    margin: 0 0 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .fixitgrid-legal-strip__offices p {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #475569;
+  }
+  .fixitgrid-legal-strip__compliance {
+    max-width: 42rem;
+    margin: 0 auto 1rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #64748b;
+  }
+  .fixitgrid-legal-strip__links {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: #64748b;
+  }
+  .fixitgrid-legal-strip__links a {
+    color: #2563eb;
+    text-decoration: none;
+  }
+  .fixitgrid-legal-strip__links a:hover {
+    text-decoration: underline;
+  }
+</style>

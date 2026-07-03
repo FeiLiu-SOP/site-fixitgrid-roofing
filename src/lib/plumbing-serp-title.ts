@@ -1,5 +1,7 @@
 /** Rockwell plumbing SERP: ≤55-char titles, `| FixitGrid` suffix (service-first, tiered). */
 
+import { stableHash } from "./faq-hydration";
+
 export const PLUMBING_BRAND_SUFFIX = " | FixitGrid";
 export const PLUMBING_TITLE_MAX = 55;
 export const PLUMBING_META_MAX = 155;
@@ -61,10 +63,6 @@ export function buildPlumbingHighTitleCore(city: string, _valueToken: string): s
   ];
 }
 
-export function plumbingHookForTier(highValue: boolean): string {
-  return highValue ? "Licensed Local Service" : "Same-Day Service";
-}
-
 export function buildPlumbingMetaDescription(city: string, stateCode: string): string {
   const st = stateCode.trim().toUpperCase() || "US";
   return clipMetaDescription(
@@ -90,16 +88,32 @@ export function buildPlumbingPageTitle(opts: {
 
 export function buildPlumbingH1(opts: {
   city: string;
-  zLabel: string | null;
-  zLabelExact: string | null;
   highValue: boolean;
+  slug?: string;
+  stateCode?: string | null;
+  county?: string | null;
 }): string {
-  const { city, highValue } = opts;
-  const hook = plumbingHookForTier(highValue);
-  if (highValue) {
-    return `${city} Plumbing Contractor — ${hook}`;
-  }
-  return `${city} Plumber — ${hook}`;
+  const { city, highValue, slug = city, stateCode, county } = opts;
+  const st = (stateCode ?? "").trim().toUpperCase() || "US";
+  const countyLabel = (county ?? "").trim();
+  const geoTail = countyLabel || st;
+
+  const lowPool = [
+    `Emergency plumber in ${city} — leak & drain response`,
+    `${city} plumbing repair — ${geoTail} pipe & fixture help`,
+    `Emergency plumbing in ${city}, ${st} — burst pipe & clog triage`,
+    `Plumbing repair in ${city}: ${geoTail} licensed local pros`,
+    `${city} emergency plumber — same-day leak repair options`,
+  ];
+  const highPool = [
+    `${city} plumbing contractor — leak & repipe scope`,
+    `Licensed plumber in ${city}, ${st}`,
+    `${city} plumbing services — ${geoTail} drain & water heater repair`,
+    `Plumbing repair in ${city} — emergency leak & fixture work`,
+    `${city} plumber — drain cleaning & pipe repair options`,
+  ];
+  const pool = highValue ? highPool : lowPool;
+  return pool[stableHash(`${slug}|plumbH1`) % pool.length]!;
 }
 
 export function buildBaitPool2TitlesPlumbing(opts: {
@@ -109,10 +123,17 @@ export function buildBaitPool2TitlesPlumbing(opts: {
   zLabelExact: string | null;
   highValue: boolean;
   slug: string;
+  county?: string;
 }): { pageTitle: string; pageH1: string; metaDescription: string } {
-  const { city, stateCode } = opts;
+  const { city, stateCode, slug, county } = opts;
   const pageTitle = buildPlumbingPageTitle(opts);
-  const pageH1 = buildPlumbingH1(opts);
+  const pageH1 = buildPlumbingH1({
+    city,
+    highValue: opts.highValue,
+    slug,
+    stateCode,
+    county,
+  });
   const metaDescription = buildPlumbingMetaDescription(city, stateCode);
   return { pageTitle, pageH1, metaDescription };
 }

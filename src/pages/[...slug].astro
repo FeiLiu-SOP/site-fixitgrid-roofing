@@ -15,6 +15,8 @@ import NationalDispatchDisclaimer from "../components/NationalDispatchDisclaimer
 import NichePartnerLogos from "../components/NichePartnerLogos.astro";
 import DispatchCommandBar from "../components/DispatchCommandBar.astro";
 import LiveDispatchStatus from "../components/LiveDispatchStatus.astro";
+import ServiceAreaEvidencePhoto from "../components/ServiceAreaEvidencePhoto.astro";
+import { getSeedEvidencePhoto } from "../lib/seed-evidence-images";
 import { liveDispatchStatusEnabled } from "../lib/live-dispatch-status";
 import { resolveContentEntrySlug, stateAbbrFromNearMeSlug } from "../lib/fixitgrid-near-me-url";
 import RockwellGa4Events from "../components/RockwellGa4Events.astro";
@@ -107,6 +109,10 @@ import FlashCouponAnchor from "../components/FlashCouponAnchor.astro";
 import FlashCouponVpcBridge from "../components/FlashCouponVpcBridge.astro";
 import { collectionUsesFlashCoupon } from "../lib/flash-coupon";
 import { buildPestBiodiversityBundle } from "../lib/pest-biodiversity";
+import {
+  isCommercialDetailCollection,
+  pickCommercialDetailCopy,
+} from "../lib/niche-detail-narratives";
 
 /** Physical-value tier: deterministic title/H1 (no stableHash) when home value clears bar. */
 const HIGH_VALUE_USD_TRIGGER = 300_000;
@@ -192,6 +198,9 @@ const pageCity = String(post.data.city ?? "").trim() || pageCityFromSlug;
 /** Opt-in live OPEN / after-hours bar — PUBLIC_LIVE_DISPATCH_STATUS=1; never on church pages. */
 const showLiveDispatchStatus =
   liveDispatchStatusEnabled() && !isCommunityStewardshipNpo && Boolean(pageCity?.trim());
+/** Seed-only field evidence photo (R2); manifest status must be `live`. */
+const seedEvidencePhoto =
+  !isCommunityStewardshipNpo ? getSeedEvidencePhoto(entrySlug) : null;
 const trustDispatchPlace = pageCity?.trim() ? pageCity.trim() : "Area";
 const desktopDispatchZip =
   String(pageLocation?.zip ?? post.data.zipCode ?? "")
@@ -329,17 +338,17 @@ function buildBaitPool2TitlesLegacy(opts: {
   const stateToken = stateLabelForBait(opts.stateCode, opts.stateFm);
   const { service, city, zLabel, pick } = opts;
   if (pick === 0 && zLabel) {
-    const pageTitle = `${zLabel} Home Protection: ${city} Emergency ${service} (Verified)`;
+    const pageTitle = `${zLabel} Home Protection: ${city} Emergency ${service}`;
     const pageH1 = `${zLabel} Home Protection — ${city} Emergency ${service}`;
     return { pageTitle, pageH1 };
   }
   if (pick === 1) {
-    const pageTitle = `${city} ${service} — 24/7 coordinated intake (${stateToken})`;
-    const pageH1 = `${city} ${service}: regional coordination desk (${stateToken})`;
+    const pageTitle = `${city} ${service} — 24/7 local service (${stateToken})`;
+    const pageH1 = `${city} ${service}: licensed local pros (${stateToken})`;
     return { pageTitle, pageH1 };
   }
-  const pageTitle = `Maintenance intensity signal in ${city}. Coordinated ${service} planning.`;
-  const pageH1 = `Maintenance intensity signal in ${city} — coordinated ${service} planning`;
+  const pageTitle = `Maintenance intensity signal in ${city}. Local ${service} planning.`;
+  const pageH1 = `Maintenance intensity signal in ${city} — local ${service} planning`;
   return { pageTitle, pageH1 };
 }
 
@@ -423,6 +432,7 @@ const roofingConvHead =
         highValue: isRoofingHighValue,
         slug: entrySlug,
         stateCode: stateCodeFromSlug ?? "US",
+        county: String(post.data.county ?? "").trim() || undefined,
       })
     : null;
 const roofingSerpOverride = isRoofingHub ? getRoofingSerpOverride(entrySlug) : null;
@@ -437,6 +447,7 @@ const plumbingConvHead =
         zLabelExact,
         highValue: isPlumbingHighValue,
         slug: entrySlug,
+        county: String(post.data.county ?? "").trim() || undefined,
       })
     : null;
 const pestConvHead =
@@ -510,14 +521,6 @@ const waterVisualLine = pageCity
 
 /** Avoid `$`+digit and `dispatch fee` substrings (church HTML compliance scans strip JSON-LD but not `<title>`/body). */
 const h1ComplianceLead = "No surprise trip framing · upfront scope notes — ";
-
-const plumbingVisualLine = pageCity
-  ? `Our ${pageCity} dispatch node ensures state-compliant pricing. Cross-referenced with USGS infrastructure risk scores to prevent plumbing scams.`
-  : `Our dispatch node ensures state-compliant pricing. Cross-referenced with USGS infrastructure risk scores to prevent plumbing scams.`;
-
-const sidingVisualLine = pageCity
-  ? `Our ${pageCity} dispatch node ensures state-compliant pricing. Cross-referenced with envelope risk scores to prevent exterior contractor scams.`
-  : `Our dispatch node ensures state-compliant pricing. Cross-referenced with envelope risk scores to prevent exterior contractor scams.`;
 
 const roofTerrainNotice = isRoofingHub
   ? pageCity
@@ -607,7 +610,7 @@ const pageTitle = isWaterDamageHub
               })
             : post.data.title)
         : isFinancialPressureMode
-          ? `${zLabelForPublicSurface} asset stewardship brief: ${pageCity} ${pageNicheLabel} (coordinated intake)`
+          ? `${zLabelForPublicSurface} asset stewardship brief: ${pageCity} ${pageNicheLabel} (local service context)`
           : baitHead?.pageTitle ?? post.data.title;
 
 /** Visible `<h1>` fallback */
@@ -625,6 +628,9 @@ const pageH1Plain = isWaterDamageHub
             zLabel,
             zLabelExact,
             highValue: isPlumbingHighValue,
+            slug: entrySlug,
+            stateCode: stateCodeFromSlug,
+            county: String(post.data.county ?? "").trim() || null,
           })
         : post.data.title)
     : isPlumbingV2Hub
@@ -640,7 +646,15 @@ const pageH1Plain = isWaterDamageHub
       : isRoofingHub
       ? roofingSerpOverride?.pageH1 ??
         roofingConvHead?.pageH1 ??
-        (pageCity ? buildRoofingH1(pageCity, isRoofingHighValue) : post.data.title)
+        (pageCity
+          ? buildRoofingH1({
+              city: pageCity,
+              highValue: isRoofingHighValue,
+              slug: entrySlug,
+              stateCode: stateCodeFromSlug,
+              county: String(post.data.county ?? "").trim() || null,
+            })
+          : post.data.title)
     : isPestControlHub
       ? pestSerpOverride?.pageH1 ??
         pestConvHead?.pageH1 ??
@@ -703,7 +717,7 @@ const pageMetaDescription = isWaterDamageHub
         ? pageMetaDescriptionDefault
         : isFinancialPressureMode
           ? clipMetaDescription(
-              `Local ${pageCity} home value benchmark: ${zLabelForPublicSurface}. Regional infrastructure maintenance coordination and documented intake.`,
+              `Local ${pageCity} home value benchmark: ${zLabelForPublicSurface}. Regional infrastructure maintenance and documented service planning.`,
             )
           : pageMetaDescriptionDefault;
 function pickFaqSubset<T>(items: T[], seedText: string, count: number): T[] {
@@ -719,28 +733,6 @@ function pickFaqSubset<T>(items: T[], seedText: string, count: number): T[] {
   }
   return copy.slice(0, Math.min(count, copy.length));
 }
-const ctaVariantsCommercial = [
-  {
-    title: `24/7 Local ${pageNicheLabel} Emergency Service`,
-    meta: "Coordinated intake, transparent pricing, and inspection availability where offered.",
-  },
-  {
-    title: `Same-Day ${pageNicheLabel} Support Options`,
-    meta: "Scheduling windows, scope review, and straightforward next-step guidance.",
-  },
-  {
-    title: `Regional ${pageNicheLabel} coordination and response`,
-    meta: "Clear intake, practical timing expectations, and direct call routing.",
-  },
-  {
-    title: `${pageNicheLabel} Help for Urgent Property Issues`,
-    meta: "Coordinated service planning and transparent appointment communication.",
-  },
-  {
-    title: `On-Demand ${pageNicheLabel} Service Availability`,
-    meta: "Regional coordination with call-first scheduling and pricing clarity.",
-  },
-];
 const ctaVariantsStewardship = [
   {
     title: `Local ${pageNicheLabel} neighbor stewardship reference`,
@@ -763,27 +755,6 @@ const ctaVariantsStewardship = [
     meta: "Reference-only coordination language; no live contractor matching.",
   },
 ];
-const ctaVariants = isCommunityStewardshipNpo ? ctaVariantsStewardship : ctaVariantsCommercial;
-const ctaVariant = ctaVariants[stableHash(`${entrySlug}|cta`) % ctaVariants.length]!;
-const serviceLineVariantsCommercial = [
-  `Licensed local technicians available for urgent ${pageNicheLabel.toLowerCase()} service calls with coordinated intake.`,
-  `Certified regional coordination for time-sensitive ${pageNicheLabel.toLowerCase()} requests and urgent property issues.`,
-  `Qualified local routing for priority ${pageNicheLabel.toLowerCase()} calls with clear intake verification.`,
-  `Insured scheduling support for urgent ${pageNicheLabel.toLowerCase()} service needs and same-day windows where available.`,
-  `Regional service coordination for ${pageNicheLabel.toLowerCase()} requests with practical timelines and scope clarity.`,
-];
-const serviceLineVariantsStewardship = [
-  `Volunteer desk materials for ${pageNicheLabel.toLowerCase()} reference in this ZIP (informational only).`,
-  `Neighborhood stewardship narratives for ${pageNicheLabel.toLowerCase()} context — no pricing or dispatch promises.`,
-  `Educational coordination notes for ${pageNicheLabel.toLowerCase()} maintenance planning in this area.`,
-  `ZIP-level reference framing for ${pageNicheLabel.toLowerCase()} systems education (non-commercial).`,
-  `Regional stewardship language for ${pageNicheLabel.toLowerCase()} neighbor questions (reference desk tone).`,
-];
-const serviceLineVariants = isCommunityStewardshipNpo
-  ? serviceLineVariantsStewardship
-  : serviceLineVariantsCommercial;
-const serviceLine =
-  serviceLineVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|svcLine`) % serviceLineVariants.length]!;
 const callBtnVariantsCommercial = [
   `Call now: ${siteConfig.phoneDisplay}`,
   `Tap to call: ${siteConfig.phoneDisplay}`,
@@ -801,20 +772,6 @@ const callBtnVariantsStewardship = [
 const callBtnVariants = isCommunityStewardshipNpo ? callBtnVariantsStewardship : callBtnVariantsCommercial;
 const callBtnLabel =
   callBtnVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|callBtn`) % callBtnVariants.length]!;
-const headerVariantsCommercial = [
-  `National ${pageNicheLabel} intake & regional coordination`,
-  `${pageNicheLabel} service routing network`,
-  `Regional ${pageNicheLabel} coordination desk`,
-  `${pageNicheLabel} scheduling & response hub`,
-  `Regional ${pageNicheLabel} service access point`,
-];
-const headerVariantsSidingCommercial = [
-  "National siding repair intake & regional coordination",
-  "Regional siding installation & repair routing",
-  "Local siding crew dispatch & scheduling desk",
-  "Siding repair service access point",
-  "Regional exterior siding response hub",
-];
 const headerVariantsStewardship = [
   `Community ${pageNicheLabel} stewardship reference desk`,
   `${pageNicheLabel} neighbor education routing`,
@@ -822,15 +779,6 @@ const headerVariantsStewardship = [
   `${pageNicheLabel} ZIP-sector education framing`,
   `Area ${pageNicheLabel} reference materials (non-commercial)`,
 ];
-const headerVariants = isCommunityStewardshipNpo
-  ? headerVariantsStewardship
-  : isSidingHub
-    ? headerVariantsSidingCommercial
-    : headerVariantsCommercial;
-const sidingServiceLeadHtml = isSidingHub
-  ? "<p><strong>On-site siding repair and installation dispatch.</strong> This page coordinates licensed local crews for moisture intrusion, decay at the envelope, and panel replacement — not retail material sales. Share photos and ZIP context for a scope review before scheduling.</p>"
-  : null;
-const headerVariant = headerVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|header`) % headerVariants.length]!;
 const faqTitleVariants = [
   "Frequently Asked Questions",
   "Service Questions and Answers",
@@ -842,7 +790,7 @@ const faqTitle = faqTitleVariants[stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|
 const geoTitleVariants = [
   "Regional Infrastructure Brief",
   "Regional service-area snapshot",
-  "Area routing notes",
+  "Area service notes",
   "Site conditions overview",
   "Terrain & access context summary",
 ] as const;
@@ -920,12 +868,51 @@ const dispatcherClaimsLine =
 const dispatcherClaimsLineDisplay = isCommunityStewardshipNpo
   ? "Scheduling visibility depends on volunteer desk coverage; this page does not display simulated queue depth."
   : dispatcherClaimsLine;
+const commercialDetailCopy =
+  !isCommunityStewardshipNpo && isCommercialDetailCollection(ACTIVE_COLLECTION)
+    ? pickCommercialDetailCopy({
+        collection: ACTIVE_COLLECTION,
+        nicheLabel: pageNicheLabel,
+        city: pageCity ?? null,
+        trustPlace: trustDispatchPlace,
+        zip: desktopDispatchZip,
+        countyLabel: dispatcherCountyLabel,
+        entrySlug,
+      })
+    : null;
+const ctaVariant = isCommunityStewardshipNpo
+  ? ctaVariantsStewardship[stableHash(`${entrySlug}|cta`) % ctaVariantsStewardship.length]!
+  : commercialDetailCopy!.ctaVariant;
+const serviceLineVariantsStewardship = [
+  `Volunteer desk materials for ${pageNicheLabel.toLowerCase()} reference in this ZIP (informational only).`,
+  `Neighborhood stewardship narratives for ${pageNicheLabel.toLowerCase()} context — no pricing or dispatch promises.`,
+  `Educational coordination notes for ${pageNicheLabel.toLowerCase()} maintenance planning in this area.`,
+  `ZIP-level reference framing for ${pageNicheLabel.toLowerCase()} systems education (non-commercial).`,
+  `Regional stewardship language for ${pageNicheLabel.toLowerCase()} neighbor questions (reference desk tone).`,
+];
+const serviceLine = isCommunityStewardshipNpo
+  ? serviceLineVariantsStewardship[
+      stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|svcLine`) % serviceLineVariantsStewardship.length
+    ]!
+  : commercialDetailCopy!.serviceLine;
+const headerVariant = isCommunityStewardshipNpo
+  ? headerVariantsStewardship[
+      stableHash(`${ACTIVE_COLLECTION}|${entrySlug}|header`) % headerVariantsStewardship.length
+    ]!
+  : commercialDetailCopy!.headerVariant;
+const plumbingVisualLine = commercialDetailCopy?.plumbingVisualLine ?? "";
+const sidingVisualLine = commercialDetailCopy?.sidingVisualLine ?? "";
+const sidingServiceLeadHtml = commercialDetailCopy?.sidingServiceLeadHtml ?? null;
+const officialNodeCommercialLine = commercialDetailCopy?.officialNodeLine ?? null;
 const phoneTrustSubtitle = isCommunityStewardshipNpo
   ? `Newtown Fellowship neighbor desk — educational context for ${trustDispatchPlace}.`
-  : `National Dispatch Hub - Connecting to Local ${trustDispatchPlace} Response Team.`;
+  : commercialDetailCopy!.phoneTrustSubtitle;
 const phoneZipHint = isCommunityStewardshipNpo
   ? `ZIP-sector reference anchor: ${desktopDispatchZip}`
-  : `Dispatching now for ${desktopDispatchZip}`;
+  : commercialDetailCopy!.phoneZipHint;
+const dispatcherHookupLine = isCommunityStewardshipNpo
+  ? `Regional coordination desk (${dispatcherCountyLabel}):`
+  : commercialDetailCopy!.dispatcherHookupLine;
 const phoneBtnAriaLabel = isCommunityStewardshipNpo
   ? `Phone ${siteConfig.phoneDisplay} (neighbor support line)`
   : `Call ${siteConfig.phoneDisplay}`;
@@ -1834,7 +1821,10 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
         {
           isWaterDamageHub ? (
             <>
-              <OfficialRiskNodeHeader />
+              <OfficialRiskNodeHeader
+                zipCode={desktopDispatchZip}
+                commercialAnchorLine={officialNodeCommercialLine}
+              />
               <ValueProtectionCalculator
                 homeUsd={zUsd}
                 zLabel={zLabel}
@@ -1861,7 +1851,7 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
               {slugDispatchFeedRecords.length > 0 ? (
                 <LiveDispatchFeed
                   records={slugDispatchFeedRecords}
-                  title={`${stateCodeFromSlug ?? ""} Dispatch Activity Feed`}
+                  title={`${stateCodeFromSlug ?? ""} Local Service Activity Feed`}
                 />
               ) : null}
               {zUsd != null ? (
@@ -1879,7 +1869,10 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
             </>
           ) : isPlumbingHub || isPlumbingV2Hub || isSidingHub ? (
             <>
-              <OfficialRiskNodeHeader />
+              <OfficialRiskNodeHeader
+                zipCode={desktopDispatchZip}
+                commercialAnchorLine={officialNodeCommercialLine}
+              />
               <ValueProtectionCalculator
                 homeUsd={zUsd}
                 zLabel={zLabel}
@@ -1914,7 +1907,10 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
             </>
           ) : isPestControlHub ? (
             <>
-              <OfficialRiskNodeHeader zipCode={desktopDispatchZip} />
+              <OfficialRiskNodeHeader
+                zipCode={desktopDispatchZip}
+                commercialAnchorLine={officialNodeCommercialLine}
+              />
               <ValueProtectionCalculator
                 homeUsd={zUsd}
                 zLabel={zLabel}
@@ -1956,6 +1952,7 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
                   <OfficialRiskNodeHeader
                     zipCode={desktopDispatchZip}
                     stewardshipMode={isCommunityStewardshipNpo}
+                    commercialAnchorLine={isCommunityStewardshipNpo ? null : officialNodeCommercialLine}
                   />
                   <ValueProtectionCalculator
                     homeUsd={zUsd}
@@ -1996,6 +1993,7 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
                   <OfficialRiskNodeHeader
                     zipCode={desktopDispatchZip}
                     stewardshipMode={isCommunityStewardshipNpo}
+                    commercialAnchorLine={isCommunityStewardshipNpo ? null : officialNodeCommercialLine}
                   />
                   <ValueProtectionCalculator
                     homeUsd={zUsd}
@@ -2047,6 +2045,11 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
             ) : null
           }
           {
+            seedEvidencePhoto ? (
+              <ServiceAreaEvidencePhoto photo={seedEvidencePhoto} />
+            ) : null
+          }
+          {
             !isCommunityStewardshipNpo ? (
               <DispatchSectorRating
                 city={pageCity}
@@ -2090,7 +2093,7 @@ const blockOrder = ACTIVE_COLLECTION === "plumbing-v2"
             <NationalDispatchDisclaimer city={pageCity} slug={entrySlug} stewardshipReference={isCommunityStewardshipNpo} />
           </div>
           <p class="dispatcher-hookup-line">
-            Regional coordination desk ({dispatcherCountyLabel}):
+            {dispatcherHookupLine}
           </p>
           <p class="dispatcher-scheduling-visibility">{dispatcherClaimsLineDisplay}</p>
           {pestLatestDispatchLine ? <p class="pest-zip-dispatch-pulse">{pestLatestDispatchLine}</p> : null}

@@ -1,5 +1,7 @@
 /** Rockwell roofing SERP titles: ≤55 chars, service-first, tiered (no asset-audit titles). */
 
+import { stableHash } from "./faq-hydration";
+
 export const ROOFING_BRAND_SUFFIX = " | FixitGrid";
 export const ROOFING_TITLE_MAX = 55;
 export const ROOFING_META_MAX = 155;
@@ -75,11 +77,34 @@ export function buildRoofingPageTitle(opts: {
   return pickFirstRoofingTitle(buildRoofingLowTitleCore(city), `low:${slug}`);
 }
 
-export function buildRoofingH1(city: string, highValue: boolean): string {
-  if (highValue) {
-    return `Roof Repair & Replacement — ${city}`;
-  }
-  return `Roofing — ${city}`;
+export function buildRoofingH1(opts: {
+  city: string;
+  highValue: boolean;
+  slug?: string;
+  stateCode?: string | null;
+  county?: string | null;
+}): string {
+  const { city, highValue, slug = city, stateCode, county } = opts;
+  const st = (stateCode ?? "").trim().toUpperCase() || "US";
+  const countyLabel = (county ?? "").trim();
+  const geoTail = countyLabel || st;
+
+  const lowPool = [
+    `Emergency roof repair in ${city} — storm & leak response`,
+    `${city} roof repair — ${geoTail} shingle & flashing work`,
+    `Storm damage roofing in ${city}, ${st} — leak triage & repair scope`,
+    `Roofing repair in ${city}: ${geoTail} emergency leak help`,
+    `${city} emergency roofing — shingle repair & dry-in options`,
+  ];
+  const highPool = [
+    `Roof repair & replacement in ${city}`,
+    `${city} roofing contractor — storm & leak repair`,
+    `${city} roof repair — ${geoTail} shingle replacement scope`,
+    `Licensed roof repair in ${city}, ${st}`,
+    `${city} storm damage roofing — repair & replacement options`,
+  ];
+  const pool = highValue ? highPool : lowPool;
+  return pool[stableHash(`${slug}|roofH1`) % pool.length]!;
 }
 
 export function buildBaitPool2TitlesRoofing(opts: {
@@ -89,11 +114,12 @@ export function buildBaitPool2TitlesRoofing(opts: {
   highValue: boolean;
   slug: string;
   stateCode?: string;
+  county?: string;
 }): { pageTitle: string; pageH1: string; metaDescription: string } {
-  const { city, highValue, stateCode = "US" } = opts;
+  const { city, highValue, stateCode = "US", slug, county } = opts;
   const st = stateCode.trim().toUpperCase() || "US";
   const pageTitle = buildRoofingPageTitle(opts);
-  const pageH1 = buildRoofingH1(city, highValue);
+  const pageH1 = buildRoofingH1({ city, highValue, slug, stateCode: st, county });
   const metaDescription = clipMetaDescription(
     `Roof repair & replacement in ${city}, ${st}. Local roofer for shingles & storm damage. Licensed contractor — free estimate.`,
     ROOFING_META_MAX,

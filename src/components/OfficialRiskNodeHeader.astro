@@ -3,20 +3,24 @@
  * Brand verification anchor above Value Protection Calculator (Pinterest / search parity).
  * Church stewardship: decouple FixitGrid dispatch; keep ZIP education anchor.
  */
-const { zipCode, stewardshipMode = false } = Astro.props as {
+const { zipCode, stewardshipMode = false, commercialAnchorLine } = Astro.props as {
   zipCode?: string | null | undefined;
   stewardshipMode?: boolean;
+  /** Commercial semantic pivot: overrides default FixitGrid anchor copy. */
+  commercialAnchorLine?: string | null;
 };
 const zip5 = String(zipCode ?? "")
   .replace(/\D/g, "")
   .slice(0, 5);
+const defaultCommercialLine =
+  zip5.length === 5
+    ? `Official Node: FixitGrid Licensed Service Area · ZIP ${zip5}`
+    : "Official Node: FixitGrid Licensed Service Area";
 const line = stewardshipMode
   ? zip5.length === 5
     ? `ZIP-sector education reference · ${zip5} — community stewardship context (non-commercial)`
     : "Community stewardship education reference (non-commercial)"
-  : zip5.length === 5
-    ? `Official Node: FixitGrid Local Dispatch Network · ZIP ${zip5}`
-    : "Official Node: FixitGrid Local Dispatch Network";
+  : (commercialAnchorLine?.trim() || defaultCommercialLine);
 ---
 
 <div class="brand-verification-anchor" role="region" aria-label={line}>

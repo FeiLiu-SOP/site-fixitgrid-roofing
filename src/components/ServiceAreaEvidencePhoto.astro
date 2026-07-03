@@ -1,0 +1,56 @@
+---
+import type { SeedEvidencePhotoView } from "../lib/seed-evidence-images";
+
+export interface Props {
+  photo: SeedEvidencePhotoView;
+}
+
+const { photo } = Astro.props;
+---
+
+<figure class="service-area-evidence-photo" aria-label="Service-area field documentation">
+  <figcaption class="service-area-evidence-photo__kicker">Service-area field documentation</figcaption>
+  <img
+    src={photo.url}
+    alt={photo.alt}
+    width="896"
+    height="560"
+    loading="lazy"
+    decoding="async"
+    class="service-area-evidence-photo__img"
+  />
+  <figcaption class="service-area-evidence-photo__caption">{photo.caption}</figcaption>
+</figure>
+
+<style>
+  .service-area-evidence-photo {
+    margin: 1.25rem 0 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8fafc;
+  }
+  .service-area-evidence-photo__kicker {
+    margin: 0;
+    padding: 0.55rem 1rem 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .service-area-evidence-photo__img {
+    display: block;
+    width: 100%;
+    max-width: 896px;
+    height: auto;
+    aspect-ratio: 896 / 560;
+    object-fit: cover;
+  }
+  .service-area-evidence-photo__caption {
+    padding: 0.65rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: #334155;
+  }
+</style>

@@ -16,7 +16,7 @@ export interface Props {
   collectionKey?: ActiveCollectionKey;
 }
 
-const BRAND_DISPLAY = "FixitGrid Local Dispatch Network";
+const BRAND_DISPLAY = "FixitGrid Licensed Service Network";
 
 /** Non-roofing fallback: never default unknown collection to roofing keys containing Roofing */
 const NEUTRAL_DISPATCH_COMMAND = { left: "Information Desk", right: "Community Briefing" } as const;
@@ -26,8 +26,8 @@ const COLLECTION_COMMAND: Record<
   { left: string; right: string }
 > = {
   "water-damage": { left: "Mitigation Desk", right: "Emergency Extraction" },
-  plumbing: { left: "Pipe Safety Hub", right: "Emergency Dispatch" },
-  "plumbing-v2": { left: "Pipe Safety Hub", right: "Emergency Dispatch" },
+  plumbing: { left: "Pipe Safety Hub", right: "Emergency Service" },
+  "plumbing-v2": { left: "Pipe Safety Hub", right: "Emergency Service" },
   roofing: { left: "Roofing Audit", right: "Structural Command" },
   "siding-services": { left: "Envelope Audit", right: "Professional Retrofit" },
   pestcontrol: { left: "Eradication Unit", right: "Secure Property" },
@@ -162,7 +162,7 @@ const telHref = `tel:${phoneE164}`;
           <>Newtown Fellowship - volunteer neighbor-stewardship desk (informational routing only).</>
         ) : (
           <>
-            National Dispatch Hub - Connecting to Local {cityDisplay} Response Team.
+            Licensed local crews serving {cityDisplay} — call for scope review.
           </>
         )
       }
